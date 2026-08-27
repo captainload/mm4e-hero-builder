@@ -2224,7 +2224,7 @@ function buildPowersUI() {
           }
         });
 
-        // Determine linked target effect and validate rules
+        // Determine linked target effect (outgoing) and incoming links
         let targetEffect = null;
         let targetDesc = "";
         if (effect.linkedTo === "previous" && eIdx > 0) {
@@ -2238,29 +2238,70 @@ function buildPowersUI() {
           }
         }
 
-        let linkBannerHtml = "";
-        if (targetEffect) {
-          const currTraits = getEffectiveEffectTraits(effect);
-          const targetTraits = getEffectiveEffectTraits(targetEffect);
-          const warnings = [];
+        // Find all other effects linked TO this effect (incoming)
+        let linkedChildren = [];
+        char.powers.forEach((otherContainer, otherPIdx) => {
+          if (Array.isArray(otherContainer.effects)) {
+            otherContainer.effects.forEach((otherEff, otherEIdx) => {
+              if (otherEff.id !== effect.id) {
+                if (otherEff.linkedTo === effect.id) {
+                  const childName = (otherContainer.name || 'Power') + ' > ' + (otherEff.name || otherEff.effectName || `Effect ${otherEIdx + 1}`);
+                  linkedChildren.push({ effect: otherEff, name: childName });
+                } else if (otherPIdx === pIdx && otherEIdx === eIdx + 1 && otherEff.linkedTo === "previous") {
+                  const childName = otherEff.name || otherEff.effectName || `Effect ${otherEIdx + 1}`;
+                  linkedChildren.push({ effect: otherEff, name: childName });
+                }
+              }
+            });
+          }
+        });
 
-          if (currTraits.action !== targetTraits.action && currTraits.action !== "None" && targetTraits.action !== "None") {
-            warnings.push(`Action mismatch (${currTraits.action} vs ${targetTraits.action}) — Linked effects must share the same action`);
+        const isLinkedCard = isLinked || (linkedChildren.length > 0);
+
+        // Build Two-Way Link Banners & Rule Checks
+        let linkBannerHtml = "";
+        const allConnected = [];
+        if (targetEffect) {
+          allConnected.push({ effect: targetEffect, desc: targetDesc, role: "parent" });
+        }
+        linkedChildren.forEach(child => {
+          if (!allConnected.some(c => c.effect.id === child.effect.id)) {
+            allConnected.push({ effect: child.effect, desc: child.name, role: "child" });
           }
-          if (currTraits.range !== targetTraits.range) {
-            warnings.push(`Range mismatch (${currTraits.range} vs ${targetTraits.range}) — Apply 'Increased Range' extra to match`);
-          }
+        });
+
+        if (allConnected.length > 0) {
+          const currTraits = getEffectiveEffectTraits(effect);
+          const banners = [];
+
+          allConnected.forEach(conn => {
+            const connTraits = getEffectiveEffectTraits(conn.effect);
+            const warnings = [];
+
+            if (currTraits.action !== connTraits.action && currTraits.action !== "None" && connTraits.action !== "None") {
+              warnings.push(`Action mismatch (${currTraits.action} vs ${connTraits.action}) — Linked effects must share the same action`);
+            }
+            if (currTraits.range !== connTraits.range) {
+              warnings.push(`Range mismatch (${currTraits.range} vs ${connTraits.range}) — Apply 'Increased Range' extra to match`);
+            }
+
+            banners.push(`
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span class="link-badge">🔗 Linked with: <strong>${conn.desc}</strong></span>
+                ${warnings.map(w => `<span class="link-warning-tag">⚠️ ${w}</span>`).join('')}
+              </div>
+            `);
+          });
 
           linkBannerHtml = `
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
-              <span class="link-badge">🔗 Linked with: <strong>${targetDesc}</strong></span>
-              ${warnings.map(w => `<span class="link-warning-tag">⚠️ ${w}</span>`).join('')}
+            <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px;">
+              ${banners.join('')}
             </div>
           `;
         }
 
         return `
-          <div class="effect-card ${isLinked ? 'is-linked' : ''}" style="margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--text-muted);">
+          <div class="effect-card ${isLinkedCard ? 'is-linked' : ''}" style="margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--text-muted);">
             
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">

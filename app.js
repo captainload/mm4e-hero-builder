@@ -272,43 +272,50 @@ const MODIFIER_CATEGORY_MAP = {
   Attack: [
     "Accurate", "Affects Insubstantial", "Area Effect (Cone)", "Area Effect (Cube)", "Area Effect (Cylinder)",
     "Area Effect (Line)", "Area Effect (Shapeable)", "Area Effect (Sphere)", "Attack", "Aura", "Contagious",
-    "Cumulative", "Homing", "Indirect", "Incurable", "Multiattack",
-    "Penetrating", "Progressive", "Reach", "Ricochet", "Secondary Effect", "Selective", "Sleep", "Split",
-    "Triggered", "Variable Descriptor", "Distracting", "Fades", "Feedback", "Grab-Based",
-    "Inaccurate", "Limited", "Noticeable", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
-    "Resistible", "Sense-Dependent", "Side Effect", "Tiring", "Unreliable"
+    "Cumulative", "Diminished Range", "Extended Range", "Homing", "Inaccurate", "Incurable", "Indirect",
+    "Increased Range", "Multiattack", "Penetrating", "Perception Range", "Progressive", "Ranged", "Reach",
+    "Reduced Range", "Close", "Ricochet", "Secondary Effect", "Selective", "Sleep", "Split", "Triggered",
+    "Variable Descriptor", "Distracting", "Fades", "Feedback", "Grab-Based", "Limited", "Noticeable",
+    "Quirk", "Removable (Device)", "Removable (Easily Removable)", "Resistible", "Sense-Dependent",
+    "Side Effect", "Tiring", "Unreliable"
   ],
   Defense: [
-    "Affects Others", "Impervious", "Hardened", "Impenetrable", "Reflect", "Redirect", "Sustained", "Continuous",
-    "Fades", "Distracting", "Limited", "Noticeable", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
-    "Side Effect", "Unreliable"
+    "Affects Others", "Area Effect (Sphere)", "Continuous", "Hardened", "Impenetrable", "Impervious",
+    "Increased Range", "Perception Range", "Ranged", "Reach", "Redirect", "Reflect", "Sustained",
+    "Distracting", "Fades", "Limited", "Noticeable", "Quirk", "Reduced Range", "Removable (Device)",
+    "Removable (Easily Removable)", "Side Effect", "Unreliable"
   ],
   Movement: [
-    "Affects Others", "Aquatic", "Area Effect (Sphere)", "Continuous", "Selective", "Subtle", "Acrobatics Check Required",
-    "Distracting", "Gliding", "Levitation", "Limited", "Noticeable", "Platform", "Quirk", "Removable (Device)",
-    "Removable (Easily Removable)", "Restrainable", "Side Effect", "Unreliable"
+    "Acrobatics Check Required", "Affects Others", "Aquatic", "Area Effect (Sphere)", "Continuous",
+    "Extended Range", "Increased Range", "Perception Range", "Ranged", "Selective", "Subtle",
+    "Distracting", "Gliding", "Levitation", "Limited", "Noticeable", "Platform", "Quirk", "Reduced Range",
+    "Removable (Device)", "Removable (Easily Removable)", "Restrainable", "Side Effect", "Unreliable"
   ],
   Sensory: [
-    "Affects Others", "Area Effect (Sphere)", "Broadcast", "Dimensional",
-    "Rapid", "Selective", "Simultaneous",
-    "Subtle", "Distracting", "Fades", "Feedback", "Limited", "Medium", "Noticeable", "One-Way", "Passive",
-    "Quirk", "Removable (Device)", "Removable (Easily Removable)", "Side Effect", "Unreliable"
+    "Affects Others", "Area Effect (Sphere)", "Broadcast", "Dimensional", "Extended Range", "Increased Range",
+    "Perception Range", "Ranged", "Rapid", "Selective", "Simultaneous", "Subtle", "Diminished Range",
+    "Distracting", "Fades", "Feedback", "Limited", "Medium", "Noticeable", "One-Way", "Passive", "Quirk",
+    "Reduced Range", "Removable (Device)", "Removable (Easily Removable)", "Side Effect", "Unreliable"
   ],
   Control: [
     "Affects Insubstantial", "Affects Objects", "Area Effect (Cone)", "Area Effect (Cube)", "Area Effect (Cylinder)",
     "Area Effect (Line)", "Area Effect (Shapeable)", "Area Effect (Sphere)", "Attack", "Continuous", "Damaging",
-    "Indirect", "Movable", "Perception Range", "Precise", "Ranged", "Selective", "Stationary", "Subtle",
-    "Triggered", "Variable Descriptor", "Concentration", "Distracting", "Fades", "Feedback", "Limited",
-    "Limited Direction", "Limited Material", "Noticeable", "Passive", "Quirk", "Removable (Device)",
-    "Removable (Easily Removable)", "Resistible", "Sense-Dependent", "Side Effect", "Unreliable"
+    "Diminished Range", "Extended Range", "Increased Range", "Indirect", "Movable", "Perception Range",
+    "Precise", "Ranged", "Reach", "Reduced Range", "Close", "Selective", "Stationary", "Subtle", "Triggered",
+    "Variable Descriptor", "Concentration", "Distracting", "Fades", "Feedback", "Limited", "Limited Direction",
+    "Limited Material", "Noticeable", "Passive", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
+    "Resistible", "Sense-Dependent", "Side Effect", "Unreliable"
   ],
   Alteration: [
-    "Affects Corporeal", "Affects Others", "Continuous", "Metamorph", "Precise", "Projection", "Subtle", "Variable",
-    "Concentration", "Distracting", "Fades", "Feedback", "Limited", "Noticeable", "Passive", "Quirk",
-    "Removable (Device)", "Removable (Easily Removable)", "Resistible", "Side Effect", "Unreliable"
+    "Affects Corporeal", "Affects Others", "Area Effect (Sphere)", "Continuous", "Diminished Range",
+    "Extended Range", "Increased Range", "Metamorph", "Perception Range", "Precise", "Projection", "Ranged",
+    "Reach", "Reduced Range", "Close", "Subtle", "Variable", "Concentration", "Distracting", "Fades",
+    "Feedback", "Limited", "Noticeable", "Passive", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
+    "Resistible", "Side Effect", "Unreliable"
   ],
   General: [
-    "Affects Others", "Continuous", "Fades", "Limited", "Noticeable", "Quirk", "Removable (Device)",
+    "Affects Others", "Continuous", "Extended Range", "Increased Range", "Perception Range", "Ranged",
+    "Reach", "Reduced Range", "Close", "Fades", "Limited", "Noticeable", "Quirk", "Removable (Device)",
     "Removable (Easily Removable)", "Side Effect", "Subtle", "Sustained", "Unreliable"
   ]
 };
@@ -333,27 +340,31 @@ window.generateSmartModifiers = function(effect) {
     let extras = [];
     let flaws = [];
     
-    let baseRange = effectData.range;
-    let baseDur = effectData.duration;
-    let baseAct = effectData.action;
+    let baseRange = effectData.range || "Close";
+    let baseDur = effectData.duration || "Instant";
+    let baseAct = effectData.action || "Standard";
 
-    const RANGE_TIERS = { "Personal": 0, "Close": 1, "Ranged": 2, "Perception": 3 };
     const DURATION_TIERS = { "Instant": 1, "Concentration": 2, "Sustained": 3, "Continuous": 4, "Permanent": 5 };
     const ACTION_TIERS = { "Full": 1, "Standard": 2, "Move": 3, "Free": 4, "Reaction": 5, "None": 6 };
 
     // RANGE
-    let rTier = RANGE_TIERS[baseRange];
-    if (rTier !== undefined && rTier >= 1 && rTier <= 3) {
-        if (rTier === 1) {
-            extras.push({ name: "Increased Range (Ranged)", cost: 1, costType: "per_rank", category: "extra" });
-            extras.push({ name: "Increased Range (Perception)", cost: 2, costType: "per_rank", category: "extra" });
-        } else if (rTier === 2) {
-            extras.push({ name: "Increased Range (Perception)", cost: 1, costType: "per_rank", category: "extra" });
-            flaws.push({ name: "Decreased Range (Close)", cost: 1, costType: "per_rank", category: "flaw" });
-        } else if (rTier === 3) {
-            flaws.push({ name: "Decreased Range (Ranged)", cost: 1, costType: "per_rank", category: "flaw" });
-            flaws.push({ name: "Decreased Range (Close)", cost: 2, costType: "per_rank", category: "flaw" });
-        }
+    if (baseRange === "Personal") {
+        extras.push({ name: "Increased Range", cost: 1, costType: "per_rank", hasRanks: true, maxRanks: 2, category: "extra" });
+    } else if (baseRange === "Close") {
+        extras.push({ name: "Increased Range", cost: 1, costType: "per_rank", hasRanks: true, maxRanks: 2, category: "extra" });
+        extras.push({ name: "Ranged", cost: 1, costType: "per_rank", hasRanks: false, category: "extra" });
+        extras.push({ name: "Perception Range", cost: 2, costType: "per_rank", hasRanks: false, category: "extra" });
+        extras.push({ name: "Reach", cost: 1, costType: "flat", hasRanks: true, maxRanks: 20, category: "extra" });
+    } else if (baseRange === "Ranged") {
+        extras.push({ name: "Increased Range", cost: 1, costType: "per_rank", hasRanks: false, category: "extra" });
+        extras.push({ name: "Perception Range", cost: 1, costType: "per_rank", hasRanks: false, category: "extra" });
+        extras.push({ name: "Extended Range", cost: 1, costType: "flat", hasRanks: true, maxRanks: 10, category: "extra" });
+        flaws.push({ name: "Reduced Range", cost: 1, costType: "per_rank", hasRanks: false, category: "flaw" });
+        flaws.push({ name: "Close", cost: 1, costType: "per_rank", hasRanks: false, category: "flaw" });
+        flaws.push({ name: "Diminished Range", cost: 1, costType: "flat", hasRanks: true, maxRanks: 3, category: "flaw" });
+    } else if (baseRange === "Perception") {
+        flaws.push({ name: "Reduced Range", cost: 1, costType: "per_rank", hasRanks: true, maxRanks: 2, category: "flaw" });
+        flaws.push({ name: "Close", cost: 2, costType: "per_rank", hasRanks: false, category: "flaw" });
     }
 
     // DURATION
@@ -1346,6 +1357,48 @@ window.updateEffectLink = function(pIdx, eIdx, val) {
   }
 };
 
+function calculateEffectiveRange(effect, baseRange) {
+  let effectiveRange = baseRange || "Close";
+  if (!effect || !effect.modifiers || effect.modifiers.length === 0) {
+    return effectiveRange;
+  }
+
+  const incRange = effect.modifiers.find(m => m.name === "Increased Range");
+  const rangedMod = effect.modifiers.find(m => m.name === "Ranged" || m.name.includes("Ranged (Deflect)") || m.name.includes("Ranged (Burrowing)"));
+  const perRange = effect.modifiers.find(m => m.name === "Perception Range" || m.name === "Perception");
+  const decRange = effect.modifiers.find(m => m.name === "Reduced Range" || m.name === "Decreased Range" || m.name === "Close" || m.name === "Close (Flaw)");
+
+  if (baseRange === "Personal") {
+    if (incRange) {
+      const r = parseInt(incRange.ranks) || 1;
+      effectiveRange = r >= 2 ? "Ranged" : "Close";
+    }
+  } else if (baseRange === "Close") {
+    if (incRange) {
+      const r = parseInt(incRange.ranks) || 1;
+      effectiveRange = r >= 2 ? "Perception" : "Ranged";
+    } else if (perRange) {
+      effectiveRange = "Perception";
+    } else if (rangedMod) {
+      effectiveRange = "Ranged";
+    }
+  } else if (baseRange === "Ranged") {
+    if (incRange || perRange) {
+      effectiveRange = "Perception";
+    } else if (decRange) {
+      effectiveRange = "Close";
+    }
+  } else if (baseRange === "Perception") {
+    if (decRange) {
+      const r = parseInt(decRange.ranks) || 1;
+      effectiveRange = r >= 2 ? "Close" : "Ranged";
+    }
+  }
+
+  return effectiveRange;
+}
+window.calculateEffectiveRange = calculateEffectiveRange;
+
 function getEffectiveEffectTraits(effect) {
   if (!effect || !effect.effectName) return { action: "Standard", range: "Close" };
   const baseData = typeof POWER_EFFECTS_LIST !== 'undefined' 
@@ -1353,26 +1406,17 @@ function getEffectiveEffectTraits(effect) {
     : null;
     
   let action = baseData?.action || "Standard";
-  let range = baseData?.range || "Close";
+  let range = calculateEffectiveRange(effect, baseData?.range || "Close");
   
   if (Array.isArray(effect.modifiers)) {
     effect.modifiers.forEach(m => {
       const mName = m.name || "";
-      if (mName === "Ranged") range = "Ranged";
-      else if (mName === "Perception Range" || mName === "Perception") range = "Perception";
-      else if (mName === "Close Range" || mName === "Close" || mName === "Close (Flaw)") range = "Close";
-      else if (mName === "Increased Range") {
-        if (range === "Personal") range = "Close";
-        else if (range === "Close") range = "Ranged";
-        else if (range === "Ranged") range = "Perception";
-      } else if (mName === "Reduced Range") {
-        if (range === "Perception") range = "Ranged";
-        else if (range === "Ranged") range = "Close";
-      } else if (mName === "Reaction") {
-        action = "Reaction";
-      } else if (mName === "Triggered") {
-        action = "Triggered";
-      }
+      if (mName === "Reaction") action = "Reaction";
+      else if (mName === "Triggered") action = "Triggered";
+      else if (mName === "Action (Move)") action = "Move";
+      else if (mName === "Action (Free)") action = "Free";
+      else if (mName === "Action (Reaction)") action = "Reaction";
+      else if (mName === "Action (Standard)") action = "Standard";
     });
   }
   
@@ -1484,36 +1528,25 @@ function buildPowersUI() {
           }
         }
 
-        let workingRange = effectData.range;
-        if (effect.modifiers && effect.modifiers.some(m => m.name.includes("Perception"))) {
-            workingRange = "Perception";
-        }
+        const baseRange = effectData ? (effectData.range || "Close") : "Close";
+        const effectiveRange = calculateEffectiveRange(effect, baseRange);
 
-        let effectiveRange = effectData.range;
         let reachRanks = 0;
-        let rangeShift = 0;
-
-        const hasPerceptionMod = effect.modifiers && effect.modifiers.some(m => m.name.includes("Perception"));
-        const hasRangedMod = effect.modifiers && effect.modifiers.some(m => m.name === "Ranged" || m.name === "Ranged (Deflect)" || m.name === "Ranged (Burrowing)");
-        const hasCloseMod = effect.modifiers && effect.modifiers.some(m => m.name === "Close");
-        
         const reachMod = effect.modifiers ? effect.modifiers.find(m => m.name === "Reach") : null;
-        if (reachMod) reachRanks = parseInt(reachMod.ranks) || 0;
+        if (reachMod) reachRanks = parseInt(reachMod.ranks) || 1;
 
-        const extRangeMod = effect.modifiers ? effect.modifiers.find(m => m.name === "Extended Range" || m.name === "Increased Range") : null;
+        let rangeShift = 0;
+        const extRangeMod = effect.modifiers ? effect.modifiers.find(m => m.name === "Extended Range") : null;
+        if (extRangeMod) rangeShift += (parseInt(extRangeMod.ranks) || 1);
+
         const dimRangeMod = effect.modifiers ? effect.modifiers.find(m => m.name === "Diminished Range") : null;
-        if (extRangeMod) rangeShift += (parseInt(extRangeMod.ranks) || 0);
-        if (dimRangeMod) rangeShift -= (parseInt(dimRangeMod.ranks) || 0);
-
-        if (hasPerceptionMod) effectiveRange = "Perception";
-        if (hasRangedMod) effectiveRange = "Ranged"; 
-        if (hasCloseMod) effectiveRange = "Close";   
+        if (dimRangeMod) rangeShift -= (parseInt(dimRangeMod.ranks) || 1);
 
         let rangeDisplay = effectiveRange;
 
         if (effectiveRange === "Close") {
           if (reachRanks > 0) {
-            let reachDist = (typeof MEASUREMENT_TABLE !== 'undefined' && MEASUREMENT_TABLE[reachRanks.toString()]) ? MEASUREMENT_TABLE[reachRanks.toString()].dist_imp : "Special";
+            let reachDist = (typeof MEASUREMENT_TABLE !== 'undefined' && MEASUREMENT_TABLE[reachRanks.toString()]) ? MEASUREMENT_TABLE[reachRanks.toString()].dist_imp : (5 + reachRanks * 5) + " ft.";
             rangeDisplay = `Close (Reach: Rank ${reachRanks} / ${reachDist})`;
           } else {
             rangeDisplay = `Close (Adjacent / 6 ft.)`;
@@ -1521,21 +1554,30 @@ function buildPowersUI() {
         } else if (effectiveRange === "Ranged") {
           let r = parseInt(effect.rank) || 1;
           const multipliers = [
-            { s: 2, m: 5, l: 10 }, { s: 5, m: 10, l: 25 }, { s: 10, m: 25, l: 50 },
-            { s: 25, m: 50, l: 100 }, { s: 50, m: 100, l: 250 }, { s: 100, m: 250, l: 500 },
-            { s: 250, m: 500, l: 1000 }, { s: 500, m: 1000, l: 2500 }
+            { s: 2, m: 5, l: 10 },      // Shift -3 (Diminished Range 3)
+            { s: 5, m: 10, l: 25 },     // Shift -2 (Diminished Range 2)
+            { s: 10, m: 25, l: 50 },    // Shift -1 (Diminished Range 1)
+            { s: 25, m: 50, l: 100 },   // Shift  0 (Standard Ranged)
+            { s: 50, m: 100, l: 250 },  // Shift +1 (Extended Range 1)
+            { s: 100, m: 250, l: 500 }, // Shift +2 (Extended Range 2)
+            { s: 250, m: 500, l: 1000 },// Shift +3 (Extended Range 3)
+            { s: 500, m: 1000, l: 2500 },// Shift +4 (Extended Range 4)
+            { s: 1000, m: 2500, l: 5000 },// Shift +5 (Extended Range 5)
+            { s: 2500, m: 5000, l: 10000 } // Shift +6 (Extended Range 6)
           ];
           let shiftIndex = 3 + rangeShift; 
           if (shiftIndex < 0) shiftIndex = 0;
           if (shiftIndex >= multipliers.length) shiftIndex = multipliers.length - 1;
           let mults = multipliers[shiftIndex];
           rangeDisplay = `Ranged (Short: ${r * mults.s} ft. / Med: ${r * mults.m} ft. / Long: ${r * mults.l} ft.)`;
+        } else if (effectiveRange === "Perception") {
+          rangeDisplay = "Perception (Line of sight / Accurate Sense)";
+        } else if (effectiveRange === "Personal") {
+          rangeDisplay = "Personal";
         } else if (effectiveRange === "Rank") {
           let effRank = Math.max(-5, effect.rank + rangeShift);
           let dist = (typeof MEASUREMENT_TABLE !== 'undefined' && MEASUREMENT_TABLE[effRank.toString()]) ? MEASUREMENT_TABLE[effRank.toString()].dist_imp : "Special";
           rangeDisplay = `Rank ${effRank} (${dist})`;
-        } else if (effectiveRange === "Personal") {
-          rangeDisplay = "Personal";
         }
 
         let measurementHtml = "";
@@ -2104,11 +2146,16 @@ function buildPowersUI() {
             modData = JSON.parse(JSON.stringify(modData));
             const isExtra = (modData.category === "extra" || (effectData && effectData.specificExtras && effectData.specificExtras.some(e => e.name === mod.name)));
             const rateStr = modData.costType === 'per_rank' ? '/r' : (modData.costType === 'removable' ? '/5 PP' : ' flat');
-            const needsRanks = (modData.costType === 'per_rank' || modData.costType === 'removable' || modData.hasRanks);
+            const needsRanks = (modData.hasRanks === true || modData.costType === 'removable');
             let maxR = modData.maxRanks || 20;
             if (mod.name === "Striding") maxR = 5;
             if (mod.name.includes("Removable")) maxR = 2;
-            if (modData.costType === 'per_rank' && !mod.name.includes("Striding")) {
+            if (mod.name === "Increased Range") maxR = (effectData && effectData.range === "Close") ? 2 : 1;
+            if (mod.name === "Reduced Range") maxR = (effectData && effectData.range === "Perception") ? 2 : 1;
+            if (mod.name === "Diminished Range") maxR = 3;
+            if (mod.name === "Extended Range") maxR = 10;
+            if (mod.name === "Reach") maxR = 20;
+            if (modData.hasRanks && modData.costType === 'per_rank' && mod.name !== "Increased Range" && mod.name !== "Reduced Range") {
                 maxR = Math.min(20, Math.max(effect.rank, 20));
             }
             const currentRanks = Math.min(maxR, Math.max(1, Number(mod.ranks) || 1));

@@ -314,6 +314,21 @@ Damage caused by this effect cannot be healed by Healing or Regeneration without
 Originates from points other than the user: 1 fixed point away, 2 any point aiming away, 3 any point aiming fixed direction, 4 any point aiming any direction.`
   },
   {
+    name: "Increased Range",
+    category: "extra",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    maxRanks: 2,
+    description: "Increases range category (Rank 1: Close to Ranged or Ranged to Perception; Rank 2: Close to Perception).",
+    fullText: `INCREASED RANGE
++1 POINT PER RANK
+Increases the range category of an effect by one step per rank:
+• Rank 1 (from Close): Increases to Ranged (Short: 25 ft × rank, Med: 50 ft × rank, Long: 100 ft × rank).
+• Rank 1 (from Ranged): Increases to Perception Range (no attack check needed).
+• Rank 2 (from Close): Increases directly to Perception Range (+2 pts/rank).`
+  },
+  {
     name: "Insidious",
     category: "extra",
     cost: 1,
@@ -549,6 +564,21 @@ A power requires an extra action to activate before effects are usable: -1 point
     fullText: `CHECK REQUIRED
 -1 POINT PER RANK FLAT
 Requires a successful skill check vs DC (10 + flaw ranks) to activate the effect.`
+  },
+  {
+    name: "Reduced Range",
+    category: "flaw",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    maxRanks: 2,
+    description: "Reduces range category by -1 step per rank (Perception to Ranged or Ranged to Close).",
+    fullText: `REDUCED RANGE
+-1 POINT PER RANK
+Reduces the range category of an effect by one step per rank:
+• Rank 1 (from Perception): Reduces to Ranged.
+• Rank 1 (from Ranged): Reduces to Close.
+• Rank 2 (from Perception): Reduces to Close (-2 pts/rank).`
   },
   {
     name: "Close",

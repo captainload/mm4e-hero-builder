@@ -3910,7 +3910,7 @@ const FileManager = {
   },
 
   fallbackDownload: function(content, filename) {
-    const blob = new Blob([content], { type: "application/json" });
+    const blob = new Blob([content], { type: "application/octet-stream" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -3918,8 +3918,10 @@ const FileManager = {
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      if (document.body.contains(a)) document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 2000);
   }
 };
 window.FileManager = FileManager;

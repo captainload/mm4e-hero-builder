@@ -1325,7 +1325,7 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
   effect.subPowers = config.subPowers ? JSON.parse(JSON.stringify(config.subPowers)) : [];
   effect.notes = config.notes ? config.notes : "";
 
-  const isisComposite = ["Enhanced Senses", "Enhanced Movement", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
   if (!isComposite) {
       let maxR = window.getMaxPowerRank(effect); 
       if (effect.rank > maxR) effect.rank = maxR;

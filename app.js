@@ -52,7 +52,49 @@ const EXTRACTED_CONFIGS = {
     { name: "X-Ray Vision", subPowers: [{ name: "Visual Senses - Sense Type [0 pts]", type: "Visual Senses", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Penetrates Concealment [+4 pts]", ranks: 1, cost: 4, costType: "flat", category: "extra", isMeta: true }] }] }
   ],
   "Enhanced Trait": [
-    { name: "Berserker Rage", modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Linked to Enhanced Advantage: Fearless 2 and Reduced Defense 1." },
+    { 
+      name: "Berserker Rage", 
+      rank: 8,
+      subPowers: [
+        {
+          name: "Strength (STR) [2 pts/r]",
+          type: "Strength (STR)",
+          rank: 4,
+          baseCost: 2,
+          costType: "per_rank",
+          modifiers: []
+        },
+        {
+          name: "Stamina (STA) [2 pts/r]",
+          type: "Stamina (STA)",
+          rank: 4,
+          baseCost: 2,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], 
+      notes: "Berserk state boosting Strength & Stamina.",
+      linkedEffects: [
+        {
+          name: "Berserker Fearlessness",
+          effectName: "Enhanced Trait",
+          rank: 1,
+          subPowers: [
+            {
+              name: "Fearless [1 pt]",
+              type: "Fearless",
+              rank: 1,
+              baseCost: 1,
+              costType: "flat",
+              modifiers: []
+            }
+          ],
+          modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }],
+          notes: "Fearless advantage active while in rage."
+        }
+      ]
+    },
     { name: "Trait Boost", modifiers: [{ name: "Fades", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
   ],
   "Environment": [
@@ -89,7 +131,34 @@ const EXTRACTED_CONFIGS = {
           category: "flaw" 
         }
       ], 
-      notes: "Immunity to a Common Damage/Hazard Descriptor with Fades (e.g. all Fire or Electricity effects). Typically linked to an Enhanced Trait (e.g. Strength or Blast) with Fades." 
+      notes: "Immunity to a Common Damage/Hazard Descriptor with Fades (e.g. all Fire or Electricity effects).",
+      linkedEffects: [
+        {
+          name: "Absorption (Enhanced Trait Boost)",
+          effectName: "Enhanced Trait",
+          rank: 10,
+          subPowers: [
+            {
+              name: "Strength (STR) [2 pts/r]",
+              type: "Strength (STR)",
+              rank: 5,
+              baseCost: 2,
+              costType: "per_rank",
+              modifiers: []
+            }
+          ],
+          modifiers: [
+            {
+              name: "Fades",
+              ranks: 1,
+              cost: 1,
+              costType: "per_rank",
+              category: "flaw"
+            }
+          ],
+          notes: "Enhanced Strength boost fueled by absorbed energy (Fades)."
+        }
+      ]
     },
     { name: "Ageless", rank: 1 },
     { name: "[Effect] Resistance", modifiers: [{ name: "Resistance", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
@@ -104,7 +173,41 @@ const EXTRACTED_CONFIGS = {
     { name: "Energy Tendrils" },
     { name: "Gravity Field", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
     { name: "[Matter] Moving", modifiers: [{ name: "Limited Material", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
-    { name: "Poltergeist", modifiers: [{ name: "Perception Range", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Precise", ranks: 1, cost: 1, costType: "flat", category: "extra" }, { name: "Subtle", ranks: 2, cost: 2, costType: "flat", category: "extra" }], notes: "Requires Indirect 4. Linked to Enhanced Senses 10 (Radius Sight Counters and Penetrates All Concealment, Limited to Targeting)." },
+    { 
+      name: "Poltergeist", 
+      rank: 4,
+      modifiers: [
+        { name: "Perception Range", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, 
+        { name: "Precise", ranks: 1, cost: 1, costType: "flat", category: "extra" }, 
+        { name: "Subtle", ranks: 2, cost: 2, costType: "flat", category: "extra" }
+      ], 
+      notes: "Telekinetic manifestation requiring sensory link.",
+      linkedEffects: [
+        {
+          name: "Poltergeist Senses",
+          effectName: "Enhanced Senses",
+          rank: 4,
+          subPowers: [
+            {
+              name: "Normal Sight [0 pts]",
+              type: "Normal Sight",
+              rank: 1,
+              baseCost: 0,
+              costType: "flat",
+              modifiers: [
+                { name: "Radius (Single Sense) [+1 pt]", ranks: 1, cost: 1, costType: "flat", category: "extra", isMeta: true },
+                { name: "Counters Concealment (One Descriptor) [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true },
+                { name: "Penetrates Concealment [+4 pts]", ranks: 1, cost: 4, costType: "flat", category: "extra", isMeta: true }
+              ]
+            }
+          ],
+          modifiers: [
+            { name: "Limited", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }
+          ],
+          notes: "Radius sight penetrating barriers, limited to targeting Poltergeist."
+        }
+      ]
+    },
     { name: "Psychokinesis", modifiers: [{ name: "Perception Range", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] },
     { name: "Tether", modifiers: [{ name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
   ],
@@ -1382,14 +1485,39 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
       if (effect.rank > maxR) effect.rank = maxR;
   }
   
-  if (!effect.effectCache) effect.effectCache = {};
-  effect.effectCache[targetEffectName] = {
-      options: JSON.parse(JSON.stringify(effect.options)),
-      subPowers: JSON.parse(JSON.stringify(effect.subPowers)),
-      modifiers: JSON.parse(JSON.stringify(effect.modifiers)),
-      rank: effect.rank,
-      name: effect.name 
-  };
+  if (!effect.id) {
+    effect.id = "eff_" + Math.random().toString(36).substr(2, 9);
+  }
+
+  // If this configuration defines linked secondary effects, append and link them!
+  if (config.linkedEffects && Array.isArray(config.linkedEffects) && config.linkedEffects.length > 0) {
+    // Clean up any previous auto-linked children from this parent effect
+    char.powers[pIdx].effects = char.powers[pIdx].effects.filter(otherEff => otherEff.linkedTo !== effect.id);
+
+    config.linkedEffects.forEach((linkedCfg, lIdx) => {
+      const linkedId = "eff_" + Math.random().toString(36).substr(2, 9);
+      const newLinkedEff = {
+        id: linkedId,
+        name: linkedCfg.name || "Linked Effect",
+        effectName: linkedCfg.effectName || "",
+        association: effect.association || "primary",
+        linkedTo: effect.id,
+        rank: linkedCfg.rank !== undefined ? linkedCfg.rank : 1,
+        descriptors: linkedCfg.descriptors || "",
+        notes: linkedCfg.notes || "",
+        modifiers: linkedCfg.modifiers ? JSON.parse(JSON.stringify(linkedCfg.modifiers)) : [],
+        options: linkedCfg.options ? JSON.parse(JSON.stringify(linkedCfg.options)) : {},
+        subPowers: linkedCfg.subPowers ? JSON.parse(JSON.stringify(linkedCfg.subPowers)) : [],
+        effectCache: {},
+        effectHistory: [linkedCfg.effectName || ""],
+        effectHistoryIdx: 0,
+        configHistory: [linkedCfg.name || ""],
+        configHistoryIdx: 0
+      };
+      
+      char.powers[pIdx].effects.splice(eIdx + 1 + lIdx, 0, newLinkedEff);
+    });
+  }
 
   buildPowersUI();
   refreshUI();

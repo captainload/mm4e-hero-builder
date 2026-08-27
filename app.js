@@ -3786,18 +3786,27 @@ const FileManager = {
         titleEl.textContent = "Folder Settings in Firefox";
         bodyEl.innerHTML = `
           <div style="line-height: 1.6; font-size: var(--font-size-controls);">
-            <p style="margin-bottom: 8px;"><strong>Why this happens:</strong> Mozilla Firefox restricts web pages from directly setting local folder paths via JavaScript for user privacy and security.</p>
-            <p style="margin-bottom: 8px;">In Firefox, your save folder is controlled directly in browser settings:</p>
-            <ol style="margin-left: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px;">
-              <li>Open Firefox <strong>Settings</strong> (or enter <code>about:preferences</code> in the URL bar).</li>
+            <p style="margin-bottom: 8px;"><strong>Why this happens:</strong> For security, browsers prevent websites from directly opening internal configuration pages (like <code>about:preferences</code>) or modifying folder paths via scripts.</p>
+            <p style="margin-bottom: 8px;">To set your save folder in Firefox:</p>
+            
+            <div style="margin: 10px 0 14px 0; padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div>
+                <span style="color: var(--text-muted); font-size: var(--font-size-secondary);">Firefox Address:</span>
+                <code style="font-weight: bold; color: var(--accent-primary); margin-left: 6px;">about:preferences</code>
+              </div>
+              <button type="button" class="btn btn-secondary" style="font-size: var(--font-size-minor-controls); padding: 4px 10px;" onclick="navigator.clipboard.writeText('about:preferences').then(() => { this.textContent = '✓ Copied!'; setTimeout(() => this.textContent = '📋 Copy Address', 2000); })">📋 Copy Address</button>
+            </div>
+
+            <ol style="margin-left: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
+              <li>Open a new tab in Firefox and paste or enter <code>about:preferences</code> in the address bar.</li>
               <li>Under <strong>General &gt; Files and Applications &gt; Downloads</strong>:
                 <ul style="margin-left: 16px; margin-top: 4px;">
-                  <li><strong>Recommended:</strong> Check <em>"Always ask you where to save files"</em> so you can pick any folder every time you save.</li>
-                  <li>Or click <strong>"Browse..."</strong> next to <em>Save files to</em> to set your permanent M&M characters folder.</li>
+                  <li><strong>Recommended:</strong> Check <em>"Always ask you where to save files"</em> so Firefox prompts you with a folder picker every time you save.</li>
+                  <li>Or click <strong>"Browse..."</strong> next to <em>Save files to</em> to choose your default character folder.</li>
                 </ul>
               </li>
             </ol>
-            <p style="color: var(--text-muted); font-size: var(--font-size-secondary);">Tip: Chromium-based browsers (Chrome, Edge, Brave) support direct folder selection via the File System Access API.</p>
+            <p style="color: var(--text-muted); font-size: var(--font-size-secondary);">Tip: In Chrome or Edge, direct folder picking works out of the box via the File System Access API.</p>
           </div>
         `;
         modal.classList.add("active");

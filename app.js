@@ -1280,20 +1280,42 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
   if (!char.powers[pIdx] || !char.powers[pIdx].effects[eIdx]) return;
   const effect = char.powers[pIdx].effects[eIdx];
 
+  const targetConfig = configName || "";
+
   if (!skipHistory) {
-      if (!effect.configHistory) { effect.configHistory = [effect.name || "New Effect"]; effect.configHistoryIdx = 0; }
-      if (effect.configHistory[effect.configHistoryIdx] !== (configName || "New Effect")) {
+      if (!effect.configHistory) { 
+        effect.configHistory = [effect.name && effect.name !== "New Effect" && effect.name !== effect.effectName ? effect.name : ""]; 
+        effect.configHistoryIdx = 0; 
+      }
+      if (effect.configHistory[effect.configHistoryIdx] !== targetConfig) {
           effect.configHistory = effect.configHistory.slice(0, effect.configHistoryIdx + 1);
-          effect.configHistory.push(configName || "New Effect");
+          effect.configHistory.push(targetConfig);
           if (effect.configHistory.length > 20) effect.configHistory.shift();
           else effect.configHistoryIdx++;
       }
   }
 
-  if (!configName || configName === "New Effect") {
+  // If reverting to "- Select Config -" (empty / none)
+  if (!targetConfig || targetConfig === "New Effect") {
+      effect.name = effect.effectName || "New Effect";
+      effect.options = {};
+      effect.subPowers = [];
+      effect.modifiers = [];
+      effect.rank = 1;
+      effect.descriptors = "";
+      effect.notes = "";
       if (effect.effectName) {
-          updateEffectDirect(pIdx, eIdx, effect.effectName, true); 
+          if (!effect.effectCache) effect.effectCache = {};
+          effect.effectCache[effect.effectName] = {
+              options: {},
+              subPowers: [],
+              modifiers: [],
+              rank: 1,
+              name: effect.effectName
+          };
       }
+      buildPowersUI();
+      refreshUI();
       return;
   }
   
@@ -1302,7 +1324,7 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
 
   for (const eff of POWER_EFFECTS_LIST) {
     if (eff.configurations) {
-      config = eff.configurations.find(c => c.name === configName);
+      config = eff.configurations.find(c => c.name === targetConfig);
       if (config) {
         targetEffectName = eff.name;
         break;
@@ -1318,6 +1340,8 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
   
   if (config.rank !== undefined) {
     effect.rank = config.rank;
+  } else {
+    effect.rank = 1;
   }
   
   effect.options = config.options ? JSON.parse(JSON.stringify(config.options)) : {};
@@ -1464,14 +1488,14 @@ window.navigateEffectHistory = function(pIdx, eIdx, dir) {
     }
     
     effect.effectHistoryIdx = newIdx;
-    updateEffectDirect(pIdx, eIdx, effect.effectHistory[newIdx], true);
+    window.updateEffectDirect(pIdx, eIdx, effect.effectHistory[newIdx], true);
 };
 
 window.navigateConfigHistory = function(pIdx, eIdx, dir) {
     const effect = char.powers[pIdx]?.effects[eIdx];
     if (!effect) return;
     if (!effect.configHistory) {
-        effect.configHistory = [effect.name || "New Effect"];
+        effect.configHistory = [effect.name && effect.name !== "New Effect" && effect.name !== effect.effectName ? effect.name : ""];
         effect.configHistoryIdx = 0;
     }
     
@@ -1488,7 +1512,7 @@ window.navigateConfigHistory = function(pIdx, eIdx, dir) {
     }
     
     effect.configHistoryIdx = newIdx;
-    applyEffectConfiguration(pIdx, eIdx, effect.configHistory[newIdx], true);
+    window.applyEffectConfiguration(pIdx, eIdx, effect.configHistory[newIdx], true);
 };
 
 function buildPowersUI() {
@@ -1623,19 +1647,20 @@ function buildPowersUI() {
 
         const showAll = effect.showAllConfigs;
         const availableTemplates = showAll ? allTemplates : (effectData.configurations || []);
+        const isCustomConfig = effect.name && effect.name !== 'New Effect' && effect.name !== effect.effectName;
 
         let templateDropdownHtml = `
           <div style="display: flex; align-items: center; gap: 6px;">
-            <label>Config:</label>
-            <select class="minor-control" style="width: 160px; ${effect.name && effect.name !== 'New Effect' && effect.name !== effect.effectName ? 'color: var(--accent-primary); font-weight: bold;' : ''}" onchange="applyEffectConfiguration(${pIdx}, ${eIdx}, this.value)">
-              <option value="" style="color: var(--text-main); font-weight: normal;">- Select Config -</option>
+            <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Config:</label>
+            <select class="minor-control" style="width: 160px; ${isCustomConfig ? 'color: var(--accent-primary); font-weight: bold;' : ''}" onchange="applyEffectConfiguration(${pIdx}, ${eIdx}, this.value)">
+              <option value="" ${!isCustomConfig ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">- Select Config -</option>
               ${availableTemplates.map(cfg => `<option value="${cfg.name}" ${cfg.name === effect.name ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${cfg.name}${showAll ? ` (${cfg.effectName || effectData.name})` : ''}</option>`).join('')}
             </select>
             <div style="display: flex; align-items: center; gap: 2px;">
                 <button type="button" class="btn minor-control-btn" style="padding: 2px 6px; font-weight: bold;" onclick="navigateConfigHistory(${pIdx}, ${eIdx}, -1)" title="Back">&lt;</button>
                 <button type="button" class="btn minor-control-btn" style="padding: 2px 6px; font-weight: bold;" onclick="navigateConfigHistory(${pIdx}, ${eIdx}, 1)" title="Forward">&gt;</button>
             </div>
-            <label style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: normal; cursor: pointer; font-size: calc(var(--font-size-minor-controls) * 0.9); margin-left: 4px; line-height: 1;">
+            <label style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-weight: normal; cursor: pointer; font-size: calc(var(--font-size-minor-controls) * 0.9); margin-left: 2px; line-height: 1;">
               <input type="checkbox" onchange="toggleAllConfigs(${pIdx}, ${eIdx}, this.checked)" ${showAll ? 'checked' : ''} style="margin: 0;">
               <span style="text-align: center;">Show<br>All</span>
             </label>
@@ -2431,9 +2456,13 @@ function buildPowersUI() {
 
             ${linkBannerHtml}
 
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px;">
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; flex: 1;">
                   ${templateDropdownHtml}
+                  <div style="display: flex; align-items: center; gap: 6px; flex: 1; min-width: 200px;">
+                    <label style="font-size: var(--font-size-secondary); color: var(--text-muted); font-weight: 600; white-space: nowrap;">Descriptors:</label>
+                    <input type="text" value="${effect.descriptors || ''}" placeholder="e.g. Fire, Magic, Technology, Piercing" style="flex: 1; min-width: 140px; font-size: var(--font-size-secondary); padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);" oninput="updateEffectDescriptorsDirect(${pIdx}, ${eIdx}, this.value)">
+                  </div>
                 </div>
             </div>
 
@@ -2484,16 +2513,9 @@ function buildPowersUI() {
               <span><strong>Check:</strong> ${effectData ? effectData.check : '—'}</span>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <label style="font-size: var(--font-size-secondary); color: var(--text-muted); font-weight: 600; min-width: 80px;">Descriptors:</label>
-                <input type="text" value="${effect.descriptors || ''}" placeholder="e.g. Fire, Magic, Technology" style="flex: 1; font-size: var(--font-size-secondary); padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);" oninput="updateEffectDescriptorsDirect(${pIdx}, ${eIdx}, this.value)">
-              </div>
-              
-              <div class="power-notes-row" style="margin-top: 0;">
-                <label style="min-width: 80px;">Notes:</label>
-                <textarea rows="1" placeholder="Details, limits, or custom sense descriptions..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateEffectNotesDirect(${pIdx}, ${eIdx}, this.value)">${effect.notes || ''}</textarea>
-              </div>
+            <div class="power-notes-row" style="margin-top: 8px;">
+              <label style="min-width: 80px;">Notes:</label>
+              <textarea rows="1" placeholder="Details, limits, or custom sense descriptions..." oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateEffectNotesDirect(${pIdx}, ${eIdx}, this.value)">${effect.notes || ''}</textarea>
             </div>
           </div>
         `;

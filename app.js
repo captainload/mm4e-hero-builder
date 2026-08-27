@@ -520,53 +520,7 @@ char.calculateEffectCost = function(effect) {
 };
 
 char.calculateTotalPowerCost = function(powerContainer) {
-  if (!powerContainer.effects || powerContainer.effects.length === 0) return 0;
-  
-  let slots = [];
-  let currentSlot = null;
-  
-  powerContainer.effects.forEach(eff => {
-      let c = char.calculateEffectCost(eff);
-      
-      if (eff.association === "primary") {
-          currentSlot = { type: "primary", baseCost: c, alts: [] };
-          slots.push(currentSlot);
-      } else if (eff.association === "linked") {
-          if (currentSlot) {
-              if (currentSlot.alts.length > 0) {
-                  currentSlot.alts[currentSlot.alts.length - 1].cost += c;
-              } else {
-                  currentSlot.baseCost += c;
-              }
-          } else {
-              currentSlot = { type: "primary", baseCost: c, alts: [] };
-              slots.push(currentSlot);
-          }
-      } else if (eff.association === "alternate" || eff.association === "dynamic") {
-          if (currentSlot) {
-              currentSlot.alts.push({ type: eff.association, cost: c });
-          } else {
-              currentSlot = { type: "primary", baseCost: c, alts: [] };
-              slots.push(currentSlot);
-          }
-      }
-  });
-
-  let totalCost = 0;
-  slots.forEach(slot => {
-      let maxCost = slot.baseCost;
-      slot.alts.forEach(alt => {
-          if (alt.cost > maxCost) maxCost = alt.cost;
-      });
-      
-      let slotTotal = maxCost;
-      slot.alts.forEach(alt => {
-          slotTotal += (alt.type === "dynamic" ? 2 : 1);
-      });
-      totalCost += slotTotal;
-  });
-  
-  return totalCost;
+  return CharacterModel.prototype.calculateTotalPowerCost.call(char, powerContainer);
 };
 char.calculatePowerCost = char.calculateTotalPowerCost;
 
@@ -1384,6 +1338,48 @@ window.updateEffectAssociation = function(pIdx, eIdx, val) {
   }
 };
 
+window.updateEffectLink = function(pIdx, eIdx, val) {
+  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
+      char.powers[pIdx].effects[eIdx].linkedTo = val || null;
+      buildPowersUI();
+      refreshUI();
+  }
+};
+
+function getEffectiveEffectTraits(effect) {
+  if (!effect || !effect.effectName) return { action: "Standard", range: "Close" };
+  const baseData = typeof POWER_EFFECTS_LIST !== 'undefined' 
+    ? POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) 
+    : null;
+    
+  let action = baseData?.action || "Standard";
+  let range = baseData?.range || "Close";
+  
+  if (Array.isArray(effect.modifiers)) {
+    effect.modifiers.forEach(m => {
+      const mName = m.name || "";
+      if (mName === "Ranged") range = "Ranged";
+      else if (mName === "Perception Range" || mName === "Perception") range = "Perception";
+      else if (mName === "Close Range" || mName === "Close" || mName === "Close (Flaw)") range = "Close";
+      else if (mName === "Increased Range") {
+        if (range === "Personal") range = "Close";
+        else if (range === "Close") range = "Ranged";
+        else if (range === "Ranged") range = "Perception";
+      } else if (mName === "Reduced Range") {
+        if (range === "Perception") range = "Ranged";
+        else if (range === "Ranged") range = "Close";
+      } else if (mName === "Reaction") {
+        action = "Reaction";
+      } else if (mName === "Triggered") {
+        action = "Triggered";
+      }
+    });
+  }
+  
+  return { action, range };
+}
+window.getEffectiveEffectTraits = getEffectiveEffectTraits;
+
 window.updatePowerContainerName = function(pIdx, val) {
   if (char.powers[pIdx]) {
       char.powers[pIdx].name = val;
@@ -2154,21 +2150,85 @@ function buildPowersUI() {
           `;
         }
 
-        const assocDisabled = powerContainer.effects.length === 1 ? 'disabled title="Only effect in container"' : '';
+        effect.id = effect.id || ("eff_" + pIdx + "_" + eIdx + "_" + Math.random().toString(36).substr(2, 6));
+        if (effect.linkedTo === undefined) effect.linkedTo = null;
+        if (!effect.association) effect.association = "primary";
+
+        const isLinked = effect.linkedTo === "previous" || (typeof effect.linkedTo === "string" && effect.linkedTo !== "") || effect.association === "linked";
+
+        // Build list of potential link targets (previous effect + other effects across containers)
+        let linkOptions = `<option value="">🔗 Not Linked</option>`;
+        if (eIdx > 0) {
+          const prevEff = powerContainer.effects[eIdx - 1];
+          const prevName = prevEff.name || prevEff.effectName || ("Effect " + eIdx);
+          linkOptions += `<option value="previous" ${effect.linkedTo === 'previous' ? 'selected' : ''}>🔗 Link to Previous (${prevName})</option>`;
+        }
+
+        char.powers.forEach((otherContainer, otherPIdx) => {
+          if (Array.isArray(otherContainer.effects)) {
+            otherContainer.effects.forEach((otherEff, otherEIdx) => {
+              if (otherEff.id && otherEff.id !== effect.id) {
+                // If it's already previous, skip duplicate option
+                if (otherPIdx === pIdx && otherEIdx === eIdx - 1) return;
+                const optLabel = (otherContainer.name || 'Power') + ' > ' + (otherEff.name || otherEff.effectName || `Effect ${otherEIdx + 1}`);
+                linkOptions += `<option value="${otherEff.id}" ${effect.linkedTo === otherEff.id ? 'selected' : ''}>🔗 Link to: ${optLabel}</option>`;
+              }
+            });
+          }
+        });
+
+        // Determine linked target effect and validate rules
+        let targetEffect = null;
+        let targetDesc = "";
+        if (effect.linkedTo === "previous" && eIdx > 0) {
+          targetEffect = powerContainer.effects[eIdx - 1];
+          targetDesc = targetEffect.name || targetEffect.effectName || ("Effect " + eIdx);
+        } else if (effect.linkedTo && effect.linkedTo !== "previous") {
+          const found = char.findEffectById(effect.linkedTo);
+          if (found) {
+            targetEffect = found.effect;
+            targetDesc = (found.container.name || "Power") + " > " + (found.effect.name || found.effect.effectName || "Effect");
+          }
+        }
+
+        let linkBannerHtml = "";
+        if (targetEffect) {
+          const currTraits = getEffectiveEffectTraits(effect);
+          const targetTraits = getEffectiveEffectTraits(targetEffect);
+          const warnings = [];
+
+          if (currTraits.action !== targetTraits.action && currTraits.action !== "None" && targetTraits.action !== "None") {
+            warnings.push(`Action mismatch (${currTraits.action} vs ${targetTraits.action}) — Linked effects must share the same action`);
+          }
+          if (currTraits.range !== targetTraits.range) {
+            warnings.push(`Range mismatch (${currTraits.range} vs ${targetTraits.range}) — Apply 'Increased Range' extra to match`);
+          }
+
+          linkBannerHtml = `
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+              <span class="link-badge">🔗 Linked with: <strong>${targetDesc}</strong></span>
+              ${warnings.map(w => `<span class="link-warning-tag">⚠️ ${w}</span>`).join('')}
+            </div>
+          `;
+        }
 
         return `
-          <div class="effect-card" style="margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--text-muted);">
+          <div class="effect-card ${isLinked ? 'is-linked' : ''}" style="margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--text-muted);">
             
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <select onchange="updateEffectAssociation(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="width: 150px; background: var(--bg-app);" ${assocDisabled}>
-                        <option value="primary" ${effect.association === 'primary' ? 'selected' : ''}>Primary Effect</option>
-                        <option value="linked" ${effect.association === 'linked' ? 'selected' : ''}>Linked Effect</option>
-                        <option value="alternate" ${effect.association === 'alternate' ? 'selected' : ''}>Alternate Effect</option>
-                        <option value="dynamic" ${effect.association === 'dynamic' ? 'selected' : ''}>Dynamic Alternate</option>
+                    
+                    <select onchange="updateEffectAssociation(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="width: 135px; background: var(--bg-app);" title="Slot Role in Array">
+                        <option value="primary" ${effect.association === 'primary' ? 'selected' : ''}>Primary Slot</option>
+                        <option value="alternate" ${effect.association === 'alternate' ? 'selected' : ''}>Alternate (1 PP)</option>
+                        <option value="dynamic" ${effect.association === 'dynamic' ? 'selected' : ''}>Dynamic (2 PP)</option>
+                    </select>
+
+                    <select onchange="updateEffectLink(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="max-width: 175px; background: var(--bg-app);" title="Link this effect to another effect">
+                        ${linkOptions}
                     </select>
                     
-                    <select onchange="updateEffectDirect(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="min-width: 170px; color: var(--accent-primary); font-weight: bold;">
+                    <select onchange="updateEffectDirect(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="min-width: 160px; color: var(--accent-primary); font-weight: bold;">
                       <option value="" ${effect.effectName === "" ? "selected" : ""} style="color: var(--text-main); font-weight: normal;">- Select Effect -</option>
                       ${POWER_EFFECTS_LIST.map(eff => `<option value="${eff.name}" ${eff.name === effect.effectName ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${eff.name} (${eff.baseCost} PP/r)</option>`).join('')}
                     </select>
@@ -2187,6 +2247,8 @@ function buildPowersUI() {
                     <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 11px; margin-left: 4px;" onclick="deleteEffect(${pIdx}, ${eIdx})" title="Delete Effect">Delete</button>
                 </div>
             </div>
+
+            ${linkBannerHtml}
 
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
@@ -2552,9 +2614,11 @@ window.addEffectToPower = function(pIdx) {
             assoc = "alternate";
         }
         char.powers[pIdx].effects.push({
+            id: "eff_" + Math.random().toString(36).substr(2, 9),
             name: "New Effect",
             effectName: "",
             association: assoc,
+            linkedTo: null,
             rank: 1,
             descriptors: "",
             notes: "",
@@ -2582,9 +2646,11 @@ function setupPowerHandlers() {
       collapsed: false,
       effects: [
           {
+            id: "eff_" + Math.random().toString(36).substr(2, 9),
             name: "New Effect",
             effectName: "",
             association: "primary",
+            linkedTo: null,
             rank: 1,
             descriptors: "",
             notes: "",

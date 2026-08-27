@@ -132,7 +132,7 @@ class CharacterModel {
     this.advantages = { ...(data.advantages || {}) };
     this.advantageDetails = { ...(data.advantageDetails || {}) };
 
-    // Powers - ensure container structure
+    // Powers - ensure container structure and effect metadata
     let loadedPowers = Array.isArray(data.powers) ? JSON.parse(JSON.stringify(data.powers)) : [];
     if (loadedPowers.length > 0 && !loadedPowers[0].effects) {
       loadedPowers = loadedPowers.map(oldEff => {
@@ -141,8 +141,28 @@ class CharacterModel {
         return {
           name: cName,
           collapsed: cCol,
-          effects: [{ ...oldEff, association: "primary", name: cName }]
+          effects: [{ ...oldEff, id: oldEff.id || ("eff_" + Math.random().toString(36).substr(2, 9)), association: "primary", linkedTo: null, name: cName }]
         };
+      });
+    } else {
+      // Ensure all effects in containers have unique IDs and migrated link data
+      loadedPowers.forEach(container => {
+        if (Array.isArray(container.effects)) {
+          let prevAssoc = "primary";
+          container.effects.forEach((eff, eIdx) => {
+            if (!eff.id) eff.id = "eff_" + Math.random().toString(36).substr(2, 9) + "_" + eIdx;
+            
+            // Legacy migration: association === 'linked'
+            if (eff.association === "linked") {
+              eff.linkedTo = "previous";
+              eff.association = prevAssoc;
+            } else {
+              if (eff.linkedTo === undefined) eff.linkedTo = null;
+              if (!eff.association) eff.association = "primary";
+              prevAssoc = eff.association;
+            }
+          });
+        }
       });
     }
     this.powers = loadedPowers;
@@ -157,6 +177,21 @@ class CharacterModel {
     this.motivation = data.motivation || (data.background?.motivation || "");
     this.complications = data.complications || (data.background?.complications || "");
     this.history = data.history || (data.background?.history || "");
+  }
+
+  findEffectById(effectId) {
+    if (!effectId || !Array.isArray(this.powers)) return null;
+    for (let pIdx = 0; pIdx < this.powers.length; pIdx++) {
+      const container = this.powers[pIdx];
+      if (Array.isArray(container.effects)) {
+        for (let eIdx = 0; eIdx < container.effects.length; eIdx++) {
+          if (container.effects[eIdx].id === effectId) {
+            return { container, pIdx, effect: container.effects[eIdx], eIdx };
+          }
+        }
+      }
+    }
+    return null;
   }
 
   getAbilityRank(key) {
@@ -218,63 +253,53 @@ class CharacterModel {
       ? (POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) || POWER_EFFECTS_LIST[0])
       : { baseCost: 1 };
       
-    const pBaseCost = effectData ? (effectData.baseCost || 1) : 1;
-    const isComposite = ["Enhanced Senses", "Enhanced Movement", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+    let pBaseCost = effectData ? effectData.baseCost : 1;
 
-    if (isComposite) {
-      let totalRank = 0;
+    if (effect.optionKey && effect.optionKey.startsWith("variable_")) {
+      const selectedOption = effectData.options?.find(o => o.key === effect.optionKey);
+      if (selectedOption && typeof selectedOption.cost === "number") {
+        pBaseCost = selectedOption.cost;
+      }
+    }
+
+    if (effect.subPowers && effect.subPowers.length > 0) {
       let totalSubCost = 0;
-
-      if (effect.subPowers && effect.subPowers.length > 0) {
+      let totalRank = 0;
+      
+      if (effect.effectName === "Summon" || effect.effectName === "Illusion") {
+        totalRank = parseInt(effect.rank) || 1;
+        totalSubCost = (parseInt(effect.rank) || 1) * pBaseCost;
+      } else if (effect.effectName === "Morph") {
+        totalRank = parseInt(effect.rank) || 1;
+        totalSubCost = (parseInt(effect.rank) || 1) * pBaseCost;
+      } else if (effect.effectName === "Variable" || effect.effectName === "Enhance Trait" || effect.effectName === "Movement" || effect.effectName === "Immunity" || effect.effectName === "Senses") {
         effect.subPowers.forEach(sub => {
           let sRank = parseInt(sub.rank) || 1;
           totalRank += sRank;
-
-          let sBaseCost = sub.baseCost !== undefined ? sub.baseCost : pBaseCost;
-          let cType = sub.costType || "per_rank";
-          let sPerRankMod = 0;
-          let sFlatMod = 0;
-          let sRemovableTiers = 0;
-
+          let sBase = sub.baseCost || (pBaseCost);
+          let sPerRank = 0, sFlat = 0, sRemovable = 0;
+          
           if (sub.modifiers && sub.modifiers.length > 0) {
-            sub.modifiers.forEach(m => {
-              let mult = m.category === 'extra' ? 1 : -1;
-              let mCost = m.cost || 1;
-              let mRanks = parseInt(m.ranks) || 1;
-              
-              if (m.isMeta) {
-                 if (m.costType === 'per_rank') sFlatMod += mult * (mCost * mRanks);
-                 else sFlatMod += mult * mCost;
-              } else if (m.costType === 'per_rank') {
-                 sPerRankMod += mult * mCost;
-              } else if (m.costType === 'flat') {
-                 sFlatMod += mult * (mCost * mRanks);
-              } else if (m.costType === 'removable') {
-                 sRemovableTiers += mRanks;
-              }
-            });
+              sub.modifiers.forEach(m => {
+                  let mult = m.category === 'extra' ? 1 : -1;
+                  let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+                  if (m.costType === 'per_rank') sPerRank += mult * mC;
+                  else if (m.costType === 'flat') sFlat += mult * mC;
+                  else if (m.costType === 'removable') sRemovable += parseInt(m.ranks)||1;
+              });
           }
-
-          let netSubRate = sBaseCost + sPerRankMod;
-          if (netSubRate < 1 && cType === "per_rank") netSubRate = 1;
-
-          let sCost = 0;
-          if (cType === "per_rank") {
-              sCost = (netSubRate * sRank) + sFlatMod;
-          } else {
-              sCost = sBaseCost + (sPerRankMod * sRank) + sFlatMod;
-          }
-
-          if (sRemovableTiers > 0) {
-              let discount = Math.floor(sCost / 5) * sRemovableTiers;
+          let sRate = sBase + sPerRank;
+          if (sRate < 1) sRate = 1;
+          let sCost = (sRate * sRank) + sFlat;
+          
+          if (sRemovable > 0) {
+              let discount = Math.floor(sCost / 5) * sRemovable;
               sCost -= discount;
           }
 
           if (sCost < 1) sCost = 1;
           totalSubCost += sCost;
         });
-      } else {
-        totalRank = 1; 
       }
       
       effect.rank = totalRank || 1;
@@ -313,52 +338,61 @@ class CharacterModel {
     }
   }
 
-  // Calculate container cost with Array (alternate/dynamic) and Linked rollup logic
+  // Calculate container cost with compound linked primary slots and compound linked alternate/dynamic slots
   calculateTotalPowerCost(powerContainer) {
     if (!powerContainer || !powerContainer.effects || powerContainer.effects.length === 0) return 0;
     
     let slots = [];
     let currentSlot = null;
     
-    powerContainer.effects.forEach(eff => {
-        let c = this.calculateEffectCost(eff);
-        
-        if (eff.association === "primary" || !eff.association) {
-            currentSlot = { type: "primary", baseCost: c, alts: [] };
+    powerContainer.effects.forEach((eff) => {
+      let c = this.calculateEffectCost(eff);
+      let isLinked = eff.linkedTo === "previous" || (typeof eff.linkedTo === "string" && eff.linkedTo !== "") || eff.association === "linked";
+      
+      let slotRole = eff.association;
+      if (slotRole === "linked" || !slotRole) {
+        slotRole = currentSlot ? currentSlot.type : "primary";
+      }
+
+      if (isLinked && currentSlot) {
+        // Compound link: Adds directly into the current slot's combined total
+        currentSlot.combinedCost += c;
+        currentSlot.effects.push(eff);
+      } else {
+        // Starts a new independent slot (Primary, Alternate, or Dynamic)
+        if (slotRole === "primary" || slots.length === 0) {
+          currentSlot = { type: "primary", baseCost: c, combinedCost: c, effects: [eff], alts: [] };
+          slots.push(currentSlot);
+        } else {
+          // Alternate or Dynamic slot
+          currentSlot = { type: slotRole, baseCost: c, combinedCost: c, effects: [eff] };
+          if (slots.length > 0) {
+            slots[0].alts.push(currentSlot);
+          } else {
+            currentSlot.type = "primary";
+            currentSlot.alts = [];
             slots.push(currentSlot);
-        } else if (eff.association === "linked") {
-            if (currentSlot) {
-                if (currentSlot.alts.length > 0) {
-                    currentSlot.alts[currentSlot.alts.length - 1].cost += c;
-                } else {
-                    currentSlot.baseCost += c;
-                }
-            } else {
-                currentSlot = { type: "primary", baseCost: c, alts: [] };
-                slots.push(currentSlot);
-            }
-        } else if (eff.association === "alternate" || eff.association === "dynamic") {
-            if (currentSlot) {
-                currentSlot.alts.push({ type: eff.association, cost: c });
-            } else {
-                currentSlot = { type: "primary", baseCost: c, alts: [] };
-                slots.push(currentSlot);
-            }
+          }
         }
+      }
     });
 
     let totalCost = 0;
     slots.forEach(slot => {
-        let maxCost = slot.baseCost;
-        slot.alts.forEach(alt => {
-            if (alt.cost > maxCost) maxCost = alt.cost;
-        });
-        
-        let slotTotal = maxCost;
-        slot.alts.forEach(alt => {
-            slotTotal += (alt.type === "dynamic" ? 2 : 1);
-        });
-        totalCost += slotTotal;
+      let maxPrimaryCost = slot.combinedCost;
+      let alts = slot.alts || [];
+      
+      alts.forEach(alt => {
+        if (alt.combinedCost > maxPrimaryCost) {
+          maxPrimaryCost = alt.combinedCost;
+        }
+      });
+      
+      let slotTotal = maxPrimaryCost;
+      alts.forEach(alt => {
+        slotTotal += (alt.type === "dynamic" ? 2 : 1);
+      });
+      totalCost += slotTotal;
     });
     
     return totalCost;

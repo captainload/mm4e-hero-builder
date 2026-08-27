@@ -435,6 +435,7 @@ function getFilteredModifiersForEffect(effectType, effectOrSub) {
 // --- REAL-TIME COST CALCULATION ENGINE WITH ARRAY/LINKED ROLLUP ---
 char.calculateEffectCost = function(effect) {
   const effectData = typeof POWER_EFFECTS_LIST !== 'undefined' ? POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) : null;
+  let pBaseCost = effectData ? effectData.baseCost : 1;
   const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
 
   if (isComposite) {

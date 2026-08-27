@@ -67,7 +67,30 @@ const EXTRACTED_CONFIGS = {
     { name: "Wings", modifiers: [{ name: "Restrainable", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
   ],
   "Immunity": [
-    { name: "Absorption", notes: "Immunity to a Damage Descriptor. Linked to Enhanced Trait with Fades." },
+    { 
+      name: "Absorption", 
+      rank: 10,
+      subPowers: [
+        { 
+          name: "Immunity to a Common Descriptor (e.g. Energy or Physical) [10 ranks]", 
+          type: "Common Descriptor (e.g. Energy)", 
+          rank: 10, 
+          baseCost: 1, 
+          costType: "per_rank", 
+          modifiers: [] 
+        }
+      ],
+      modifiers: [
+        { 
+          name: "Fades", 
+          ranks: 1, 
+          cost: 1, 
+          costType: "per_rank", 
+          category: "flaw" 
+        }
+      ], 
+      notes: "Immunity to a Damage Descriptor with Fades. Typically linked to an Enhanced Trait (e.g. Strength or Blast) with Fades." 
+    },
     { name: "Ageless", rank: 1 },
     { name: "[Effect] Resistance", modifiers: [{ name: "Resistance", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
     { name: "Environmental Immunity", rank: 10 },
@@ -184,6 +207,10 @@ const EXTRACTED_MODIFIERS = {
   "Illusion": {
       extras: [{name: "Active", cost: 1, costType: "per_rank"}, {name: "Continuous", cost: 2, costType: "per_rank"}, {name: "Selective", cost: 1, costType: "per_rank"}],
       flaws: [{name: "Feedback", cost: 1, costType: "per_rank"}, {name: "Limited to Minds", cost: 1, costType: "per_rank"}, {name: "Limited to One Subject", cost: 1, costType: "per_rank"}, {name: "Resistible", cost: 1, costType: "per_rank"}]
+  },
+  "Immunity": {
+      extras: [{name: "Affects Others", cost: 1, costType: "per_rank"}, {name: "Affects Others Only", cost: 0, costType: "per_rank"}, {name: "Area Effect", cost: 1, costType: "per_rank"}, {name: "Ranged", cost: 1, costType: "per_rank"}, {name: "Sustained", cost: 0, costType: "per_rank"}, {name: "Redirect (Reaction)", cost: 1, costType: "flat"}, {name: "Redirect (Sustained)", cost: 1, costType: "per_rank"}, {name: "Redirect (Continuous)", cost: 2, costType: "per_rank"}],
+      flaws: [{name: "Concentration", cost: 1, costType: "per_rank"}, {name: "Resistance", cost: 1, costType: "per_rank"}, {name: "Fades", cost: 1, costType: "per_rank"}, {name: "Limited", cost: 1, costType: "per_rank"}]
   },
   "Insubstantial": {
       extras: [{name: "Affects Corporeal", cost: 1, costType: "per_rank"}, {name: "Affects Others", cost: 1, costType: "per_rank"}, {name: "Continuous", cost: 1, costType: "per_rank"}, {name: "Linked", cost: 0, costType: "per_rank"}, {name: "Normally Insubstantial", cost: 0, costType: "per_rank"}, {name: "Permanent", cost: 0, costType: "per_rank"}, {name: "Precise", cost: 1, costType: "flat"}, {name: "Reaction", cost: 1, costType: "flat"}, {name: "Subtle (DC 20)", cost: 1, costType: "flat"}, {name: "Subtle (Unnoticeable)", cost: 2, costType: "flat"}],
@@ -2470,7 +2497,7 @@ function buildPowersUI() {
 
             ${subPowersHtml ? `<div style="margin-top: 8px;"><strong style="font-size: var(--font-size-secondary); color: var(--text-main);">Configured Options:</strong>${subPowersHtml}</div>` : ''}
 
-            ${effect.effectName !== "" && effect.effectName !== "Immunity" ? `
+            ${effect.effectName !== "" ? `
             <div class="power-modifiers-row" style="margin-top: 8px;">
               <div style="display: flex; align-items: center; gap: 6px;">
                 <select id="selRootExtra_${pIdx}_${eIdx}" class="minor-control" style="max-width: 170px;">
@@ -2658,13 +2685,15 @@ window.addSubPowerMeta = function(pIdx, eIdx, subIdx, selectId) {
         sub.modifiers = sub.modifiers.filter(m => !m.name.includes("Counters Concealment (One Descriptor)"));
     }
 
+    const isSenseMeta = effect.effectName === "Enhanced Senses";
+
     sub.modifiers.push({
       name: metaName,
       ranks: 1,
       cost: mCost, 
       costType: mType,
       category: mCategory,
-      isMeta: true
+      isMeta: isSenseMeta
     });
     
     let addedMetaCore = metaName.split(" (")[0];

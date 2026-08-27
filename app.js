@@ -3940,7 +3940,7 @@ const FileManager = {
 
     const isFF = typeof navigator !== 'undefined' && (/firefox/i.test(navigator.userAgent) || !window.showSaveFilePicker);
     if (isFF) {
-      showToast(`Saved "${defaultFileName}" to Downloads! (Tip: In Firefox Settings > Downloads, check "Always ask where to save" to choose folders)`, "info", 6500);
+      showToast(`Saving "${defaultFileName}"... Click "OK / Save File" in Firefox to choose your save folder.`, "info", 5000);
     } else {
       showToast(`Saved "${defaultFileName}" to downloads!`, "success");
     }
@@ -4046,13 +4046,14 @@ const FileManager = {
             <ol style="margin-left: 20px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px;">
               <li>Open a new tab in Firefox and paste or enter <code>about:preferences</code> in the address bar.</li>
               <li>Under <strong>General &gt; Files and Applications &gt; Downloads</strong>:
-                <ul style="margin-left: 16px; margin-top: 4px;">
-                  <li><strong>Recommended:</strong> Check <em>"Always ask you where to save files"</em> so Firefox prompts you with a folder picker every time you save.</li>
-                  <li>Or click <strong>"Browse..."</strong> next to <em>Save files to</em> to choose your default character folder.</li>
+                <ul style="margin-left: 16px; margin-top: 4px; display: flex; flex-direction: column; gap: 4px;">
+                  <li><strong>Recommended:</strong> Check <em>"Always ask you where to save files"</em>.</li>
+                  <li>Or click <strong>"Browse..."</strong> next to <em>Save files to</em> to choose a default folder.</li>
                 </ul>
               </li>
+              <li><strong>How Saving Works in Firefox:</strong> When you click <em>Save Character</em> or <em>Save As</em>, Firefox will show its confirmation prompt (<em>"Open with / Save File"</em>). Click <strong>OK</strong> and the standard Windows "Save As" file explorer dialog will immediately open so you can choose any directory or file name!</li>
             </ol>
-            <p style="color: var(--text-muted); font-size: var(--font-size-secondary);">Tip: In Chrome or Edge, direct folder picking works out of the box via the File System Access API.</p>
+            <p style="color: var(--text-muted); font-size: var(--font-size-secondary);">Tip: In Chromium browsers (Chrome, Edge, Opera, Brave), direct folder selection works via the File System Access API without the browser prompt step.</p>
           </div>
         `;
         modal.classList.add("active");

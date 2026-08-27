@@ -72,8 +72,8 @@ const EXTRACTED_CONFIGS = {
       rank: 10,
       subPowers: [
         { 
-          name: "Immunity to a Common Descriptor (e.g. Energy or Physical) [10 ranks]", 
-          type: "Common Descriptor (e.g. Energy)", 
+          name: "Common Descriptor (e.g. all Fire or Electricity effects) [10 ranks]", 
+          type: "Common Descriptor", 
           rank: 10, 
           baseCost: 1, 
           costType: "per_rank", 
@@ -89,7 +89,7 @@ const EXTRACTED_CONFIGS = {
           category: "flaw" 
         }
       ], 
-      notes: "Immunity to a Damage Descriptor with Fades. Typically linked to an Enhanced Trait (e.g. Strength or Blast) with Fades." 
+      notes: "Immunity to a Common Damage/Hazard Descriptor with Fades (e.g. all Fire or Electricity effects). Typically linked to an Enhanced Trait (e.g. Strength or Blast) with Fades." 
     },
     { name: "Ageless", rank: 1 },
     { name: "[Effect] Resistance", modifiers: [{ name: "Resistance", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
@@ -1804,6 +1804,11 @@ function buildPowersUI() {
               dynDesc = `Applies the '${sType}' condition on a target at this degree.`;
             } else if (effect.effectName === "Immunity") {
               if (sType.includes("Life Support")) dynDesc = "Immunity to all Environmental Hazards (Aging, Cold, Deprivation, Disease, Heat, Poison, Pressure, Radiation, Sleep, Suffocation, Vacuum).";
+              else if (sType.includes("Very Common Descriptor")) dynDesc = "Immunity to a Very Common descriptor (e.g. Energy Damage, Bludgeoning Damage, Piercing Damage, Slashing Damage).";
+              else if (sType.includes("Common Descriptor")) dynDesc = "Immunity to a Common descriptor (e.g. all effects of a type like Cold, Electricity, Fire, Radiation, Weather, or Ballistic Damage).";
+              else if (sType.includes("Uncommon Descriptor")) dynDesc = "Immunity to an Uncommon descriptor (e.g. Fire Damage, Cold Damage, Electricity Damage, Radiation Damage, Falling Damage, Entrapment, Dazzle, Fatigue).";
+              else if (sType.includes("Rare Descriptor")) dynDesc = "Immunity to a Rare descriptor (e.g. Chemical, Fear, Gravitic, Holy, or Critical Hits).";
+              else if (sType.includes("Very Rare Descriptor")) dynDesc = "Immunity to a Very Rare descriptor (e.g. own powers, specific individual's powers).";
               else if (sType.includes("Custom Immunity")) dynDesc = "Specify custom immunity details below.";
               else dynDesc = `Immunity to ${sType}.`;
               if (sType.includes("Descriptor") || sType.includes("Custom") || sType.includes("One Type")) placeholderText = "Specify descriptor or details...";

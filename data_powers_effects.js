@@ -683,18 +683,7 @@ EXTRAS
 FLAWS
 * LIMITED: Enhanced Traits are often Limited in some way, like Nighttime or Daytime Only, While Angry, or Underwater. -1 point per rank.
 * REDUCED TRAIT: One or more of your traits are lowered while others are enhanced. -1x (the cost of the reduced trait) flat.`,
-    shortDesc: "Raises the rank of a specific Ability, Skill, Defense, or Advantage.",
-    powerOptions: [
-      { key: "enhanced_trait", label: "Trait Raised", type: "dropdown", choices: [
-        "- Select Trait -",
-        "Strength (STR)", "Stamina (STA)", "Agility (AGL)", "Intellect (INT)", "Awareness (AWE)", "Presence (PRE)",
-        "Attack (ATK)", "Defense (DEF)", "Dodge Resistance", "Fortitude Resistance", "Will Resistance",
-        "**SKILLS**",
-        "Acrobatics", "Athletics", "Close Combat", "Computers", "Deception", "Expertise", "Insight", "Intimidation", "Investigation", "Perception", "Persuasion", "Ranged Combat", "Sleight of Hand", "Stealth", "Technology", "Treatment", "Vehicles",
-        "**ADVANTAGES**",
-        "Agile Feint", "All-Out Attack", "Animal Empathy", "Assessment", "Benefit", "Close Attack", "Close Defense", "Connected", "Contact", "Daze", "Defensive Attack", "Defensive Roll", "Eidetic Memory", "Equipment", "Evasion", "Fascinate", "Fast Grab", "Favored Environment", "Favored Foe", "Grab Finesse", "Great Endurance", "Hide in Plain Sight", "Improved Aim", "Improved Critical", "Improved Defense", "Improved Disarm", "Improved Hold", "Improved Initiative", "Improved Trip", "Improvised Tools", "Jack-of-all-Trades", "Languages", "Luck", "Minion", "Move-by Action", "Multilingual", "Power Attack", "Prone Fighting", "Quick Draw", "Ranged Attack", "Ranged Defense", "Ranged Disarm", "Redirect", "Ricochet Attack", "Ritualist", "Second Chance", "Setup", "Sidekick", "Skill Focus", "Startle", "Tough", "Trance", "Ultimate Effort", "Uncanny Dodge", "Weapon Bind", "Weapon Break"
-      ], fullRow: true }
-    ]
+    shortDesc: "Raises the rank of specific Abilities, Skills, Defenses, or Advantages."
   },
   {
     name: "Environment",

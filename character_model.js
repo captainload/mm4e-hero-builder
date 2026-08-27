@@ -272,7 +272,7 @@ class CharacterModel {
       } else if (effect.effectName === "Morph") {
         totalRank = parseInt(effect.rank) || 1;
         totalSubCost = (parseInt(effect.rank) || 1) * pBaseCost;
-      } else if (effect.effectName === "Variable" || effect.effectName === "Enhance Trait" || effect.effectName === "Movement" || effect.effectName === "Immunity" || effect.effectName === "Senses") {
+      } else if (effect.effectName === "Variable" || effect.effectName === "Enhanced Trait" || effect.effectName === "Enhance Trait" || effect.effectName === "Movement" || effect.effectName === "Enhanced Movement" || effect.effectName === "Immunity" || effect.effectName === "Senses" || effect.effectName === "Enhanced Senses" || effect.effectName === "Comprehend") {
         effect.subPowers.forEach(sub => {
           let sRank = parseInt(sub.rank) || 1;
           totalRank += sRank;

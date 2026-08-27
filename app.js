@@ -435,8 +435,7 @@ function getFilteredModifiersForEffect(effectType, effectOrSub) {
 // --- REAL-TIME COST CALCULATION ENGINE WITH ARRAY/LINKED ROLLUP ---
 char.calculateEffectCost = function(effect) {
   const effectData = typeof POWER_EFFECTS_LIST !== 'undefined' ? POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) : null;
-  let pBaseCost = effectData ? effectData.baseCost : 0; 
-  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
 
   if (isComposite) {
     let totalRank = 0;
@@ -539,6 +538,16 @@ window.getMaxPowerRank = function(effect, subPower) {
   if (subPower) {
      let type = subPower.type || subPower.name || "";
      
+     if (effect && effect.effectName === "Enhanced Trait") {
+       if (typeof ADVANTAGES_LIST !== 'undefined') {
+         let adv = ADVANTAGES_LIST.find(a => a.name === type);
+         if (adv) {
+           return adv.hasRanks ? (adv.maxRanks || 10) : 1;
+         }
+       }
+       return 20;
+     }
+
      if (subPower.costType === "flat" && !type.includes("Sense Type") && effect.effectName !== "Immunity") return 1;
 
      if (type.includes("Dimensional Travel") || type.includes("Space Travel")) return 20; 
@@ -1495,7 +1504,7 @@ function buildPowersUI() {
     const summaryText = powerContainer.effects.map(e => `${e.effectName || 'No Effect'} ${e.rank}`).join(" | ");
 
     let effectsHtml = powerContainer.effects.map((effect, eIdx) => {
-        const isComposite = ["Enhanced Senses", "Enhanced Movement", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+        const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
         
         let effectData = null;
         if (effect.effectName) {
@@ -1728,6 +1737,16 @@ function buildPowersUI() {
               } else if (sType.includes("Objects")) dynDesc = sRank >= 2 ? "Communicate with inanimate objects." : "Requires 2 ranks to function.";
               else if (sType.includes("Plants")) dynDesc = sRank >= 2 ? "Communicate to and comprehend plants." : "Requires 2 ranks to function.";
               else if (sType.includes("Spirits")) dynDesc = sRank === 1 ? "Comprehend spirits." : "Comprehend spirits and be understood by them.";
+            } else if (effect.effectName === "Enhanced Trait") {
+              if (typeof ADVANTAGES_LIST !== 'undefined' && ADVANTAGES_LIST.some(a => a.name === sType)) {
+                let adv = ADVANTAGES_LIST.find(a => a.name === sType);
+                dynDesc = adv ? (adv.shortDesc || "Enhanced advantage.") : "Enhanced advantage.";
+              } else if (typeof SKILLS_LIST !== 'undefined' && SKILLS_LIST.some(s => s.name === sType)) {
+                dynDesc = `Provides +${sRank} enhanced skill rank to ${sType} checks.`;
+              } else {
+                dynDesc = `Provides +${sRank} enhanced rank to ${sType}.`;
+              }
+              placeholderText = "Notes, descriptor specifics, or limits...";
             } else if (effect.effectName === "Affliction") {
               dynDesc = `Applies the '${sType}' condition on a target at this degree.`;
             } else if (effect.effectName === "Immunity") {
@@ -1882,12 +1901,15 @@ function buildPowersUI() {
             }
 
             let isImmunityLocked = effect.effectName === "Immunity" && !sType.includes("Custom");
-            let stepperControls = subMaxR > 1 && sub.costType === "per_rank" && !isImmunityLocked ? `
+            let isFlatAdvantage = effect.effectName === "Enhanced Trait" && typeof ADVANTAGES_LIST !== 'undefined' && ADVANTAGES_LIST.some(a => a.name === sType && !a.hasRanks);
+            let allowsRanks = (sub.costType === "per_rank") || (effect.effectName === "Enhanced Trait" && !isFlatAdvantage);
+
+            let stepperControls = subMaxR > 1 && allowsRanks && !isImmunityLocked ? `
               <button type="button" class="stepper-btn stepper-dec" style="width: 26px !important; min-width: 26px !important;" onclick="stepSubPowerRank(${pIdx}, ${eIdx}, ${sIdx}, -1, 1, ${subMaxR})">−</button>
               <input type="number" class="stepper-input" style="width: 38px !important; min-width: 38px !important; font-size: var(--font-size-minor-controls);" value="${sRank}" min="1" max="${subMaxR}" readonly>
               <button type="button" class="stepper-btn stepper-inc" style="width: 26px !important; min-width: 26px !important;" onclick="stepSubPowerRank(${pIdx}, ${eIdx}, ${sIdx}, 1, 1, ${subMaxR})">+</button>
             ` : `
-              <input type="number" class="stepper-input" style="width: 50px !important; min-width: 50px !important; font-size: var(--font-size-minor-controls); background: transparent; border: none;" value="${sRank}" readonly title="${isImmunityLocked ? 'Rank Locked by Tier' : 'Rank Locked'}">
+              <input type="number" class="stepper-input" style="width: 50px !important; min-width: 50px !important; font-size: var(--font-size-minor-controls); background: transparent; border: none;" value="${sRank}" readonly title="${isImmunityLocked ? 'Rank Locked by Tier' : (isFlatAdvantage ? 'Rank 1 (Standard Advantage)' : 'Rank Locked')}">
             `;
 
             return `
@@ -1895,7 +1917,7 @@ function buildPowersUI() {
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
                   <div style="display: flex; align-items: center; gap: 8px;">
                     <strong style="font-size: var(--font-size-controls); color: var(--accent-primary);">${sub.name.split(" [")[0] || sub.type}</strong>
-                    ${sub.cost ? `<span class="badge effect-cost-badge" style="font-size: 11px;">${sub.cost} PP/r</span>` : ''}
+                    <span class="badge effect-cost-badge" style="font-size: 11px;">${sub.baseCost || 1} ${sub.costType === 'per_rank' ? 'PP/r' : 'PP'}</span>
                   </div>
 
                   <div style="display: flex; align-items: center; gap: 10px;">
@@ -1993,6 +2015,76 @@ function buildPowersUI() {
                   ${immChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                 </select>
                 <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selOptionChoice_${pIdx}_${eIdx}')">+ Add Option</button>
+              </div>
+            </div>
+          `;
+        } else if (effect.effectName === "Enhanced Trait") {
+          let abilityChoices = [
+            "- Select Ability / Defense -",
+            "Strength (STR) [2 pts/r]",
+            "Stamina (STA) [2 pts/r]",
+            "Agility (AGL) [2 pts/r]",
+            "Intellect (INT) [2 pts/r]",
+            "Awareness (AWE) [2 pts/r]",
+            "Presence (PRE) [2 pts/r]",
+            "Attack (ATK) [2 pts/r]",
+            "Defense (DEF) [2 pts/r]",
+            "Dodge Resistance [1 pt/r]",
+            "Fortitude Resistance [1 pt/r]",
+            "Will Resistance [1 pt/r]",
+            "Toughness [1 pt/r]"
+          ];
+
+          let advChoices = ["- Select Advantage -"];
+          if (typeof ADVANTAGES_LIST !== 'undefined' && Array.isArray(ADVANTAGES_LIST)) {
+            ADVANTAGES_LIST.forEach(adv => {
+              advChoices.push(`${adv.name} [1 pt${adv.hasRanks ? '/r' : ''}]`);
+            });
+          } else {
+            advChoices.push(
+              "Agile Feint [1 pt]", "All-Out Attack [1 pt]", "Animal Empathy [1 pt]", "Assessment [1 pt]", "Benefit [1 pt/r]", "Close Attack [1 pt/r]", "Close Defense [1 pt/r]", "Connected [1 pt]", "Contact [1 pt]", "Daze [1 pt]", "Defensive Attack [1 pt]", "Defensive Roll [1 pt/r]", "Eidetic Memory [1 pt]", "Equipment [1 pt/r]", "Evasion [1 pt/r]", "Fascinate [1 pt/r]", "Fast Grab [1 pt]", "Favored Environment [1 pt]", "Favored Foe [1 pt]", "Grab Finesse [1 pt]", "Great Endurance [1 pt]", "Hide in Plain Sight [1 pt]", "Improved Aim [1 pt]", "Improved Critical [1 pt/r]", "Improved Defense [1 pt]", "Improved Disarm [1 pt]", "Improved Hold [1 pt]", "Improved Initiative [1 pt/r]", "Improved Trip [1 pt]", "Improvised Tools [1 pt]", "Jack-of-all-Trades [1 pt]", "Languages [1 pt/r]", "Luck [1 pt/r]", "Minion [1 pt/r]", "Move-by Action [1 pt]", "Multilingual [1 pt/r]", "Power Attack [1 pt]", "Prone Fighting [1 pt]", "Quick Draw [1 pt]", "Ranged Attack [1 pt/r]", "Ranged Defense [1 pt/r]", "Ranged Disarm [1 pt]", "Redirect [1 pt]", "Ricochet Attack [1 pt/r]", "Ritualist [1 pt]", "Second Chance [1 pt/r]", "Setup [1 pt/r]", "Sidekick [1 pt/r]", "Skill Focus [1 pt/r]", "Startle [1 pt]", "Tough [1 pt/r]", "Trance [1 pt]", "Ultimate Effort [1 pt/r]", "Uncanny Dodge [1 pt]", "Weapon Bind [1 pt]", "Weapon Break [1 pt]"
+            );
+          }
+
+          let skillChoices = ["- Select Skill -"];
+          if (typeof SKILLS_LIST !== 'undefined' && Array.isArray(SKILLS_LIST)) {
+            SKILLS_LIST.forEach(sk => {
+              skillChoices.push(`${sk.name} [1 pt/r]`);
+            });
+          } else {
+            skillChoices.push(
+              "Acrobatics [1 pt/r]", "Athletics [1 pt/r]", "Close Combat [1 pt/r]", "Computers [1 pt/r]", "Deception [1 pt/r]", "Expertise [1 pt/r]", "Insight [1 pt/r]", "Intimidation [1 pt/r]", "Investigation [1 pt/r]", "Perception [1 pt/r]", "Persuasion [1 pt/r]", "Ranged Combat [1 pt/r]", "Sleight of Hand [1 pt/r]", "Stealth [1 pt/r]", "Technology [1 pt/r]", "Treatment [1 pt/r]", "Vehicles [1 pt/r]"
+            );
+          }
+
+          optionPickersHtml = `
+            <div class="power-options-row" style="display: flex; flex-direction: column; gap: 10px; background: var(--bg-panel); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 4px;">
+              <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Abilities / Defenses:</label>
+                  <select id="selEnhAbility_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                    ${abilityChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                  </select>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAbility_${pIdx}_${eIdx}')">+ Add Ability</button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Advantages:</label>
+                  <select id="selEnhAdvantage_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                    ${advChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                  </select>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAdvantage_${pIdx}_${eIdx}')">+ Add Advantage</button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Skills:</label>
+                  <select id="selEnhSkill_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                    ${skillChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                  </select>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhSkill_${pIdx}_${eIdx}')">+ Add Skill</button>
+                </div>
+
               </div>
             </div>
           `;
@@ -2467,7 +2559,7 @@ window.addOptionSubPower = function(pIdx, eIdx, selectId) {
   let cleanName = optChoice.split(" [")[0];
   let coreName = cleanName.split(" (")[0]; 
   
-  if (effect.effectName === "Immunity") {
+  if (effect.effectName === "Immunity" || effect.effectName === "Enhanced Trait") {
       coreName = cleanName;
   } else {
       if (cleanName.includes("Dimensional Travel")) coreName = "Dimensional Travel";
@@ -2477,7 +2569,7 @@ window.addOptionSubPower = function(pIdx, eIdx, selectId) {
       else if (cleanName.includes("Water-Walking")) coreName = "Water-Walking";
   }
 
-  if (effect.subPowers.some(sub => sub.type === coreName || sub.name === cleanName)) {
+  if (effect.subPowers.some(sub => sub.type === coreName || sub.name === cleanName || (sub.name && sub.name.split(" [")[0] === cleanName))) {
       let warningsDisabled = localStorage.getItem("mm4e_disable_warnings") === "true";
       if (!warningsDisabled) {
           alert(coreName + " has already been added to this power. Increase its rank instead.");

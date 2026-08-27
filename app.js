@@ -3910,18 +3910,17 @@ const FileManager = {
   },
 
   fallbackDownload: function(content, filename) {
-    const blob = new Blob([content], { type: "application/octet-stream" });
-    const url = URL.createObjectURL(blob);
+    // Using octet-stream data URI forces Firefox to trigger the OS Save As picker dialog
+    const dataUri = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(content);
     const a = document.createElement("a");
-    a.href = url;
+    a.href = dataUri;
     a.download = filename;
     a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     setTimeout(() => {
       if (document.body.contains(a)) document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 2000);
+    }, 1000);
   }
 };
 window.FileManager = FileManager;

@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1e293b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="M&M4 Hero">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="manifest" href="manifest.json">
+  <title>M&M 4E Character Generator</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Strict Grid Layout for Power Options */
+    .power-options-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr; 
+      gap: 8px 16px;
+      padding: 8px 10px;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-color);
+      border-radius: 4px;
+      font-size: var(--font-size-minor-controls);
+    }
+    .power-option-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .power-option-item.full-row {
+      grid-column: 1 / -1; 
+    }
+    .power-option-item select, .power-option-item input, .power-option-item textarea {
+      font-size: var(--font-size-minor-controls);
+      padding: 2px 4px;
+      flex: 1;
+      width: 100%;
+    }
+    .power-option-item label {
+      min-width: 130px;
+      font-size: var(--font-size-minor-controls);
+      font-weight: 600;
+      white-space: nowrap;
+      color: var(--text-main);
+    }
+    @media (max-width: 768px) {
+      .power-options-row {
+        grid-template-columns: 1fr; 
+      }
+    }
+
+    /* Active (Ranked) Advantage Tag Styling */
+    .skill-adv-tag.active-adv-tag {
+      color: #f59e0b;
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+    .skill-adv-tag.active-adv-tag:hover {
+      background: #f59e0b;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="top-header">
+    <h1>M&M 4th Edition Hero Builder</h1>
+    
+    <div class="header-actions">
+      <span class="file-status-badge" id="lblCurrentFile" title="Current Character File">[Unsaved Character]</span>
+      <button class="btn btn-secondary" id="btnNewHero">New</button>
+      <button class="btn" id="btnSaveHero">Save</button>
+      <button class="btn btn-secondary" id="btnSaveAsHero">Save As...</button>
+      <button class="btn btn-secondary" id="btnLoadHero">Load</button>
+      <input type="file" id="fileLoadHero" accept=".mm4e,.json" style="display: none;">
+      <button class="btn btn-secondary" onclick="window.print()">Print</button>
+      
+      <!-- Theme/Options Toggle with dots handled dynamically in JS -->
+      <button class="btn btn-secondary" id="btnToggleOptions" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        ⚙ Options
+      </button>
+    </div>
+
+    <!-- Options Drop-Down Window / Modal -->
+    <div class="options-dropdown" id="optionsModal">
+      <h3>Display & Interface Settings</h3>
+      
+      <button class="btn btn-secondary" id="btnThemeToggle" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;">
+        <!-- Filled dynamically by JS -->
+      </button>
+
+      <div class="font-control-group" style="margin-top: 8px;">
+        <div>
+          <label>Labels & Headers:</label>
+          <span class="secondary-text" id="valLabelFont">16px</span>
+        </div>
+        <input type="range" id="sliderLabelFont" min="12" max="22" value="16">
+      </div>
+
+      <div class="font-control-group">
+        <div>
+          <label>Interactive Controls:</label>
+          <span class="secondary-text" id="valControlFont">14px</span>
+        </div>
+        <input type="range" id="sliderControlFont" min="10" max="20" value="14">
+      </div>
+
+      <div class="font-control-group">
+        <div>
+          <label>Links & Tags (Touch Target):</label>
+          <span class="secondary-text" id="valLinkFont">12px</span>
+        </div>
+        <input type="range" id="sliderLinkFont" min="9" max="18" value="12">
+      </div>
+
+      <div class="font-control-group">
+        <div>
+          <label>Secondary Details:</label>
+          <span class="secondary-text" id="valSecondaryFont">12px</span>
+        </div>
+        <input type="range" id="sliderSecondaryFont" min="8" max="16" value="12">
+      </div>
+
+      <div class="font-control-group" style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
+        <div>
+          <label>Sub-Controls & Dropdowns:</label>
+          <span class="secondary-text" id="valMinorControlFont">12px</span>
+        </div>
+        <input type="range" id="sliderMinorControlFont" min="9" max="18" value="12">
+      </div>
+
+      <!-- Save / Load Folder Preferences -->
+      <div style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+        <h3 style="font-size: var(--font-size-labels); margin-bottom: 6px; border: none; padding: 0;">Save / Load Folder</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: var(--font-size-secondary);">
+          <span style="color: var(--text-muted);">Default:</span>
+          <span id="lblActiveFolder" style="font-weight: 600; color: var(--text-main); font-family: ui-monospace, monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Current default save/load folder">[Project Default]</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="btn btn-secondary" id="btnSetCustomFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
+            📁 Set Folder...
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnResetFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
+            ↺ Reset to Default
+          </button>
+        </div>
+        <div id="boxFirefoxNotice" style="display: none; margin-top: 8px; padding: 8px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 4px; font-size: var(--font-size-secondary); line-height: 1.4;">
+          🦊 <strong>Firefox Users:</strong> To choose custom save locations, open <em>Firefox Settings &gt; General &gt; Downloads</em> and check <strong>"Always ask you where to save files"</strong>.
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Power Point Totals Header -->
+  <div class="summary-bar">
+    <div>
+      Hero: <strong id="lblHeroName">New Hero</strong> | 
+      PL: <span class="badge" id="lblPL">10</span>
+    </div>
+    <div>
+      Abilities: <span class="badge" id="lblAbilPP">0 PP</span>
+      Combat: <span class="badge" id="lblCombatPP">0 PP</span>
+      Resistances: <span class="badge" id="lblResistPP">0 PP</span>
+      Skills: <span class="badge" id="lblSkillPP">0 PP</span>
+      Advantages: <span class="badge" id="lblAdvPP">0 PP</span>
+      Powers: <span class="badge" id="lblPowerPP">0 PP</span>
+      | Total: <span class="badge" id="lblTotalPP">0 / 150 PP</span>
+    </div>
+  </div>
+
+  <!-- Primary Tabs -->
+  <nav class="tabs-container">
+    <button class="tab-btn active" data-tab="tab-basics">Basics & Stats</button>
+    <button class="tab-btn" data-tab="tab-skills">Skills</button>
+    <button class="tab-btn" data-tab="tab-advantages">Advantages</button>
+    <button class="tab-btn" data-tab="tab-powers">Powers</button>
+    <button class="tab-btn" data-tab="tab-equipment">Equipment & HQ</button>
+    <button class="tab-btn" data-tab="tab-background">Background</button>
+    <button class="tab-btn" data-tab="tab-tables">Reference Tables</button>
+  </nav>
+
+  <!-- TAB 1: BASICS & ABILITIES -->
+  <section id="tab-basics" class="tab-content active">
+    
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Hero Details & Power Level</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div class="hero-details-single-row">
+          <div class="hero-detail-item">
+            <label>Name:</label>
+            <input type="text" id="heroNameInput" value="New Hero" style="width: 200px;">
+          </div>
+          <div class="hero-detail-item">
+            <label>PL:</label>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('heroPLInput', -1, 1, 20)">−</button>
+              <input type="number" id="heroPLInput" class="stepper-input" min="1" max="20" value="10">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('heroPLInput', 1, 1, 20)">+</button>
+            </div>
+          </div>
+          <div class="hero-detail-item">
+            <label>Size:</label>
+            <select id="heroSizeInput" class="fit-content">
+              <option value="Awesome">Awesome (Rank 5)</option>
+              <option value="Colossal">Colossal (Rank 4)</option>
+              <option value="Gargantuan">Gargantuan (Rank 3)</option>
+              <option value="Huge">Huge (Rank 2)</option>
+              <option value="Large">Large (Rank 1)</option>
+              <option value="Medium" selected>Medium (Rank 0)</option>
+              <option value="Small">Small (Rank -1)</option>
+              <option value="Tiny">Tiny (Rank -2)</option>
+              <option value="Diminutive">Diminutive (Rank -3)</option>
+              <option value="Fine">Fine (Rank -4)</option>
+              <option value="Minuscule">Minuscule (Rank -5)</option>
+            </select>
+          </div>
+          <div class="hero-detail-item">
+            <label>Mass:</label>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('heroMassInput', -1, -5, 30)">−</button>
+              <input type="number" id="heroMassInput" class="stepper-input" min="-5" max="30" value="3">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('heroMassInput', 1, -5, 30)">+</button>
+            </div>
+            <span class="secondary-text" id="lblHeroMassVal">(200 lbs.)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core Abilities Panel -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Abilities (2 PP per Rank)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div class="full-width-list" id="abilitiesContainer"></div>
+      </div>
+    </div>
+
+    <!-- Combat Abilities Panel -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Combat Abilities & Situational Modifiers</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div class="combat-inline-row" style="margin-bottom: 6px; align-items: center;">
+          <div class="combat-item">
+            <label>Attack (ATK):</label>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('inputATK', -1, -5, 20)">−</button>
+              <input type="number" id="inputATK" class="stepper-input" min="-5" max="20" value="0">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('inputATK', 1, -5, 20)">+</button>
+            </div>
+          </div>
+          <div class="combat-item">
+            <label>Defense (DEF):</label>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('inputDEF', -1, -5, 20)">−</button>
+              <input type="number" id="inputDEF" class="stepper-input" min="-5" max="20" value="0">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('inputDEF', 1, -5, 20)">+</button>
+            </div>
+          </div>
+
+          <div class="combat-item" style="border-left: 1px solid var(--border-color); padding-left: 16px;">
+            <label>Close Attack:</label>
+            <span class="badge" id="lblCloseAttack" style="font-size: var(--font-size-labels);">+0</span>
+            <span class="secondary-text" id="lblCloseAtkBreakdown" style="margin-left: 4px;">(ATK + Adv + Skill)</span>
+          </div>
+          <div class="combat-item">
+            <label>Ranged Attack:</label>
+            <span class="badge" id="lblRangedAttack" style="font-size: var(--font-size-labels);">+0</span>
+            <span class="secondary-text" id="lblRangedAtkBreakdown" style="margin-left: 4px;">(ATK + Adv + Skill)</span>
+          </div>
+
+          <div class="combat-item" style="margin-left: auto;">
+            <label class="secondary-text" style="cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: normal;">
+              <input type="checkbox" id="chkFilterUnrankedSkills" onchange="refreshUI()"> Hide Unranked Skills
+            </label>
+          </div>
+        </div>
+
+        <div class="combat-conditionals-box" id="combatConditionalsContainer" style="margin-top: 4px; padding-top: 4px;">
+          <div id="combatAdvList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Defenses Block -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Defenses</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div class="full-width-list">
+          <div class="list-row">
+            <span class="row-title">Defense Class</span>
+            <div style="width: 110px; min-width: 110px;"></div>
+            <div class="row-adjustments">Base (10 + DEF Rank)</div>
+            <div class="defense-total-col" id="resDefenseClass">10</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Dodge</span>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('inputDodge', -1, 0, 20)">−</button>
+              <input type="number" id="inputDodge" class="stepper-input" min="0" max="20" value="0">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('inputDodge', 1, 0, 20)">+</button>
+            </div>
+            <div class="row-adjustments" id="adjDodge">Base DEF</div>
+            <div class="defense-total-col" id="resDodge">0</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Toughness</span>
+            <div style="width: 110px; min-width: 110px;"></div>
+            <div class="row-adjustments" id="adjToughness">Base STA</div>
+            <div class="defense-total-col" id="resToughness">0</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Fortitude</span>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('inputFort', -1, 0, 20)">−</button>
+              <input type="number" id="inputFort" class="stepper-input" min="0" max="20" value="0">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('inputFort', 1, 0, 20)">+</button>
+            </div>
+            <div class="row-adjustments" id="adjFort">Base STA</div>
+            <div class="defense-total-col" id="resFortitude">0</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Will</span>
+            <div class="stepper-group">
+              <button type="button" class="stepper-btn stepper-dec" onclick="stepVal('inputWill', -1, 0, 20)">−</button>
+              <input type="number" id="inputWill" class="stepper-input" min="0" max="20" value="0">
+              <button type="button" class="stepper-btn stepper-inc" onclick="stepVal('inputWill', 1, 0, 20)">+</button>
+            </div>
+            <div class="row-adjustments" id="adjWill">Base AWE</div>
+            <div class="defense-total-col" id="resWill">0</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Close Defense</span>
+            <div style="width: 110px; min-width: 110px;"></div>
+            <div class="row-adjustments" id="adjCloseDef">Base DEF + Close Defense Advantage</div>
+            <div class="defense-total-col" id="resCloseDef">0</div>
+          </div>
+          <div class="list-row">
+            <span class="row-title">Ranged Defense</span>
+            <div style="width: 110px; min-width: 110px;"></div>
+            <div class="row-adjustments" id="adjRangedDef">Base DEF + Ranged Defense Advantage</div>
+            <div class="defense-total-col" id="resRangedDef">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Misc Traits Block -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Misc. Traits</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div class="full-width-list">
+          <div class="list-row">
+            <span class="misc-row-title">Initiative</span>
+            <div class="row-adjustments" id="adjInitiative">AGL + Improved Initiative</div>
+            <div class="misc-total-col" id="resInitiative">0</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Ground Speed</span>
+            <div class="row-adjustments" id="adjGroundSpeed">Base Speed Rank 2 (Modified by Size/Powers)</div>
+            <div class="misc-total-col" id="resGroundSpeed">Rank 2 (30 ft.)</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Air Speed (Flight)</span>
+            <div class="row-adjustments" id="adjAirSpeed">Flight Effect</div>
+            <div class="misc-total-col" id="resAirSpeed">—</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Water Speed (Swim)</span>
+            <div class="row-adjustments" id="adjWaterSpeed">Base Swimming Rank 0 (Modified by Powers)</div>
+            <div class="misc-total-col" id="resWaterSpeed">Rank 0 (6 ft.)</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Space Speed</span>
+            <div class="row-adjustments" id="adjSpaceSpeed">Space Travel Effect</div>
+            <div class="misc-total-col" id="resSpaceSpeed">—</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Max Lifting Capacity</span>
+            <div class="row-adjustments" id="adjMaxLifting">STR Rank Equivalent Mass (Modified by Powers)</div>
+            <div class="misc-total-col" id="resMaxLifting">Rank 0 (25 lbs.)</div>
+          </div>
+          <div class="list-row">
+            <span class="misc-row-title">Spaces / Reach</span>
+            <div class="row-adjustments" id="adjSpacesReach">Determined by Size Category</div>
+            <div class="misc-total-col" id="resSpacesReach">1 / 1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- TAB 2: SKILLS -->
+  <section id="tab-skills" class="tab-content">
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Skills (1 PP per 2 Ranks; Expertise: 1 PP per 4 Ranks)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <table id="skillsTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-table="skills" data-col="name">Skill</th>
+              <th class="sortable" data-table="skills" data-col="ability">Key Ability</th>
+              <th class="sortable" data-table="skills" data-col="untrained">Untrained?</th>
+              <th>Ability Rank</th>
+              <th>Bought Ranks</th>
+              <th>Total Bonus</th>
+              <th>Focus / Specialization</th>
+              <th>Modifying Advantages</th>
+              <th style="width: 40px; text-align: center;">Info</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: ADVANTAGES -->
+  <section id="tab-advantages" class="tab-content">
+    <div class="collapsible-panel" style="margin-bottom: 8px;">
+      <div class="panel-body" style="padding: 6px 12px; display: flex; gap: 20px; font-size: var(--font-size-controls);">
+        <div>Heroic Advantages Limit: <span class="badge" id="lblHeroicLimit">0 / 5</span></div>
+        <div>Command Advantages Limit: <span class="badge" id="lblCommandLimit">0 / 0</span></div>
+      </div>
+    </div>
+
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Advantages (1 PP per Rank)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <table id="advantagesTable">
+          <thead>
+            <tr>
+              <th class="sortable" data-table="advantages" data-col="name">Advantage</th>
+              <th class="sortable" data-table="advantages" data-col="types">Type</th>
+              <th>Rank</th>
+              <th>Configuration / Focus Details</th>
+              <th>Description</th>
+              <th style="width: 40px; text-align: center;">Info</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: POWERS CONSTRUCTION ENGINE -->
+  <section id="tab-powers" class="tab-content">
+    <div class="static-panel">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h2 style="font-size: var(--font-size-labels); margin: 0;">Power Construction Engine</h2>
+          <span class="secondary-text">Build custom powers, configure effect ranks, attach effect-specific extras/flaws, and manage devices.</span>
+        </div>
+        <button type="button" class="btn" id="btnAddPower">+ Add New Power Container</button>
+      </div>
+
+      <div id="powersContainer">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: EQUIPMENT & HQ -->
+  <section id="tab-equipment" class="tab-content">
+    <div class="static-panel" style="margin-bottom: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <div>
+          <h2 style="font-size: var(--font-size-labels); margin: 0;">Equipment & Headquarters</h2>
+          <span class="secondary-text">Spend Equipment Points (EP) gained from the Equipment advantage (5 EP per rank).</span>
+        </div>
+        <div style="font-size: var(--font-size-labels); font-weight: bold;">
+          Available EP: <span class="badge" id="lblAvailableEP" style="background: var(--accent-primary); font-size: 14px;">0 / 0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Gear Panel -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Personal Gear (Weapons, Armor, Utility)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+          <button type="button" class="btn" id="btnAddGear">+ Add Gear</button>
+        </div>
+        <div id="gearContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicles Panel -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Vehicles</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+          <button type="button" class="btn" id="btnAddVehicle">+ Add Vehicle</button>
+        </div>
+        <div id="vehiclesContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- HQ / Installations Panel -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Installations / Headquarters</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+          <button type="button" class="btn" id="btnAddHQ">+ Add Installation</button>
+        </div>
+        <div id="hqContainer">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 6: BACKGROUND -->
+  <section id="tab-background" class="tab-content">
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Character Background, Motivations & Complications</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body grid-2">
+        <div class="form-group">
+          <label>Real Name / Identity</label>
+          <input type="text" id="bgIdentity" placeholder="Secret Identity">
+        </div>
+        <div class="form-group">
+          <label>Motivation</label>
+          <input type="text" id="bgMotivation" placeholder="e.g. Justice, Responsibility, Thrills">
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Complications</label>
+          <textarea id="bgComplications" placeholder="List character complications, enemies, quirks, and weaknesses..."></textarea>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;">
+          <label>Background History</label>
+          <textarea id="bgHistory" placeholder="Character origin story, appearance notes, personality..."></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 7: TABLES -->
+  <section id="tab-tables" class="tab-content">
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Actions</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table id="actionsViewTable">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Type</th>
+                <th>Check</th>
+                <th>Effect</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Measurements Table (Rank-to-Value)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <table id="measurementsViewTable">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Mass (US)</th>
+              <th>Mass (Metric)</th>
+              <th>Time</th>
+              <th>Distance (US)</th>
+              <th>Distance (Metric)</th>
+              <th>Volume (US)</th>
+              <th>Volume (Metric)</th>
+              <th>Benchmark</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Power Level Limits</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <table id="plLimitsViewTable">
+          <thead>
+            <tr>
+              <th>Power Level</th>
+              <th>Skill Modifier</th>
+              <th>Attack + Effect</th>
+              <th>Defense + Toughness</th>
+              <th>Fortitude + Will</th>
+              <th>Heroic Advantages</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Size Categories & Modifiers</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <table id="sizeViewTable">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Rank</th>
+              <th>Spaces</th>
+              <th>Reach</th>
+              <th>Defense</th>
+              <th>Damage</th>
+              <th>Toughness</th>
+              <th>Speed</th>
+              <th>Intimidation</th>
+              <th>Stealth</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- Universal Rule Description Modal Overlay -->
+  <div class="modal-overlay" id="ruleInfoModal">
+    <div class="info-popup-box">
+      <div class="info-popup-header">
+        <h3 id="modalRuleTitle">Rule Information</h3>
+        <button class="info-popup-close" id="modalRuleClose">✕</button>
+      </div>
+      <div class="info-popup-body" id="modalRuleBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Scripts: Clean Modular Architecture -->
+  <script src="data_measurements.js"></script>
+  <script src="data_skills.js"></script>
+  <script src="data_advantages.js"></script>
+  <script src="data_powers_effects.js"></script>
+  <script src="data_powers_modifiers.js"></script>
+  <script src="data_equipment.js"></script>
+  <script src="character_model.js"></script>
+  <!-- Main UI App Logic -->
+  <script src="app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+          console.log('ServiceWorker registration note:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>

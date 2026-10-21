@@ -134,6 +134,7 @@ FLAWS
     duration: "Sustained",
     baseCost: 2,
     costType: "per_rank",
+    maxRanks: 5,
     fullText: `You can communicate at a distance using a medium other than normal means. Choose a sense type as your Communication medium:
 
 COMMUNICATION MEDIUM TABLE:

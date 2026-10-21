@@ -3,6 +3,7 @@
 class CharacterModel {
   constructor() {
     this.name = "New Hero";
+    this.playerName = "";
     this.powerLevel = 10;
     this.totalPointsAllowed = 150;
     this.sizeCategory = "Medium";
@@ -27,10 +28,21 @@ class CharacterModel {
     // Constructed Powers Array with structured modifiers
     this.powers = [];
 
+    // Improvised Effects / Blueprints
+    this.blueprints = [];
+
     // Equipment & Installations
     this.gear = [];
     this.vehicles = [];
     this.installations = [];
+
+    // Minions, Mecha, & Alternate Forms ("Alts")
+    this.companions = [];
+    this.isMecha = false;
+    this.isMinion = false;
+    this.isAltForm = false;
+    this.altType = null; // 'minion' | 'mecha' | 'alt_form' | null
+    this.altParentHeroName = "";
 
     // Background & Identity
     this.identity = "";
@@ -41,6 +53,7 @@ class CharacterModel {
 
   reset() {
     this.name = "New Hero";
+    this.playerName = "";
     this.powerLevel = 10;
     this.totalPointsAllowed = 150;
     this.sizeCategory = "Medium";
@@ -58,9 +71,17 @@ class CharacterModel {
     this.advantageDetails = {};
 
     this.powers = [];
+    this.blueprints = [];
     this.gear = [];
     this.vehicles = [];
     this.installations = [];
+
+    this.companions = [];
+    this.isMecha = false;
+    this.isMinion = false;
+    this.isAltForm = false;
+    this.altType = null;
+    this.altParentHeroName = "";
 
     this.identity = "";
     this.motivation = "";
@@ -75,6 +96,7 @@ class CharacterModel {
       savedAt: new Date().toISOString(),
       character: {
         name: this.name,
+        playerName: this.playerName,
         powerLevel: this.powerLevel,
         totalPointsAllowed: this.totalPointsAllowed,
         sizeCategory: this.sizeCategory,
@@ -88,13 +110,20 @@ class CharacterModel {
         advantages: { ...this.advantages },
         advantageDetails: { ...this.advantageDetails },
         powers: JSON.parse(JSON.stringify(this.powers || [])),
+        blueprints: JSON.parse(JSON.stringify(this.blueprints || [])),
         gear: JSON.parse(JSON.stringify(this.gear || [])),
         vehicles: JSON.parse(JSON.stringify(this.vehicles || [])),
         installations: JSON.parse(JSON.stringify(this.installations || [])),
         identity: this.identity || "",
         motivation: this.motivation || "",
         complications: this.complications || "",
-        history: this.history || ""
+        history: this.history || "",
+        companions: JSON.parse(JSON.stringify(this.companions || [])),
+        isMecha: this.isMecha || false,
+        isMinion: this.isMinion || false,
+        isAltForm: this.isAltForm || false,
+        altType: this.altType || null,
+        altParentHeroName: this.altParentHeroName || ""
       }
     };
   }
@@ -104,10 +133,17 @@ class CharacterModel {
     const data = (raw.format === "MM4E_CHARACTER" && raw.character) ? raw.character : raw;
 
     this.name = data.name || "New Hero";
+    this.playerName = data.playerName || "";
     this.powerLevel = typeof data.powerLevel === "number" ? data.powerLevel : (data.pl || 10);
     this.totalPointsAllowed = typeof data.totalPointsAllowed === "number" ? data.totalPointsAllowed : (this.powerLevel * 15);
     this.sizeCategory = data.sizeCategory || data.size || "Medium";
     this.massRank = typeof data.massRank === "number" ? data.massRank : 3;
+    this.companions = Array.isArray(data.companions) ? JSON.parse(JSON.stringify(data.companions)) : [];
+    this.isMecha = !!data.isMecha;
+    this.isMinion = !!data.isMinion;
+    this.isAltForm = !!data.isAltForm;
+    this.altType = data.altType || null;
+    this.altParentHeroName = data.altParentHeroName || "";
 
     // Abilities
     this.abilities = { STR: 0, STA: 0, AGL: 0, INT: 0, AWE: 0, PRE: 0, ...(data.abilities || {}) };
@@ -166,6 +202,29 @@ class CharacterModel {
       });
     }
     this.powers = loadedPowers;
+
+    // Blueprints
+    let loadedBlueprints = Array.isArray(data.blueprints) ? JSON.parse(JSON.stringify(data.blueprints)) : [];
+    if (loadedBlueprints.length > 0 && !loadedBlueprints[0].effects) {
+      loadedBlueprints = loadedBlueprints.map(oldEff => {
+        const cName = oldEff.name || "Imported Blueprint";
+        const cCol = oldEff.collapsed || false;
+        return {
+          name: cName,
+          collapsed: cCol,
+          effects: [{ ...oldEff, id: oldEff.id || ("imp_" + Math.random().toString(36).substr(2, 9)), association: "primary", linkedTo: null, name: cName }]
+        };
+      });
+    } else {
+      loadedBlueprints.forEach(container => {
+        if (Array.isArray(container.effects)) {
+          container.effects.forEach((eff, eIdx) => {
+            if (!eff.id) eff.id = "imp_" + Math.random().toString(36).substr(2, 9) + "_" + eIdx;
+          });
+        }
+      });
+    }
+    this.blueprints = loadedBlueprints;
 
     // Equipment
     this.gear = Array.isArray(data.gear) ? JSON.parse(JSON.stringify(data.gear)) : [];
@@ -244,6 +303,10 @@ class CharacterModel {
       commandValid: totalCommand <= maxCommand,
       commandAbility: hasTacticalGenius ? "INT" : "PRE"
     };
+  }
+
+  get activePowers() {
+    return (typeof window !== 'undefined' && window.activePowerContext === 'blueprints') ? this.blueprints : this.powers;
   }
 
   // Calculate dynamic point cost of an individual effect using M&M 4E modifier math
@@ -547,5 +610,66 @@ class CharacterModel {
       totalSpent: totalSpent,
       remaining: remaining
     };
+  }
+
+  addCompanion(type = "minion", name = "", pl = 10, totalPoints = null) {
+    if (!this.companions) this.companions = [];
+    const id = "alt_" + Date.now().toString(36) + "_" + Math.random().toString(36).substr(2, 5);
+    const typeLabels = { minion: "Minion", mecha: "Mecha", alt_form: "Alternate Form" };
+    const countOfType = this.companions.filter(c => c.type === type).length + 1;
+    const defaultName = name || ((typeLabels[type] || "Alt") + " #" + countOfType);
+    const budget = typeof totalPoints === "number" ? totalPoints : (pl * 15);
+
+    const companionEntry = {
+      id,
+      name: defaultName,
+      type,
+      powerLevel: pl,
+      totalPointsAllowed: budget,
+      data: {
+        name: defaultName,
+        playerName: this.playerName || "",
+        powerLevel: pl,
+        totalPointsAllowed: budget,
+        sizeCategory: type === 'mecha' ? "Huge" : "Medium",
+        massRank: type === 'mecha' ? 7 : 3,
+        isMecha: type === 'mecha',
+        isMinion: type === 'minion',
+        isAltForm: type === 'alt_form',
+        altType: type,
+        altParentHeroName: this.name,
+        abilities: { STR: type === 'mecha' ? 8 : 0, STA: type === 'mecha' ? 0 : 0, AGL: 0, INT: 0, AWE: 0, PRE: 0 },
+        absentAbilities: { STR: false, STA: type === 'mecha', AGL: false, INT: false, AWE: false, PRE: false },
+        combat: { ATK: 0, DEF: 0 },
+        purchasedResistances: { Dodge: 0, Fortitude: 0, Will: 0 },
+        skills: {},
+        skillDetails: {},
+        advantages: {},
+        advantageDetails: {},
+        powers: [],
+        blueprints: [],
+        gear: [],
+        vehicles: [],
+        installations: [],
+        identity: "",
+        motivation: "",
+        complications: "",
+        history: ""
+      }
+    };
+    this.companions.push(companionEntry);
+    return companionEntry;
+  }
+
+  removeCompanion(id) {
+    if (!this.companions) return false;
+    const initialLen = this.companions.length;
+    this.companions = this.companions.filter(c => c.id !== id);
+    return this.companions.length < initialLen;
+  }
+
+  getCompanion(id) {
+    if (!this.companions) return null;
+    return this.companions.find(c => c.id === id) || null;
   }
 }

@@ -1,5 +1,5 @@
 <!-- Psycros, 2026 - for the M&M community -->
-<!-- All original Mutants & Masterminds 4th Edition content used in this project is the sole property of Green Ronin Publishing. -->
+<!-- All published Mutants & Masterminds 4th Edition content used in this project is the sole property of Green Ronin Publishing. -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -68,92 +68,175 @@
 <body>
 
   <!-- Top App Header -->
-  <header class="top-header">
-    <h1>M&M 4th Edition Hero Builder</h1>
-    
-    <div class="header-actions">
-      <span class="file-status-badge" id="lblCurrentFile" title="Current Character File">[Unsaved Character]</span>
-      <button class="btn btn-secondary" id="btnNewHero">New</button>
-      <button class="btn" id="btnSaveHero">Save</button>
-      <button class="btn btn-secondary" id="btnSaveAsHero">Save As...</button>
-      <button class="btn btn-secondary" id="btnLoadHero">Load</button>
-      <input type="file" id="fileLoadHero" accept=".mm4e,.json" style="display: none;">
-      <button class="btn btn-secondary" onclick="window.print()">Print</button>
-      
-      <!-- Theme/Options Toggle with dots handled dynamically in JS -->
-      <button class="btn btn-secondary" id="btnToggleOptions" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        ⚙ Options
+  <header class="top-header menu-right" id="appTopHeader">
+    <!-- Main Menu Component -->
+    <div class="main-menu-container" id="mainMenuContainer">
+      <button class="btn-main-menu" id="btnMainMenu" type="button" aria-haspopup="true" aria-expanded="false" title="Main Menu" onclick="const m = document.getElementById('mainMenuDropdown'); if (m) { const v = m.style.display === 'block'; m.style.display = v ? 'none' : 'block'; this.setAttribute('aria-expanded', !v); }">
+        <span class="main-menu-hamburger">☰</span> <span class="main-menu-label">Main</span> <span class="caret">▾</span>
       </button>
+      <div class="main-menu-dropdown" id="mainMenuDropdown" style="display: none;">
+        <div class="menu-file-header">
+          <span class="file-status-badge" id="lblCurrentFile" title="Current Character File">[Unsaved Character]</span>
+        </div>
+        <div class="menu-group-title">File Operations</div>
+        <button type="button" class="menu-action-btn" id="btnNewHero"><span class="menu-btn-icon">📄</span> New Character</button>
+        <button type="button" class="menu-action-btn" id="btnSaveHero"><span class="menu-btn-icon">💾</span> Save</button>
+        <button type="button" class="menu-action-btn" id="btnSaveAsHero"><span class="menu-btn-icon">📑</span> Save As...</button>
+        <button type="button" class="menu-action-btn" id="btnLoadHero"><span class="menu-btn-icon">📂</span> Load Character...</button>
+        <input type="file" id="fileLoadHero" accept=".mm4e,.json" style="display: none;">
+        
+        <div class="menu-divider"></div>
+        <div class="menu-group-title">Output &amp; Export</div>
+        <button type="button" class="menu-action-btn" id="btnExportPdf"><span class="menu-btn-icon">📑</span> Export to PDF</button>
+        <button type="button" class="menu-action-btn" id="btnPrintHero"><span class="menu-btn-icon">🖨️</span> Print / Preview Sheet</button>
+
+        <div class="menu-divider"></div>
+        <div class="menu-group-title">Minions, Mecha &amp; Forms</div>
+        <button type="button" class="menu-action-btn" id="btnQuickAddMinion"><span class="menu-btn-icon">👾</span> + Add Minion</button>
+        <button type="button" class="menu-action-btn" id="btnQuickAddMecha"><span class="menu-btn-icon">🤖</span> + Add Mecha</button>
+        <button type="button" class="menu-action-btn" id="btnQuickAddAltForm"><span class="menu-btn-icon">⚡</span> + Add Alternate Form</button>
+
+        <div class="menu-divider"></div>
+        <button type="button" class="menu-action-btn" id="btnToggleOptions"><span class="menu-btn-icon">⚙️</span> Options &amp; Display...</button>
+      </div>
+
+      <!-- Options Drop-Down Window / Modal Anchored to Main Menu -->
+      <div class="options-dropdown" id="optionsModal">
+        <div class="options-header" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 6px; margin-bottom: 8px;">
+          <h3 style="margin: 0; font-size: var(--font-size-labels); border: none; padding: 0; display: flex; align-items: center; gap: 6px; color: var(--accent-primary);">
+            <span>⚙️</span> Display &amp; Settings
+          </h3>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutOptions" title="Open in separate resizable window" style="padding: 2px 8px; font-size: 11px;">⧉ Pop Out</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCloseOptions" title="Close" style="padding: 2px 7px; font-size: 11px;">✕</button>
+          </div>
+        </div>
+
+        <div id="boxPoppedOutOptionsNotice" style="display: none; padding: 12px; text-align: center; background: rgba(37,99,235,0.06); border: 1px solid var(--border-color); border-radius: 4px; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="font-size: 13px; font-weight: 700; color: var(--accent-primary);">
+            ⚙️ Options are open in a pop-out window.
+          </div>
+          <div style="font-size: 11px; color: var(--text-muted);">
+            You can move and resize the options window across your screens.
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnRedockOptions" style="margin-top: 4px;">Return / Redock to Main App</button>
+        </div>
+
+        <div class="options-body" id="optionsDockableBody">
+          <button class="btn btn-secondary" id="btnThemeToggle" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;">
+            <!-- Filled dynamically by JS -->
+          </button>
+
+          <div class="font-control-group" style="margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <button class="btn btn-secondary" onclick="resetFont('Label', 16)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <label>Labels &amp; Headers:</label>
+              </div>
+              <span class="secondary-text" id="valLabelFont">16px</span>
+            </div>
+            <input type="range" id="sliderLabelFont" min="12" max="22" value="16">
+          </div>
+
+          <div class="font-control-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <button class="btn btn-secondary" onclick="resetFont('Control', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <label>Interactive Controls:</label>
+              </div>
+              <span class="secondary-text" id="valControlFont">14px</span>
+            </div>
+            <input type="range" id="sliderControlFont" min="10" max="20" value="14">
+          </div>
+
+          <div class="font-control-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <button class="btn btn-secondary" onclick="resetFont('Link', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <label>Links &amp; Tags (Touch Target):</label>
+              </div>
+              <span class="secondary-text" id="valLinkFont">14px</span>
+            </div>
+            <input type="range" id="sliderLinkFont" min="9" max="18" value="14">
+          </div>
+
+          <div class="font-control-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <button class="btn btn-secondary" onclick="resetFont('Secondary', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <label>Secondary Details:</label>
+              </div>
+              <span class="secondary-text" id="valSecondaryFont">14px</span>
+            </div>
+            <input type="range" id="sliderSecondaryFont" min="10" max="18" value="14">
+          </div>
+
+          <div class="font-control-group" style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <button class="btn btn-secondary" onclick="resetFont('MinorControl', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <label>Sub-Controls &amp; Dropdowns:</label>
+              </div>
+              <span class="secondary-text" id="valMinorControlFont">14px</span>
+            </div>
+            <input type="range" id="sliderMinorControlFont" min="9" max="18" value="14">
+          </div>
+
+          <!-- Save / Load Folder Preferences -->
+          <div style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+            <h3 style="font-size: var(--font-size-labels); margin-bottom: 6px; border: none; padding: 0;">Save / Load Folder</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: var(--font-size-secondary);">
+              <span style="color: var(--text-muted);">Default:</span>
+              <span id="lblActiveFolder" style="font-weight: 600; color: var(--text-main); font-family: ui-monospace, monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Current default save/load folder">[Project Default]</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button type="button" class="btn btn-secondary" id="btnSetCustomFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
+                📁 Set Folder...
+              </button>
+              <button type="button" class="btn btn-secondary" id="btnResetFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
+                ↺ Reset to Default
+              </button>
+            </div>
+            <div id="boxFirefoxNotice" style="display: none; margin-top: 8px; padding: 8px 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 4px; font-size: var(--font-size-secondary); line-height: 1.4;">
+              🦊 <strong>Firefox Saving:</strong> In <em>Firefox Settings &gt; General &gt; Downloads</em>, check <strong>"Always ask you where to save files"</strong>. When saving, click <strong>OK / Save File</strong> on Firefox's prompt to open the system Save As dialog.
+            </div>
+          </div>
+
+          <!-- Main Menu Position Option -->
+          <div class="font-control-group" style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-weight: 600;">Main Menu Position:</label>
+            </div>
+            <div style="display: flex; gap: 14px; font-size: var(--font-size-secondary);">
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="menuPosition" value="left" id="optMenuLeft"> Left Side
+              </label>
+              <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                <input type="radio" name="menuPosition" value="right" id="optMenuRight" checked> Right Side
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Options Drop-Down Window / Modal -->
-    <div class="options-dropdown" id="optionsModal">
-      <h3>Display & Interface Settings</h3>
-      
-      <button class="btn btn-secondary" id="btnThemeToggle" style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px;">
-        <!-- Filled dynamically by JS -->
-      </button>
+    <!-- Title Section -->
+    <div class="header-title-section">
+      <h1 class="header-main-title">M&M 4E Hero Builder</h1>
+    </div>
 
-      <div class="font-control-group" style="margin-top: 8px;">
-        <div>
-          <label>Labels & Headers:</label>
-          <span class="secondary-text" id="valLabelFont">16px</span>
-        </div>
-        <input type="range" id="sliderLabelFont" min="12" max="22" value="16">
+    <!-- Form / Companion Quick Switcher in Header -->
+    <div class="header-alt-switcher" id="headerAltSwitcher">
+      <div class="header-player-item" style="display: inline-flex; align-items: center; gap: 6px;">
+        <label for="playerNameInput" class="header-alt-lbl">Player:</label>
+        <input type="text" id="playerNameInput" placeholder="Player Name" style="width: 130px; height: 28px; font-size: var(--font-size-controls, 14px); padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
       </div>
-
-      <div class="font-control-group">
-        <div>
-          <label>Interactive Controls:</label>
-          <span class="secondary-text" id="valControlFont">14px</span>
-        </div>
-        <input type="range" id="sliderControlFont" min="10" max="20" value="14">
-      </div>
-
-      <div class="font-control-group">
-        <div>
-          <label>Links & Tags (Touch Target):</label>
-          <span class="secondary-text" id="valLinkFont">12px</span>
-        </div>
-        <input type="range" id="sliderLinkFont" min="9" max="18" value="12">
-      </div>
-
-      <div class="font-control-group">
-        <div>
-          <label>Secondary Details:</label>
-          <span class="secondary-text" id="valSecondaryFont">12px</span>
-        </div>
-        <input type="range" id="sliderSecondaryFont" min="8" max="16" value="12">
-      </div>
-
-      <div class="font-control-group" style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
-        <div>
-          <label>Sub-Controls & Dropdowns:</label>
-          <span class="secondary-text" id="valMinorControlFont">12px</span>
-        </div>
-        <input type="range" id="sliderMinorControlFont" min="9" max="18" value="12">
-      </div>
-
-      <!-- Save / Load Folder Preferences -->
-      <div style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
-        <h3 style="font-size: var(--font-size-labels); margin-bottom: 6px; border: none; padding: 0;">Save / Load Folder</h3>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: var(--font-size-secondary);">
-          <span style="color: var(--text-muted);">Default:</span>
-          <span id="lblActiveFolder" style="font-weight: 600; color: var(--text-main); font-family: ui-monospace, monospace; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="Current default save/load folder">[Project Default]</span>
-        </div>
-        <div style="display: flex; gap: 6px;">
-          <button type="button" class="btn btn-secondary" id="btnSetCustomFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
-            📁 Set Folder...
-          </button>
-          <button type="button" class="btn btn-secondary" id="btnResetFolder" style="flex: 1; font-size: var(--font-size-minor-controls); padding: 4px 6px;">
-            ↺ Reset to Default
-          </button>
-        </div>
-        <div id="boxFirefoxNotice" style="display: none; margin-top: 8px; padding: 8px 10px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 4px; font-size: var(--font-size-secondary); line-height: 1.4;">
-          🦊 <strong>Firefox Saving:</strong> In <em>Firefox Settings &gt; General &gt; Downloads</em>, check <strong>"Always ask you where to save files"</strong>. When saving, click <strong>OK / Save File</strong> on Firefox's prompt to open the system Save As dialog.
-        </div>
-      </div>
-
+      <label for="selActiveCharacter" class="header-alt-lbl">Active Form:</label>
+      <select id="selActiveCharacter" class="header-alt-select">
+        <option value="main">🦸 Primary Hero</option>
+      </select>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnDeleteCurrentAlt" title="Delete current form" style="display: none; padding: 2px 6px;">🗑</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnOpenTablesModal" title="Open Reference Tables" onclick="window.TablesPopoutManager ? window.TablesPopoutManager.openModal() : null" style="padding: 4px 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">📊 Tables</button>
     </div>
   </header>
 
@@ -182,7 +265,8 @@
     <button class="tab-btn" data-tab="tab-powers">Powers</button>
     <button class="tab-btn" data-tab="tab-equipment">Equipment & HQ</button>
     <button class="tab-btn" data-tab="tab-background">Background</button>
-    <button class="tab-btn" data-tab="tab-tables">Reference Tables</button>
+    <button class="tab-btn" data-tab="tab-companions">Companions &amp; Forms</button>
+    <button class="tab-btn" data-tab="tab-blueprints">Improv Builder</button>
   </nav>
 
   <!-- TAB 1: BASICS & ABILITIES -->
@@ -579,34 +663,79 @@
     </div>
   </section>
 
-  <!-- TAB 7: TABLES -->
-  <section id="tab-tables" class="tab-content">
+  <!-- TAB 8: IMPROV BUILDER -->
+  <section id="tab-blueprints" class="tab-content">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px;">
+      <div>
+        <h2 style="margin: 0; font-size: 1.2rem; color: var(--accent-primary);">Improvised Effects & Gadgets</h2>
+        <div style="font-size: var(--font-size-secondary); color: var(--text-muted); margin-top: 4px;">
+          Create temporary Power Stunts, Inventions, and Rituals without altering your main PP totals.
+        </div>
+      </div>
+      <button type="button" class="btn" id="btnAddBlueprint">+ Add Blueprint</button>
+    </div>
+    
+    <div id="blueprintsContainer">
+      <!-- Improvised effects rendered here -->
+    </div>
+  </section>
 
-    <div class="collapsible-panel collapsed">
+  <!-- TAB: COMPANIONS & FORMS -->
+  <section id="tab-companions" class="tab-content">
+    <div class="collapsible-panel">
       <div class="panel-header">
-        <span>Actions</span>
+        <span>Minions, Mecha &amp; Alternate Forms ("Alts")</span>
         <span>▼</span>
       </div>
       <div class="panel-body">
-        <div style="overflow-x: auto;">
-          <table id="actionsViewTable">
-            <thead>
-              <tr>
-                <th>Action</th>
-                <th>Type</th>
-                <th>Check</th>
-                <th>Effect</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
+        <p style="font-size: var(--font-size-secondary); color: var(--text-muted); margin-bottom: 12px;">
+          Create independent secondary character sheets for summoned minions, piloted or automated mecha, and alternate forms. Each alt tracks its own abilities, combat values, skills, and powers.
+        </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
+          <button type="button" class="btn" id="btnAddMinion">+ Add Minion</button>
+          <button type="button" class="btn btn-secondary" id="btnAddMecha">+ Add Mecha</button>
+          <button type="button" class="btn btn-secondary" id="btnAddAltForm">+ Add Alternate Form</button>
+        </div>
+        <div class="companions-grid" id="companionsListContainer">
+          <!-- Rendered dynamically -->
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- REFERENCE TABLES MODAL POPUP & POPOUT SHELL -->
+  <div class="tables-modal-overlay" id="modalReferenceTables" style="display: none;">
+    <div class="tables-modal-dialog">
+      <div class="tables-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">📊</span>
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Reference Tables &amp; Rules</h3>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 380px; margin: 0 12px;">
+          <input type="text" id="txtTableFilter" placeholder="🔍 Filter tables (e.g. speed, time, condition)..." style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnToggleAllTables" title="Expand or collapse all tables">Toggle All</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutTables" title="Open in separate resizable window">⧉ Pop Out</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnCloseTablesModal" title="Close Tables">✕ Close</button>
+        </div>
+      </div>
+
+      <div id="boxPoppedOutTablesNotice" style="display: none; padding: 20px; text-align: center; background: rgba(37,99,235,0.06); border-bottom: 1px solid var(--border-color); flex-direction: column; align-items: center; gap: 8px;">
+        <div style="font-size: 14px; font-weight: 700; color: var(--accent-primary);">
+          📊 Reference Tables are currently open in an independent pop-out window.
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted); max-width: 480px;">
+          You can move and resize the pop-out window across your screens. Its size and position will be remembered between sessions.
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnRedockTables" style="margin-top: 6px;">Return / Redock to Main App</button>
+      </div>
+
+      <div class="tables-modal-body" id="tablesDockableBody">
     
     <div class="collapsible-panel collapsed">
       <div class="panel-header">
-        <span>Measurements Table (Rank-to-Value)</span>
+        <span>Measurements Table & Benchmarks (pg 11-12)</span>
         <span>▼</span>
       </div>
       <div class="panel-body">
@@ -631,7 +760,69 @@
 
     <div class="collapsible-panel collapsed">
       <div class="panel-header">
-        <span>Power Level Limits</span>
+        <span>Difficulty Classes (DCs) & Routine Checks (pg 14)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table class="reference-table">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 4px;">Difficulty</th>
+                <th style="text-align: left; padding: 4px;">DC</th>
+                <th style="text-align: left; padding: 4px;">Example (Skill Check)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Routine</strong> (Take 10)</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Base 10</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Result = 10 + Skill Bonus. Used under normal/stress-free conditions.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Easy</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">10</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Climbing a knotted rope.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Average</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">15</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Hearing an approaching guard.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Hard</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">20</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Disarming a complex explosive.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Formidable</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">25</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Hacking a secure military server.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Heroic</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">30</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Out-maneuvering a seasoned fighter pilot.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Superhuman</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">40</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Tracking a speedster across the globe.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Conditions Summary (pg 24)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table class="reference-table">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 4px;">Condition</th>
+                <th style="text-align: left; padding: 4px;">Mechanical Effect</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Dazed</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Can only take a standard action per turn (no move action).</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Stunned</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Cannot take any actions (including free actions).</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Incapacitated</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Defenseless, Stunned, and Unaware. Usually knocked out.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Hindered</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Move at half normal speed (-1 speed rank).</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Immobile</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Cannot move from current location (speed rank is effectively 0).</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Defenseless</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Active defenses (Dodge/Parry) are 0. Attackers can take routine checks against you.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Impaired</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">−2 penalty on all checks.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Disabled</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">−5 penalty on all checks.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Vulnerable</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Active defenses (Dodge/Parry) are halved (round up).</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Compelled</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Can take one standard action chosen by another character.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Controlled</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Another character dictates all your actions.</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);"><strong>Unaware</strong></td><td style="padding: 4px; border-top: 1px solid var(--border-color);">Completely unaware of surroundings; auto-fail awareness checks.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Power Level Limits (pg 44)</span>
         <span>▼</span>
       </div>
       <div class="panel-body">
@@ -653,7 +844,7 @@
 
     <div class="collapsible-panel collapsed">
       <div class="panel-header">
-        <span>Size Categories & Modifiers</span>
+        <span>Size Categories & Modifiers (pg 58)</span>
         <span>▼</span>
       </div>
       <div class="panel-body">
@@ -677,7 +868,75 @@
       </div>
     </div>
 
-  </section>
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Material Toughness (pg 197)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table class="reference-table">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 4px;">Material</th>
+                <th style="text-align: left; padding: 4px;">Toughness Rank</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Paper / Soil</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">0</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Glass / Ice</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">1</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Wood</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">3</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Stone</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">5</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Iron</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">7</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Steel</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">9</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Titanium</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">15</td></tr>
+              <tr><td style="padding: 4px; border-top: 1px solid var(--border-color);">Super-Alloys</td><td style="padding: 4px; border-top: 1px solid var(--border-color);">20+</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="collapsible-panel collapsed">
+      <div class="panel-header">
+        <span>Actions (pg 201)</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="overflow-x: auto;">
+          <table id="actionsViewTable">
+            <thead>
+              <tr>
+                <th>Action</th>
+                <th>Type</th>
+                <th>Check</th>
+                <th>Effect</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Print & PDF Preview Modal Overlay -->
+  <div class="print-preview-modal-overlay" id="modalPrintPreview" style="display: none;">
+    <div class="print-preview-modal-dialog">
+      <div class="print-preview-modal-header">
+        <h3 style="margin: 0; font-size: 16px;">Tactical Dossier - Print &amp; PDF Export Preview</h3>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-sm" id="btnModalExportPdf" style="background: #2563eb; color: #ffffff;">Save as PDF / Print</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnClosePrintPreview">✕ Close</button>
+        </div>
+      </div>
+      <div class="print-preview-modal-body" id="printPreviewModalBody">
+        <!-- Rendered print sheet -->
+      </div>
+    </div>
+  </div>
 
   <!-- Universal Rule Description Modal Overlay -->
   <div class="modal-overlay" id="ruleInfoModal">
@@ -693,16 +952,19 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer" aria-live="polite"></div>
 
-  <!-- Scripts: Clean Modular Architecture -->
-  <script src="data_measurements.js"></script>
-  <script src="data_skills.js"></script>
-  <script src="data_advantages.js"></script>
-  <script src="data_powers_effects.js"></script>
-  <script src="data_powers_modifiers.js"></script>
-  <script src="data_equipment.js"></script>
-  <script src="character_model.js"></script>
+  <div id="print-layout" class="print-only"></div>
+
+  <!-- Data and Model Files -->
+  <script src="data_advantages.js?v=2"></script>
+  <script src="data_skills.js?v=2"></script>
+  <script src="data_powers_effects.js?v=2"></script>
+  <script src="data_powers_modifiers.js?v=2"></script>
+  <script src="data_measurements.js?v=2"></script>
+  <script src="data_equipment.js?v=2"></script>
+  <script src="character_model.js?v=2"></script>
+  <script src="print.js?v=1"></script>
   <!-- Main UI App Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=2"></script>
 
   <!-- PWA Service Worker Registration -->
   <script>

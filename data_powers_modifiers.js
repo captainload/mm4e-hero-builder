@@ -834,5 +834,77 @@ You have no control over an effect with this flaw. Instead, the Game Master deci
     fullText: `UNRELIABLE
 -1 POINT PER RANK
 An Unreliable effect doesn't work all the time. Roll a d20 each round you use or maintain the effect; on a 10 or less, it fails to activate.`
+    },
+  {
+    name: "Accurate (Teleport)",
+    category: "extra",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    description: "Do not need to accurately sense destination; general description suffices.",
+    fullText: "ACCURATE\n+1 POINT PER RANK\nDo not need to accurately sense destination; general description suffices."
+  },
+  {
+    name: "Change Direction",
+    category: "extra",
+    cost: 1,
+    costType: "flat",
+    hasRanks: false,
+    description: "Change direction/orientation after teleport.",
+    fullText: "CHANGE DIRECTION\n+1 POINT FLAT\nChange direction/orientation after teleport."
+  },
+  {
+    name: "Change Velocity",
+    category: "extra",
+    cost: 1,
+    costType: "flat",
+    hasRanks: false,
+    description: "Arrive at destination 'at rest' (no fall damage).",
+    fullText: "CHANGE VELOCITY\n+1 POINT FLAT\nArrive at destination 'at rest' (no fall damage)."
+  },
+  {
+    name: "Easy",
+    category: "extra",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    description: "Not Dazed or Vulnerable after Extended teleports.",
+    fullText: "EASY\n+1 POINT PER RANK\nNot Dazed or Vulnerable after Extended teleports."
+  },
+  {
+    name: "Extended",
+    category: "extra",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    description: "Two simple actions for distance rank +10.",
+    fullText: "EXTENDED\n+1 POINT PER RANK\nTwo simple actions for distance rank +10."
+  },
+  {
+    name: "Known Location",
+    category: "extra",
+    cost: 1,
+    costType: "flat",
+    hasRanks: true,
+    description: "Memorize specific locations for precise teleporting.",
+    fullText: "KNOWN LOCATION\n+1 POINT FLAT PER LOCATION\nMemorize specific locations for precise teleporting."
+  },
+  {
+    name: "Turnabout",
+    category: "extra",
+    cost: 1,
+    costType: "flat",
+    hasRanks: false,
+    description: "Teleport, take action, and teleport back as a free action.",
+    fullText: "TURNABOUT\n+1 POINT FLAT\nTeleport, take action, and teleport back as a free action."
+  },
+  {
+    name: "Extended Only",
+    category: "flaw",
+    cost: 1,
+    costType: "per_rank",
+    hasRanks: true,
+    description: "Restricted to extended teleports only.",
+    fullText: "EXTENDED ONLY\n-1 POINT PER RANK\nRestricted to extended teleports only."
   }
 ];

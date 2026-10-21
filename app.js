@@ -1,5 +1,7 @@
 const char = new CharacterModel();
 window.char = char;
+window.primaryHero = char;
+window.activeCompanionId = null;
 char.powers = [];
 
 let skillSort = { col: "name", asc: true };
@@ -277,7 +279,7 @@ const EXTRACTED_MODIFIERS = {
   },
   "Enhanced Trait": {
       extras: [{name: "Sustained", cost: 0, costType: "per_rank"}],
-      flaws: [{name: "Limited", cost: 1, costType: "per_rank"}]
+      flaws: [{name: "Limited", cost: 1, costType: "per_rank"}, {name: "Reduced Trait", cost: 1, costType: "flat", hasRanks: true, maxRanks: 20}]
   },
   "Environment": {
       extras: [{name: "Shape", cost: 0, costType: "per_rank"}, {name: "Variable", cost: 1, costType: "per_rank"}],
@@ -372,7 +374,7 @@ const EXTRACTED_MODIFIERS = {
       flaws: [{name: "Attitude (Indifferent)", cost: 1, costType: "per_rank"}, {name: "Attitude (Unfavorable)", cost: 2, costType: "per_rank"}, {name: "Hostile", cost: 2, costType: "per_rank"}, {name: "Resistible", cost: 1, costType: "per_rank"}]
   },
   "Teleport": {
-      extras: [{name: "Accurate", cost: 1, costType: "per_rank"}, {name: "Change Direction", cost: 1, costType: "flat"}, {name: "Change Velocity", cost: 1, costType: "flat"}, {name: "Easy", cost: 1, costType: "per_rank"}, {name: "Extended", cost: 1, costType: "per_rank"}, {name: "Increased Mass", cost: 1, costType: "flat"}, {name: "Known Location", cost: 1, costType: "flat"}, {name: "Turnabout", cost: 1, costType: "flat"}],
+      extras: [{name: "Accurate (Teleport)", cost: 1, costType: "per_rank"}, {name: "Change Direction", cost: 1, costType: "flat"}, {name: "Change Velocity", cost: 1, costType: "flat"}, {name: "Easy", cost: 1, costType: "per_rank"}, {name: "Extended", cost: 1, costType: "per_rank"}, {name: "Increased Mass", cost: 1, costType: "flat"}, {name: "Known Location", cost: 1, costType: "flat"}, {name: "Turnabout", cost: 1, costType: "flat"}],
       flaws: [{name: "Extended Only", cost: 1, costType: "per_rank"}, {name: "Medium", cost: 1, costType: "per_rank"}]
   },
   "Transmute": {
@@ -399,56 +401,15 @@ if (typeof POWER_EFFECTS_LIST !== 'undefined') {
 
 // --- EFFECT TYPE TO ALLOWED MODIFIERS FILTER ---
 const MODIFIER_CATEGORY_MAP = {
-  Attack: [
-    "Accurate", "Affects Insubstantial", "Area Effect (Cone)", "Area Effect (Cube)", "Area Effect (Cylinder)",
-    "Area Effect (Line)", "Area Effect (Shapeable)", "Area Effect (Sphere)", "Attack", "Aura", "Contagious",
-    "Cumulative", "Diminished Range", "Extended Range", "Homing", "Inaccurate", "Incurable", "Indirect",
-    "Increased Range", "Multiattack", "Penetrating", "Perception Range", "Progressive", "Ranged", "Reach",
-    "Reduced Range", "Close", "Ricochet", "Secondary Effect", "Selective", "Sleep", "Split", "Triggered",
-    "Variable Descriptor", "Distracting", "Fades", "Feedback", "Grab-Based", "Limited", "Noticeable",
-    "Quirk", "Removable (Device)", "Removable (Easily Removable)", "Resistible", "Sense-Dependent",
-    "Side Effect", "Tiring", "Unreliable"
-  ],
-  Defense: [
-    "Affects Others", "Area Effect (Sphere)", "Continuous", "Hardened", "Impenetrable", "Impervious",
-    "Increased Range", "Perception Range", "Ranged", "Reach", "Redirect", "Reflect", "Sustained",
-    "Distracting", "Fades", "Limited", "Noticeable", "Quirk", "Reduced Range", "Removable (Device)",
-    "Removable (Easily Removable)", "Side Effect", "Unreliable"
-  ],
-  Movement: [
-    "Acrobatics Check Required", "Affects Others", "Aquatic", "Area Effect (Sphere)", "Continuous",
-    "Extended Range", "Increased Range", "Perception Range", "Ranged", "Selective", "Subtle",
-    "Distracting", "Gliding", "Levitation", "Limited", "Noticeable", "Platform", "Quirk", "Reduced Range",
-    "Removable (Device)", "Removable (Easily Removable)", "Restrainable", "Side Effect", "Unreliable"
-  ],
-  Sensory: [
-    "Affects Others", "Area Effect (Sphere)", "Broadcast", "Dimensional", "Extended Range", "Increased Range",
-    "Perception Range", "Ranged", "Rapid", "Selective", "Simultaneous", "Subtle", "Diminished Range",
-    "Distracting", "Fades", "Feedback", "Limited", "Medium", "Noticeable", "One-Way", "Passive", "Quirk",
-    "Reduced Range", "Removable (Device)", "Removable (Easily Removable)", "Side Effect", "Unreliable"
-  ],
-  Control: [
-    "Affects Insubstantial", "Affects Objects", "Area Effect (Cone)", "Area Effect (Cube)", "Area Effect (Cylinder)",
-    "Area Effect (Line)", "Area Effect (Shapeable)", "Area Effect (Sphere)", "Attack", "Continuous", "Damaging",
-    "Diminished Range", "Extended Range", "Increased Range", "Indirect", "Movable", "Perception Range",
-    "Precise", "Ranged", "Reach", "Reduced Range", "Close", "Selective", "Stationary", "Subtle", "Triggered",
-    "Variable Descriptor", "Concentration", "Distracting", "Fades", "Feedback", "Limited", "Limited Direction",
-    "Limited Material", "Noticeable", "Passive", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
-    "Resistible", "Sense-Dependent", "Side Effect", "Unreliable"
-  ],
-  Alteration: [
-    "Affects Corporeal", "Affects Others", "Area Effect (Sphere)", "Continuous", "Diminished Range",
-    "Extended Range", "Increased Range", "Metamorph", "Perception Range", "Precise", "Projection", "Ranged",
-    "Reach", "Reduced Range", "Close", "Subtle", "Variable", "Concentration", "Distracting", "Fades",
-    "Feedback", "Limited", "Noticeable", "Passive", "Quirk", "Removable (Device)", "Removable (Easily Removable)",
-    "Resistible", "Side Effect", "Unreliable"
-  ],
-  General: [
-    "Affects Others", "Continuous", "Extended Range", "Increased Range", "Perception Range", "Ranged",
-    "Reach", "Reduced Range", "Close", "Fades", "Limited", "Noticeable", "Quirk", "Removable (Device)",
-    "Removable (Easily Removable)", "Side Effect", "Subtle", "Sustained", "Unreliable"
-  ]
+  Attack: ["Accurate","Affects Insubstantial","Area Effect (Cone)","Area Effect (Cube)","Area Effect (Line)","Area Effect (Shapeable)","Area Effect (Sphere)","Aura","Contagious","Diminished Range","Extended Range","Homing","Inaccurate","Incurable","Indirect","Increased Range","Multiattack","Penetrating","Perception Range","Ranged","Reach","Reduced Range","Close","Ricochet","Secondary Effect","Selective","Split","Triggered","Variable Descriptor","Distracting","Fades","Feedback","Grab-Based","Resistible","Sense-Dependent","Tiring","Alternate Defense","Thrown","Increased Action"],
+  Defense: ["Affects Others","Area Effect (Sphere)","Hardened","Impenetrable","Impervious","Increased Range","Perception Range","Ranged","Reach","Increased Duration (Sustained)","Increased Duration (Continuous)","Distracting","Fades","Reduced Range","Resistible","Tiring","Sustained","Concentration"],
+  Movement: ["Affects Others","Area Effect (Sphere)","Increased Duration (Continuous)","Extended Range","Increased Range","Perception Range","Ranged","Selective","Subtle","Distracting","Fades","Reduced Range","Resistible","Tiring","Increased Mass","Sustained","Concentration"],
+  Sensory: ["Affects Others","Area Effect (Sphere)","Dimensional","Extended Range","Increased Range","Perception Range","Ranged","Selective","Subtle","Diminished Range","Distracting","Fades","Feedback","Reduced Range","Sense-Dependent","Tiring","Increased Duration (Concentration)","Increased Duration (Sustained)","Increased Duration (Continuous)","Sustained","Concentration"],
+  Control: ["Affects Insubstantial","Affects Objects","Area Effect (Cone)","Area Effect (Cube)","Area Effect (Line)","Area Effect (Shapeable)","Area Effect (Sphere)","Increased Duration (Continuous)","Diminished Range","Extended Range","Increased Range","Indirect","Perception Range","Precise","Ranged","Reach","Reduced Range","Close","Selective","Subtle","Triggered","Variable Descriptor","Increased Duration (Concentration)","Distracting","Fades","Feedback","Resistible","Sense-Dependent","Tiring","Increased Mass","Sustained","Concentration"],
+  Alteration: ["Affects Corporeal","Affects Others","Area Effect (Sphere)","Increased Duration (Continuous)","Diminished Range","Extended Range","Increased Range","Perception Range","Precise","Ranged","Reach","Reduced Range","Close","Subtle","Increased Duration (Concentration)","Distracting","Fades","Feedback","Resistible","Tiring","Sustained","Concentration"],
+  General: ["Alternate Effect","Feature","Linked","Quirk","Removable (Device)","Removable (Easily Removable)","Activation","Check Required","Side Effect","Noticeable","Insidious","Limited","Uncontrolled","Unreliable","Independent","Short-Term","Reversible","Alternate Resistance","Permanent","Reaction"]
 };
+
 
 // --- SENSE TYPE DICTIONARY ---
 const SENSE_TYPE_MAP = {
@@ -552,7 +513,7 @@ function getFilteredModifiersForEffect(effectType, effectOrSub) {
   let available = [];
 
   if (typeof POWER_MODIFIERS_LIST !== 'undefined') {
-    available = POWER_MODIFIERS_LIST.filter(m => allowedNames.includes(m.name));
+    available = POWER_MODIFIERS_LIST.filter(m => allowedNames.includes(m.name) && !m.name.includes("Alternate Effect"));
   }
 
   if (effectOrSub && (effectOrSub.effectName === "Enhanced Senses" || (effectOrSub.name && effectOrSub.name.includes("Senses")))) {
@@ -618,6 +579,11 @@ char.calculateEffectCost = function(effect) {
         }
 
         if (sCost < 1) sCost = 1;
+        
+        if (sub.isReduced) {
+            sCost = -sCost;
+        }
+        
         totalSubCost += sCost;
       });
     } else {
@@ -673,7 +639,7 @@ window.getMaxPowerRank = function(effect, subPower) {
        if (typeof ADVANTAGES_LIST !== 'undefined') {
          let adv = ADVANTAGES_LIST.find(a => a.name === type);
          if (adv) {
-           return adv.hasRanks ? (adv.maxRanks || 10) : 1;
+           return (adv.hasRanks || adv.ranked) ? (adv.maxRanks || 10) : 1;
          }
        }
        return 20;
@@ -753,8 +719,8 @@ function renderOptgroupChoices(choices, currentVal) {
 }
 
 window.updateSubPowerDetails = function(pIdx, eIdx, subIdx, val) {
-    if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].subPowers[subIdx]) {
-        char.powers[pIdx].effects[eIdx].subPowers[subIdx].details = val;
+    if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].subPowers[subIdx]) {
+        char.activePowers[pIdx].effects[eIdx].subPowers[subIdx].details = val;
     }
 };
 
@@ -806,24 +772,63 @@ window.showPowerEffectInfo = function(effectName) {
 
 window.showModifierInfo = function(modName) {
   let mod = null;
+  let baseName = modName.replace(/\s*\([^)]*\)/g, ''); // Remove parenthesis e.g., "Area Effect (Cone)" -> "Area Effect"
+  
   if (typeof POWER_MODIFIERS_LIST !== 'undefined') {
-    mod = POWER_MODIFIERS_LIST.find(m => m.name === modName);
+    mod = POWER_MODIFIERS_LIST.find(m => m.name === modName) || POWER_MODIFIERS_LIST.find(m => m.name === baseName);
   }
   if (!mod && typeof POWER_EFFECTS_LIST !== 'undefined') {
     for (const eff of POWER_EFFECTS_LIST) {
       if (eff.specificExtras) {
-        mod = eff.specificExtras.find(m => m.name === modName);
+        mod = eff.specificExtras.find(m => m.name === modName) || eff.specificExtras.find(m => m.name === baseName);
         if (mod) break;
       }
       if (eff.specificFlaws) {
-        mod = eff.specificFlaws.find(m => m.name === modName);
+        mod = eff.specificFlaws.find(m => m.name === modName) || eff.specificFlaws.find(m => m.name === baseName);
         if (mod) break;
       }
     }
   }
-  if (!mod) return;
-  document.getElementById("modalRuleTitle").textContent = `${mod.name}`;
-  document.getElementById("modalRuleBody").textContent = mod.fullText || mod.description;
+
+  const titleEl = document.getElementById("modalRuleTitle");
+  const bodyEl = document.getElementById("modalRuleBody");
+
+  if (!mod) {
+      titleEl.textContent = modName || "Unknown Modifier";
+      bodyEl.textContent = "No detailed description available for this modifier.";
+      document.getElementById("ruleInfoModal").classList.add("active");
+      return;
+  }
+  
+  if (!mod.fullText && !mod.description && typeof POWER_EFFECTS_LIST !== 'undefined') {
+      for (const eff of POWER_EFFECTS_LIST) {
+          if ((eff.specificExtras && eff.specificExtras.some(m => m.name === mod.name)) || (eff.specificFlaws && eff.specificFlaws.some(m => m.name === mod.name))) {
+              const regex = new RegExp(`\\*\\s*${mod.name.toUpperCase().replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")}\\s*:?\\s*(.*)`, 'i');
+              const match = eff.fullText ? eff.fullText.match(regex) : null;
+              if (match) {
+                  mod.fullText = match[0].trim();
+              } else {
+                  const baseRegex = new RegExp(`\\*\\s*${baseName.toUpperCase().replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&")}\\s*:?\\s*(.*)`, 'i');
+                  const baseMatch = eff.fullText ? eff.fullText.match(baseRegex) : null;
+                  if (baseMatch) {
+                      mod.fullText = baseMatch[0].trim();
+                  }
+              }
+              break;
+          }
+      }
+  }
+
+  titleEl.textContent = `${mod.name}`;
+  bodyEl.textContent = mod.fullText || mod.description || "No description available.";
+  document.getElementById("ruleInfoModal").classList.add("active");
+};
+
+window.showOptionInfo = function(optName, optDesc) {
+  const titleEl = document.getElementById("modalRuleTitle");
+  const bodyEl = document.getElementById("modalRuleBody");
+  titleEl.textContent = optName || "Option Details";
+  bodyEl.innerHTML = optDesc || "No additional information.";
   document.getElementById("ruleInfoModal").classList.add("active");
 };
 
@@ -877,6 +882,896 @@ window.checkScreenResolution = function() {
         if (existingWarning) existingWarning.remove();
     }
 };
+
+/* ==========================================================================
+   REFERENCE TABLES POP-UP & POPOUT MANAGER
+   ========================================================================== */
+const TablesPopoutManager = {
+  storageKey: "mm4e_tables_bounds",
+  defaultBounds: { width: 920, height: 720, left: 160, top: 120 },
+  win: null,
+  placeholder: null,
+  pollTimer: null,
+  activeFilter: "",
+  activeContentEl: null,
+  parentContainer: null,
+  isRedocking: false,
+
+  getModalOverlay() {
+    return document.getElementById("modalReferenceTables");
+  },
+
+  getContentEl() {
+    if (this.activeContentEl && this.activeContentEl.ownerDocument) {
+      return this.activeContentEl;
+    }
+    let el = document.getElementById("tablesDockableBody");
+    if (!el && this.win && !this.win.closed) {
+      try {
+        el = this.win.document.getElementById("tablesDockableBody");
+      } catch (e) {}
+    }
+    if (el) {
+      this.activeContentEl = el;
+      if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("tables-modal-dialog")) {
+        this.parentContainer = el.parentNode;
+      }
+    }
+    return this.activeContentEl;
+  },
+
+  getNoticeEl() {
+    return document.getElementById("boxPoppedOutTablesNotice");
+  },
+
+  getPopoutBtn() {
+    return document.getElementById("btnPopoutTables");
+  },
+
+  getSearchInput() {
+    return document.getElementById("txtTableFilter");
+  },
+
+  isOpenModal() {
+    const modal = this.getModalOverlay();
+    return modal && modal.style.display === "flex";
+  },
+
+  isPoppedOut() {
+    return !!(this.win && !this.win.closed);
+  },
+
+  updateHeaderBtnState() {
+    const btn = document.getElementById("btnOpenTablesModal");
+    if (!btn) return;
+    if (this.isPoppedOut()) {
+      btn.title = "Reference Tables are open in pop-out window (Click to bring to front)";
+      btn.classList.add("btn-popped-out-active");
+    } else {
+      btn.title = "Open Reference Tables";
+      btn.classList.remove("btn-popped-out-active");
+    }
+  },
+
+  getSavedBounds() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          let w = Math.max(380, Math.min(window.screen.availWidth || 2560, Number(parsed.width) || this.defaultBounds.width));
+          let h = Math.max(280, Math.min(window.screen.availHeight || 1440, Number(parsed.height) || this.defaultBounds.height));
+          let l = Number(parsed.left);
+          let t = Number(parsed.top);
+          if (isNaN(l) || l < -1000 || l > (window.screen.availWidth || 2560)) l = this.defaultBounds.left;
+          if (isNaN(t) || t < -1000 || t > (window.screen.availHeight || 1440)) t = this.defaultBounds.top;
+          return { width: Math.round(w), height: Math.round(h), left: Math.round(l), top: Math.round(t) };
+        }
+      }
+    } catch (e) {}
+    return { ...this.defaultBounds };
+  },
+
+  saveBounds() {
+    if (!this.win || this.win.closed) return;
+    try {
+      const x = this.win.screenX !== undefined ? this.win.screenX : this.win.screenLeft;
+      const y = this.win.screenY !== undefined ? this.win.screenY : this.win.screenTop;
+      const w = this.win.outerWidth || this.win.innerWidth;
+      const h = this.win.outerHeight || this.win.innerHeight;
+      if (typeof x === "number" && typeof y === "number" && typeof w === "number" && typeof h === "number" &&
+          !isNaN(x) && !isNaN(y) && !isNaN(w) && !isNaN(h) && w >= 300 && h >= 200) {
+        const bounds = { width: Math.round(w), height: Math.round(h), left: Math.round(x), top: Math.round(y) };
+        localStorage.setItem(this.storageKey, JSON.stringify(bounds));
+      }
+    } catch (e) {}
+  },
+
+  ensureDocked() {
+    const contentEl = this.getContentEl();
+    const parent = this.parentContainer || (document.getElementById("modalReferenceTables") ? document.getElementById("modalReferenceTables").querySelector(".tables-modal-dialog") : null);
+    if (!contentEl || !parent) return;
+
+    if (contentEl.ownerDocument === document && contentEl.parentNode === parent) {
+      if (this.placeholder && this.placeholder.parentNode) {
+        this.placeholder.remove();
+        this.placeholder = null;
+      }
+      return;
+    }
+
+    try {
+      if (document.adoptNode && contentEl.ownerDocument !== document) {
+        document.adoptNode(contentEl);
+      }
+    } catch (e) {}
+
+    if (this.placeholder && this.placeholder.parentNode) {
+      this.placeholder.parentNode.insertBefore(contentEl, this.placeholder);
+      this.placeholder.remove();
+      this.placeholder = null;
+    } else {
+      parent.appendChild(contentEl);
+    }
+    contentEl.style.display = "";
+  },
+
+  openModal() {
+    if (this.isPoppedOut()) {
+      try {
+        this.win.focus();
+      } catch (e) {}
+      if (typeof showToast === "function") {
+        showToast("Reference Tables window focused.", "info");
+      }
+      return;
+    }
+
+    this.ensureDocked();
+    const modal = this.getModalOverlay();
+    if (modal) {
+      modal.style.display = "flex";
+      const notice = this.getNoticeEl();
+      if (notice) notice.style.display = "none";
+      const popBtn = this.getPopoutBtn();
+      if (popBtn) popBtn.style.display = "";
+      const input = this.getSearchInput();
+      if (input) {
+        input.value = this.activeFilter;
+        setTimeout(() => input.focus(), 60);
+      }
+      this.filterTables(this.activeFilter);
+    }
+  },
+
+  closeModal() {
+    const modal = this.getModalOverlay();
+    if (modal) modal.style.display = "none";
+  },
+
+  toggleAllTables(forceExpand) {
+    const contentEl = this.getContentEl();
+    if (!contentEl) return;
+    const panels = contentEl.querySelectorAll(".collapsible-panel");
+    if (panels.length === 0) return;
+    if (typeof forceExpand !== "boolean") {
+      const anyCollapsed = Array.from(panels).some(p => p.classList.contains("collapsed"));
+      forceExpand = anyCollapsed;
+    }
+    panels.forEach(p => {
+      if (forceExpand) {
+        p.classList.remove("collapsed");
+      } else {
+        p.classList.add("collapsed");
+      }
+    });
+  },
+
+  popout() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      return;
+    }
+
+    this.ensureDocked();
+    const contentEl = this.getContentEl();
+    if (!contentEl) return;
+
+    if (!this.parentContainer) {
+      this.parentContainer = contentEl.parentNode || (document.getElementById("modalReferenceTables") ? document.getElementById("modalReferenceTables").querySelector(".tables-modal-dialog") : null);
+    }
+
+    const bounds = this.getSavedBounds();
+    const features = `popup=yes,width=${bounds.width},height=${bounds.height},left=${bounds.left},top=${bounds.top},resizable=yes,scrollbars=yes`;
+
+    try {
+      this.win = window.open("", "_blank", features);
+    } catch (err) {
+      console.warn("Popout window open error:", err);
+    }
+
+    if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
+      alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      return;
+    }
+
+    const popDoc = this.win.document;
+    const baseHref = document.baseURI || window.location.href || "";
+
+    popDoc.open();
+    popDoc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📊 Reference Tables &amp; Rules - M&amp;M 4E</title>
+  ${baseHref ? `<base href="${baseHref}">` : ''}
+</head>
+<body class="popout-tables-body">
+  <div class="popout-tables-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 16px;">📊</span>
+      <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">Reference Tables &amp; Rules</h3>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 400px; margin: 0 12px;">
+      <input type="text" id="txtPopoutTableFilter" placeholder="🔍 Filter tables..." value="${this.activeFilter.replace(/"/g, '&quot;')}" style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutToggleAll" title="Expand or collapse all tables">Toggle All</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutRedock" title="Redock back to main builder">⬅ Redock</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutClose" title="Close window">✕ Close</button>
+    </div>
+  </div>
+  <div class="popout-tables-container" id="popoutMountContainer"></div>
+</body>
+</html>`);
+    popDoc.close();
+
+    // Copy stylesheet and style tags from parent
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach(node => {
+      try {
+        popDoc.head.appendChild(popDoc.importNode ? popDoc.importNode(node, true) : node.cloneNode(true));
+      } catch (e) {}
+    });
+
+    // Mirror data-theme
+    const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    popDoc.documentElement.setAttribute('data-theme', curTheme);
+    popDoc.body.setAttribute('data-theme', curTheme);
+
+    // Setup placeholder and move DOM element
+    if (!this.placeholder) {
+      this.placeholder = document.createComment("tablesDockableBody-placeholder");
+    }
+    if (contentEl.parentNode) {
+      contentEl.parentNode.insertBefore(this.placeholder, contentEl);
+    }
+    const mount = popDoc.getElementById("popoutMountContainer");
+    if (mount) {
+      try {
+        if (popDoc.adoptNode) popDoc.adoptNode(contentEl);
+      } catch (e) {}
+      mount.appendChild(contentEl);
+      contentEl.style.display = "";
+    }
+
+    // Completely close the main window modal overlay so no popup or backdrop is left behind
+    this.closeModal();
+
+    const notice = this.getNoticeEl();
+    if (notice) notice.style.display = "none";
+    const popBtn = this.getPopoutBtn();
+    if (popBtn) popBtn.style.display = "";
+
+    this.updateHeaderBtnState();
+
+    // Track geometry
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    this.pollTimer = setInterval(() => {
+      if (this.win && !this.win.closed) {
+        this.saveBounds();
+      } else {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+        this.redock({ openMainModal: false });
+      }
+    }, 500);
+
+    // Listeners in popout
+    this.win.addEventListener("resize", () => this.saveBounds());
+    this.win.addEventListener("beforeunload", () => {
+      this.saveBounds();
+      this.redock({ openMainModal: false });
+    });
+    this.win.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.redock({ openMainModal: false });
+      }
+    });
+
+    const popFilterInput = popDoc.getElementById("txtPopoutTableFilter");
+    if (popFilterInput) {
+      popFilterInput.addEventListener("input", (e) => {
+        this.activeFilter = e.target.value;
+        const mainInput = this.getSearchInput();
+        if (mainInput) mainInput.value = this.activeFilter;
+        this.filterTables(this.activeFilter);
+      });
+    }
+
+    const btnToggleAll = popDoc.getElementById("btnPopoutToggleAll");
+    if (btnToggleAll) {
+      btnToggleAll.addEventListener("click", () => this.toggleAllTables());
+    }
+
+    const btnRedock = popDoc.getElementById("btnPopoutRedock");
+    if (btnRedock) {
+      btnRedock.addEventListener("click", () => this.redock({ openMainModal: true }));
+    }
+
+    const btnClose = popDoc.getElementById("btnPopoutClose");
+    if (btnClose) {
+      btnClose.addEventListener("click", () => {
+        this.redock({ openMainModal: false });
+      });
+    }
+
+    // Keep filter applied in popout
+    this.filterTables(this.activeFilter);
+  },
+
+  redock(options = {}) {
+    if (this.isRedocking) return;
+    this.isRedocking = true;
+
+    try {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
+
+      this.ensureDocked();
+
+      if (this.win && !this.win.closed) {
+        try {
+          this.win.close();
+        } catch (e) {}
+      }
+      this.win = null;
+
+      this.updateHeaderBtnState();
+
+      const notice = this.getNoticeEl();
+      if (notice) notice.style.display = "none";
+      const popBtn = this.getPopoutBtn();
+      if (popBtn) popBtn.style.display = "";
+
+      const mainInput = this.getSearchInput();
+      if (mainInput) {
+        mainInput.value = this.activeFilter;
+      }
+      this.filterTables(this.activeFilter);
+
+      if (options.openMainModal) {
+        this.openModal();
+      } else {
+        this.closeModal();
+      }
+    } finally {
+      this.isRedocking = false;
+    }
+  },
+
+  filterTables(query) {
+    this.activeFilter = query || "";
+    const q = this.activeFilter.trim().toLowerCase();
+    const contentEl = this.getContentEl();
+    if (!contentEl) return;
+
+    const panels = contentEl.querySelectorAll(".collapsible-panel");
+    panels.forEach(panel => {
+      const header = panel.querySelector(".panel-header");
+      const title = (header ? header.textContent : "").toLowerCase();
+      const rows = panel.querySelectorAll("tbody tr");
+
+      if (!q) {
+        rows.forEach(r => r.style.display = "");
+        panel.style.display = "";
+        return;
+      }
+
+      let anyMatch = false;
+      if (title.includes(q)) {
+        anyMatch = true;
+        rows.forEach(r => r.style.display = "");
+      } else {
+        rows.forEach(r => {
+          const text = r.textContent.toLowerCase();
+          if (text.includes(q)) {
+            r.style.display = "";
+            anyMatch = true;
+          } else {
+            r.style.display = "none";
+          }
+        });
+      }
+
+      if (anyMatch) {
+        panel.style.display = "";
+        panel.classList.remove("collapsed");
+      } else {
+        panel.style.display = "none";
+      }
+    });
+  },
+
+  init() {
+    const btnOpen = document.getElementById("btnOpenTablesModal");
+    const btnClose = document.getElementById("btnCloseTablesModal");
+    const btnPopout = document.getElementById("btnPopoutTables");
+    const btnRedock = document.getElementById("btnRedockTables");
+    const btnToggleAll = document.getElementById("btnToggleAllTables");
+    const modal = this.getModalOverlay();
+    const filterInput = this.getSearchInput();
+    const contentEl = this.getContentEl();
+
+    if (btnOpen && !btnOpen.__tablesBound) {
+      btnOpen.__tablesBound = true;
+      btnOpen.addEventListener("click", () => this.openModal());
+    }
+
+    if (btnClose && !btnClose.__tablesBound) {
+      btnClose.__tablesBound = true;
+      btnClose.addEventListener("click", () => this.closeModal());
+    }
+
+    if (btnPopout && !btnPopout.__tablesBound) {
+      btnPopout.__tablesBound = true;
+      btnPopout.addEventListener("click", () => this.popout());
+    }
+
+    if (btnRedock && !btnRedock.__tablesBound) {
+      btnRedock.__tablesBound = true;
+      btnRedock.addEventListener("click", () => this.redock({ openMainModal: true }));
+    }
+
+    if (btnToggleAll && !btnToggleAll.__tablesBound) {
+      btnToggleAll.__tablesBound = true;
+      btnToggleAll.addEventListener("click", () => this.toggleAllTables());
+    }
+
+    if (modal && !modal.__tablesBound) {
+      modal.__tablesBound = true;
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) this.closeModal();
+      });
+    }
+
+    if (filterInput && !filterInput.__tablesBound) {
+      filterInput.__tablesBound = true;
+      filterInput.addEventListener("input", (e) => {
+        this.filterTables(e.target.value);
+      });
+    }
+
+    // Event delegation for collapsible headers
+    if (contentEl && !contentEl.__tablesBound) {
+      contentEl.__tablesBound = true;
+      contentEl.addEventListener("click", (e) => {
+        const header = e.target.closest(".panel-header");
+        if (header && contentEl.contains(header)) {
+          if (e.__headerHandled) return;
+          e.__headerHandled = true;
+          header.parentElement.classList.toggle("collapsed");
+        }
+      });
+    }
+
+    if (!document.__tablesEscBound) {
+      document.__tablesEscBound = true;
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this.isOpenModal()) {
+          this.closeModal();
+        }
+      });
+    }
+
+    this.updateHeaderBtnState();
+  }
+};
+window.TablesPopoutManager = TablesPopoutManager;
+
+/* ==========================================================================
+   OPTIONS & DISPLAY SETTINGS POP-UP & POPOUT MANAGER
+   ========================================================================== */
+const OptionsPopoutManager = {
+  storageKey: "mm4e_options_bounds",
+  defaultBounds: { width: 380, height: 640, left: 100, top: 100 },
+  win: null,
+  placeholder: null,
+  pollTimer: null,
+  activeContentEl: null,
+  parentContainer: null,
+  isRedocking: false,
+
+  getModalEl() {
+    return document.getElementById("optionsModal");
+  },
+
+  getContentEl() {
+    if (this.activeContentEl && this.activeContentEl.ownerDocument) {
+      return this.activeContentEl;
+    }
+    let el = document.getElementById("optionsDockableBody");
+    if (!el && this.win && !this.win.closed) {
+      try {
+        el = this.win.document.getElementById("optionsDockableBody");
+      } catch (e) {}
+    }
+    if (el) {
+      this.activeContentEl = el;
+      if (el.parentNode) {
+        this.parentContainer = el.parentNode;
+      }
+    }
+    return this.activeContentEl;
+  },
+
+  getNoticeEl() {
+    return document.getElementById("boxPoppedOutOptionsNotice");
+  },
+
+  getPopoutBtn() {
+    return document.getElementById("btnPopoutOptions");
+  },
+
+  isOpenModal() {
+    const modal = this.getModalEl();
+    return modal && modal.classList.contains("show");
+  },
+
+  isPoppedOut() {
+    return !!(this.win && !this.win.closed);
+  },
+
+  getSavedBounds() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          let w = Math.max(300, Math.min(window.screen.availWidth || 2560, Number(parsed.width) || this.defaultBounds.width));
+          let h = Math.max(250, Math.min(window.screen.availHeight || 1440, Number(parsed.height) || this.defaultBounds.height));
+          let l = Number(parsed.left);
+          let t = Number(parsed.top);
+          if (isNaN(l) || l < -1000 || l > (window.screen.availWidth || 2560)) l = this.defaultBounds.left;
+          if (isNaN(t) || t < -1000 || t > (window.screen.availHeight || 1440)) t = this.defaultBounds.top;
+          return { width: Math.round(w), height: Math.round(h), left: Math.round(l), top: Math.round(t) };
+        }
+      }
+    } catch (e) {}
+    return { ...this.defaultBounds };
+  },
+
+  saveBounds() {
+    if (!this.win || this.win.closed) return;
+    try {
+      const x = this.win.screenX !== undefined ? this.win.screenX : this.win.screenLeft;
+      const y = this.win.screenY !== undefined ? this.win.screenY : this.win.screenTop;
+      const w = this.win.outerWidth || this.win.innerWidth;
+      const h = this.win.outerHeight || this.win.innerHeight;
+      if (typeof x === "number" && typeof y === "number" && typeof w === "number" && typeof h === "number" &&
+          !isNaN(x) && !isNaN(y) && !isNaN(w) && !isNaN(h) && w >= 250 && h >= 200) {
+        const bounds = { width: Math.round(w), height: Math.round(h), left: Math.round(x), top: Math.round(y) };
+        localStorage.setItem(this.storageKey, JSON.stringify(bounds));
+      }
+    } catch (e) {}
+  },
+
+  ensureDocked() {
+    const contentEl = this.getContentEl();
+    const parent = this.parentContainer || document.getElementById("optionsModal");
+    if (!contentEl || !parent) return;
+
+    if (contentEl.ownerDocument === document && contentEl.parentNode === parent) {
+      if (this.placeholder && this.placeholder.parentNode) {
+        this.placeholder.remove();
+        this.placeholder = null;
+      }
+      return;
+    }
+
+    try {
+      if (document.adoptNode && contentEl.ownerDocument !== document) {
+        document.adoptNode(contentEl);
+      }
+    } catch (e) {}
+
+    if (this.placeholder && this.placeholder.parentNode) {
+      this.placeholder.parentNode.insertBefore(contentEl, this.placeholder);
+      this.placeholder.remove();
+      this.placeholder = null;
+    } else {
+      parent.appendChild(contentEl);
+    }
+    contentEl.style.display = "";
+  },
+
+  openModal() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      if (typeof showToast === "function") {
+        showToast("Display Settings window focused.", "info");
+      }
+      return;
+    }
+
+    this.ensureDocked();
+    const modal = this.getModalEl();
+    if (modal) {
+      modal.classList.add("show");
+      const notice = this.getNoticeEl();
+      if (notice) notice.style.display = "none";
+      const popBtn = this.getPopoutBtn();
+      if (popBtn) popBtn.style.display = "";
+    }
+  },
+
+  closeModal() {
+    const modal = this.getModalEl();
+    if (modal) modal.classList.remove("show");
+  },
+
+  toggleModal() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      if (typeof showToast === "function") {
+        showToast("Display Settings window focused.", "info");
+      }
+      return;
+    }
+    const modal = this.getModalEl();
+    if (modal) {
+      if (modal.classList.contains("show")) {
+        this.closeModal();
+      } else {
+        this.openModal();
+      }
+    }
+  },
+
+  popout() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      return;
+    }
+
+    this.ensureDocked();
+    const contentEl = this.getContentEl();
+    if (!contentEl) return;
+
+    if (!this.parentContainer) {
+      this.parentContainer = contentEl.parentNode || document.getElementById("optionsModal");
+    }
+
+    const bounds = this.getSavedBounds();
+    const features = `popup=yes,width=${bounds.width},height=${bounds.height},left=${bounds.left},top=${bounds.top},resizable=yes,scrollbars=yes`;
+
+    try {
+      this.win = window.open("", "_blank", features);
+    } catch (err) {
+      console.warn("Options popout open error:", err);
+    }
+
+    if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
+      alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      return;
+    }
+
+    const popDoc = this.win.document;
+    const baseHref = document.baseURI || window.location.href || "";
+
+    popDoc.open();
+    popDoc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>⚙️ Display &amp; Settings - M&amp;M 4E</title>
+  ${baseHref ? `<base href="${baseHref}">` : ''}
+</head>
+<body class="popout-options-body">
+  <div class="popout-options-header">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 16px;">⚙️</span>
+      <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">Display &amp; Settings</h3>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutRedock" title="Redock back into main app">⬅ Redock</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutClose" title="Close window">✕ Close</button>
+    </div>
+  </div>
+  <div class="popout-options-container" id="popoutOptionsMountContainer"></div>
+</body>
+</html>`);
+    popDoc.close();
+
+    // Copy stylesheet and style tags from parent
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach(node => {
+      try {
+        popDoc.head.appendChild(popDoc.importNode ? popDoc.importNode(node, true) : node.cloneNode(true));
+      } catch (e) {}
+    });
+
+    // Mirror current data-theme and custom style properties
+    const curTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+    popDoc.documentElement.setAttribute('data-theme', curTheme);
+    popDoc.body.setAttribute('data-theme', curTheme);
+    if (document.documentElement.style.cssText) {
+      popDoc.documentElement.style.cssText = document.documentElement.style.cssText;
+    }
+
+    // Setup placeholder and adopt element
+    if (!this.placeholder) {
+      this.placeholder = document.createComment("optionsDockableBody-placeholder");
+    }
+    if (contentEl.parentNode) {
+      contentEl.parentNode.insertBefore(this.placeholder, contentEl);
+    }
+    const mount = popDoc.getElementById("popoutOptionsMountContainer");
+    if (mount) {
+      try {
+        if (popDoc.adoptNode) popDoc.adoptNode(contentEl);
+      } catch (e) {}
+      mount.appendChild(contentEl);
+      contentEl.style.display = "";
+    }
+
+    // Completely close main options modal so nothing is left behind
+    this.closeModal();
+
+    const notice = this.getNoticeEl();
+    if (notice) notice.style.display = "none";
+    const popBtn = this.getPopoutBtn();
+    if (popBtn) popBtn.style.display = "";
+
+    // Track geometry
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    this.pollTimer = setInterval(() => {
+      if (this.win && !this.win.closed) {
+        this.saveBounds();
+      } else {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+        this.redock({ openMainModal: false });
+      }
+    }, 500);
+
+    // Listeners in child window
+    this.win.addEventListener("resize", () => this.saveBounds());
+    this.win.addEventListener("beforeunload", () => {
+      this.saveBounds();
+      this.redock({ openMainModal: false });
+    });
+    this.win.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.redock({ openMainModal: false });
+      }
+    });
+
+    const btnRedock = popDoc.getElementById("btnPopoutRedock");
+    if (btnRedock) {
+      btnRedock.addEventListener("click", () => this.redock({ openMainModal: true }));
+    }
+
+    const btnClose = popDoc.getElementById("btnPopoutClose");
+    if (btnClose) {
+      btnClose.addEventListener("click", () => {
+        this.redock({ openMainModal: false });
+      });
+    }
+  },
+
+  redock(options = {}) {
+    if (this.isRedocking) return;
+    this.isRedocking = true;
+
+    try {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
+
+      this.ensureDocked();
+
+      if (this.win && !this.win.closed) {
+        try {
+          this.win.close();
+        } catch (e) {}
+      }
+      this.win = null;
+
+      const notice = this.getNoticeEl();
+      if (notice) notice.style.display = "none";
+      const popBtn = this.getPopoutBtn();
+      if (popBtn) popBtn.style.display = "";
+
+      if (options.openMainModal) {
+        this.openModal();
+      } else {
+        this.closeModal();
+      }
+    } finally {
+      this.isRedocking = false;
+    }
+  },
+
+  init() {
+    const btnToggle = document.getElementById("btnToggleOptions");
+    const btnClose = document.getElementById("btnCloseOptions");
+    const btnPopout = document.getElementById("btnPopoutOptions");
+    const btnRedock = document.getElementById("btnRedockOptions");
+    const modal = this.getModalEl();
+
+    if (btnToggle && !btnToggle.__optionsBound) {
+      btnToggle.__optionsBound = true;
+      btnToggle.onclick = (e) => {
+        e.stopPropagation();
+        this.toggleModal();
+      };
+    }
+
+    if (btnClose && !btnClose.__optionsBound) {
+      btnClose.__optionsBound = true;
+      btnClose.onclick = (e) => {
+        e.stopPropagation();
+        this.closeModal();
+      };
+    }
+
+    if (btnPopout && !btnPopout.__optionsBound) {
+      btnPopout.__optionsBound = true;
+      btnPopout.onclick = (e) => {
+        e.stopPropagation();
+        this.popout();
+      };
+    }
+
+    if (btnRedock && !btnRedock.__optionsBound) {
+      btnRedock.__optionsBound = true;
+      btnRedock.onclick = (e) => {
+        e.stopPropagation();
+        this.redock({ openMainModal: true });
+      };
+    }
+
+    if (modal && !modal.__optionsBound) {
+      modal.__optionsBound = true;
+      modal.onclick = (e) => {
+        e.stopPropagation();
+      };
+    }
+
+    if (!document.__optionsClickBound) {
+      document.__optionsClickBound = true;
+      document.addEventListener("click", (e) => {
+        if (modal && modal.classList.contains("show")) {
+          if (!modal.contains(e.target) && e.target !== btnToggle && !btnToggle?.contains(e.target)) {
+            this.closeModal();
+          }
+        }
+      });
+    }
+
+    if (!document.__optionsEscBound) {
+      document.__optionsEscBound = true;
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && this.isOpenModal()) {
+          this.closeModal();
+        }
+      });
+    }
+  }
+};
+window.OptionsPopoutManager = OptionsPopoutManager;
 
 document.addEventListener("DOMContentLoaded", () => {
   const injectedStyles = document.createElement('style');
@@ -934,6 +1829,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setupEquipmentHandlers();
   buildEquipmentUI();
   FileManager.init();
+  setupMainMenuAndHeader();
+  TablesPopoutManager.init();
+  OptionsPopoutManager.init();
   refreshUI();
 });
 
@@ -944,28 +1842,41 @@ function setupTabs() {
       document.querySelectorAll(".tab-content").forEach(tc => tc.classList.remove("active"));
       btn.classList.add("active");
       document.getElementById(btn.dataset.tab).classList.add("active");
+      
+      // Update power context for shared UI logic
+      if (btn.dataset.tab === "tab-blueprints") {
+          window.activePowerContext = 'blueprints';
+          buildPowersUI();
+      } else if (btn.dataset.tab === "tab-powers") {
+          window.activePowerContext = 'powers';
+          buildPowersUI();
+      } else if (btn.dataset.tab === "tab-companions") {
+          renderCompanionsTab();
+      }
     });
   });
 }
 
 function setupCollapsibles() {
   document.querySelectorAll(".panel-header").forEach(header => {
-    header.addEventListener("click", () => {
+    if (header.__collapsibleBound) return;
+    header.__collapsibleBound = true;
+    header.addEventListener("click", (e) => {
+      if (e.__headerHandled) return;
+      e.__headerHandled = true;
       header.parentElement.classList.toggle("collapsed");
     });
   });
 }
 
 function setupOptionsModal() {
-  const btn = document.getElementById("btnToggleOptions");
-  const modal = document.getElementById("optionsModal");
-  const modalContent = modal ? modal.querySelector(".modal-content") || modal : null;
+  const modalContent = document.getElementById("optionsDockableBody") || document.getElementById("optionsModal");
 
   if (modalContent && !document.getElementById("chkDisableWarnings")) {
       const warningsDiv = document.createElement("div");
-      warningsDiv.style.marginTop = "16px";
-      warningsDiv.style.paddingTop = "16px";
-      warningsDiv.style.borderTop = "1px solid var(--border-color)";
+      warningsDiv.style.marginTop = "12px";
+      warningsDiv.style.paddingTop = "10px";
+      warningsDiv.style.borderTop = "1px dashed var(--border-color)";
       
       const isChecked = localStorage.getItem("mm4e_disable_warnings") === "true";
       const isResWarningDisabled = localStorage.getItem("mm4e_disable_res_warning") === "true";
@@ -999,18 +1910,7 @@ function setupOptionsModal() {
       });
   }
 
-  btn.addEventListener("click", (e) => {
-    e.stopPropagation();
-    modal.classList.toggle("show");
-  });
-
-  modal.addEventListener("click", (e) => {
-    e.stopPropagation();
-  });
-
-  document.addEventListener("click", () => {
-    modal.classList.remove("show");
-  });
+  OptionsPopoutManager.init();
 }
 
 function setupInfoModalHandlers() {
@@ -1043,10 +1943,10 @@ function setupThemeAndFontControls() {
   const savedTheme = localStorage.getItem("mm4e_theme") || "light";
   const savedLabelFont = localStorage.getItem("mm4e_font_labels") || "16";
   const savedControlFont = localStorage.getItem("mm4e_font_controls") || "14";
-  const savedLinkFont = localStorage.getItem("mm4e_font_links") || "12";
-  const savedSecondaryFont = localStorage.getItem("mm4e_font_secondary") || "12";
-  const savedMinorControlFont = localStorage.getItem("mm4e_font_minor_controls") || "12";
-
+  const savedLinkFont = localStorage.getItem("mm4e_font_links") || "14";
+  const savedSecondaryFont = localStorage.getItem("mm4e_font_secondary") || "14";
+  const savedMinorControlFont = localStorage.getItem("mm4e_font_minor_controls") || "14";
+  
   root.setAttribute("data-theme", savedTheme);
 
   function updateThemeBtnUI(activeTheme) {
@@ -1084,6 +1984,20 @@ function setupThemeAndFontControls() {
   sliderMinorControl.value = savedMinorControlFont;
   document.getElementById("valMinorControlFont").textContent = savedMinorControlFont + "px";
 
+  function syncToAllPopouts(fn) {
+    if (typeof TablesPopoutManager !== "undefined" && TablesPopoutManager.win && !TablesPopoutManager.win.closed) {
+      try { fn(TablesPopoutManager.win); } catch (e) {}
+    }
+    if (typeof OptionsPopoutManager !== "undefined" && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed) {
+      try { fn(OptionsPopoutManager.win); } catch (e) {}
+    }
+  }
+
+  function updateOptionValText(id, text) {
+    const el = document.getElementById(id) || (typeof OptionsPopoutManager !== 'undefined' && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed ? OptionsPopoutManager.win.document.getElementById(id) : null);
+    if (el) el.textContent = text;
+  }
+
   btnTheme.addEventListener("click", (e) => {
     e.stopPropagation(); 
     const currentTheme = root.getAttribute("data-theme");
@@ -1094,34 +2008,68 @@ function setupThemeAndFontControls() {
     root.setAttribute("data-theme", nextTheme);
     updateThemeBtnUI(nextTheme);
     localStorage.setItem("mm4e_theme", nextTheme);
+    syncToAllPopouts(win => {
+      win.document.documentElement.setAttribute("data-theme", nextTheme);
+      win.document.body.setAttribute("data-theme", nextTheme);
+    });
   });
 
   sliderLabel.addEventListener("input", (e) => {
     root.style.setProperty("--font-size-labels", e.target.value + "px");
-    document.getElementById("valLabelFont").textContent = e.target.value + "px";
+    updateOptionValText("valLabelFont", e.target.value + "px");
     localStorage.setItem("mm4e_font_labels", e.target.value);
+    syncToAllPopouts(win => win.document.documentElement.style.setProperty("--font-size-labels", e.target.value + "px"));
   });
   sliderControl.addEventListener("input", (e) => {
     root.style.setProperty("--font-size-controls", e.target.value + "px");
-    document.getElementById("valControlFont").textContent = e.target.value + "px";
+    updateOptionValText("valControlFont", e.target.value + "px");
     localStorage.setItem("mm4e_font_controls", e.target.value);
+    syncToAllPopouts(win => win.document.documentElement.style.setProperty("--font-size-controls", e.target.value + "px"));
   });
   sliderLink.addEventListener("input", (e) => {
     root.style.setProperty("--font-size-links", e.target.value + "px");
-    document.getElementById("valLinkFont").textContent = e.target.value + "px";
+    updateOptionValText("valLinkFont", e.target.value + "px");
     localStorage.setItem("mm4e_font_links", e.target.value);
+    syncToAllPopouts(win => win.document.documentElement.style.setProperty("--font-size-links", e.target.value + "px"));
   });
   sliderSecondary.addEventListener("input", (e) => {
     root.style.setProperty("--font-size-secondary", e.target.value + "px");
-    document.getElementById("valSecondaryFont").textContent = e.target.value + "px";
+    updateOptionValText("valSecondaryFont", e.target.value + "px");
     localStorage.setItem("mm4e_font_secondary", e.target.value);
+    syncToAllPopouts(win => win.document.documentElement.style.setProperty("--font-size-secondary", e.target.value + "px"));
   });
   sliderMinorControl.addEventListener("input", (e) => {
     root.style.setProperty("--font-size-minor-controls", e.target.value + "px");
-    document.getElementById("valMinorControlFont").textContent = e.target.value + "px";
+    updateOptionValText("valMinorControlFont", e.target.value + "px");
     localStorage.setItem("mm4e_font_minor_controls", e.target.value);
+    syncToAllPopouts(win => win.document.documentElement.style.setProperty("--font-size-minor-controls", e.target.value + "px"));
   });
 }
+window.resetFont = function(type, defaultSize) {
+  const root = document.documentElement;
+  let cssVar = "";
+  let lsKey = "";
+  if (type === 'Label') { cssVar = "--font-size-labels"; lsKey = "mm4e_font_labels"; }
+  else if (type === 'Control') { cssVar = "--font-size-controls"; lsKey = "mm4e_font_controls"; }
+  else if (type === 'Link') { cssVar = "--font-size-links"; lsKey = "mm4e_font_links"; }
+  else if (type === 'Secondary') { cssVar = "--font-size-secondary"; lsKey = "mm4e_font_secondary"; }
+  else if (type === 'MinorControl') { cssVar = "--font-size-minor-controls"; lsKey = "mm4e_font_minor_controls"; }
+
+  if (cssVar) {
+    root.style.setProperty(cssVar, defaultSize + "px");
+    if (typeof TablesPopoutManager !== "undefined" && TablesPopoutManager.win && !TablesPopoutManager.win.closed) {
+      try { TablesPopoutManager.win.document.documentElement.style.setProperty(cssVar, defaultSize + "px"); } catch (e) {}
+    }
+    if (typeof OptionsPopoutManager !== "undefined" && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed) {
+      try { OptionsPopoutManager.win.document.documentElement.style.setProperty(cssVar, defaultSize + "px"); } catch (e) {}
+    }
+    const slider = document.getElementById("slider" + type + "Font") || (typeof OptionsPopoutManager !== 'undefined' && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed ? OptionsPopoutManager.win.document.getElementById("slider" + type + "Font") : null);
+    if (slider) slider.value = defaultSize;
+    const valEl = document.getElementById("val" + type + "Font") || (typeof OptionsPopoutManager !== 'undefined' && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed ? OptionsPopoutManager.win.document.getElementById("val" + type + "Font") : null);
+    if (valEl) valEl.textContent = defaultSize + "px";
+    localStorage.setItem(lsKey, defaultSize);
+  }
+};
 
 function setupSortingHeaders() {
   document.querySelectorAll("th.sortable").forEach(th => {
@@ -1248,6 +2196,9 @@ function buildAbilitiesUI() {
   document.getElementById("heroNameInput").addEventListener("input", (e) => {
     char.name = e.target.value;
     refreshUI();
+  });
+  document.getElementById("playerNameInput").addEventListener("input", (e) => {
+    char.playerName = e.target.value;
   });
   document.getElementById("heroPLInput").addEventListener("input", (e) => {
     char.powerLevel = parseInt(e.target.value) || 10;
@@ -1407,8 +2358,8 @@ function buildAdvantagesUI() {
 }
 
 window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory = false) {
-  if (!char.powers[pIdx] || !char.powers[pIdx].effects[eIdx]) return;
-  const effect = char.powers[pIdx].effects[eIdx];
+  if (!char.activePowers[pIdx] || !char.activePowers[pIdx].effects[eIdx]) return;
+  const effect = char.activePowers[pIdx].effects[eIdx];
 
   const targetConfig = configName || "";
 
@@ -1492,7 +2443,7 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
   // If this configuration defines linked secondary effects, append and link them!
   if (config.linkedEffects && Array.isArray(config.linkedEffects) && config.linkedEffects.length > 0) {
     // Clean up any previous auto-linked children from this parent effect
-    char.powers[pIdx].effects = char.powers[pIdx].effects.filter(otherEff => otherEff.linkedTo !== effect.id);
+    char.activePowers[pIdx].effects = char.activePowers[pIdx].effects.filter(otherEff => otherEff.linkedTo !== effect.id);
 
     config.linkedEffects.forEach((linkedCfg, lIdx) => {
       const linkedId = "eff_" + Math.random().toString(36).substr(2, 9);
@@ -1515,7 +2466,7 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
         configHistoryIdx: 0
       };
       
-      char.powers[pIdx].effects.splice(eIdx + 1 + lIdx, 0, newLinkedEff);
+      char.activePowers[pIdx].effects.splice(eIdx + 1 + lIdx, 0, newLinkedEff);
     });
   }
 
@@ -1524,23 +2475,44 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
 };
 
 window.toggleAllConfigs = function(pIdx, eIdx, isChecked) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    char.powers[pIdx].effects[eIdx].showAllConfigs = isChecked;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    char.activePowers[pIdx].effects[eIdx].showAllConfigs = isChecked;
     buildPowersUI();
   }
 };
 
 window.updateEffectAssociation = function(pIdx, eIdx, val) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-      char.powers[pIdx].effects[eIdx].association = val;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+      const container = char.activePowers[pIdx];
+      
+      if (val === 'primary') {
+          // Clear other primaries
+          container.effects.forEach((eff, idx) => {
+              if (idx !== eIdx && eff.association === 'primary') {
+                  eff.association = 'alternate';
+              }
+          });
+      } else if (val === 'alternate' || val === 'dynamic') {
+          // Ensure there is at least one primary remaining
+          let otherPrimary = container.effects.find((eff, idx) => idx !== eIdx && eff.association === 'primary');
+          if (!otherPrimary) {
+             let firstAvailable = container.effects.find((eff, idx) => idx !== eIdx);
+             if (firstAvailable) {
+                 firstAvailable.association = 'primary';
+             } else {
+                 val = 'primary'; // If it's the only effect, it must be primary
+             }
+          }
+      }
+      container.effects[eIdx].association = val;
       buildPowersUI();
       refreshUI();
   }
 };
 
 window.updateEffectLink = function(pIdx, eIdx, val) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-      char.powers[pIdx].effects[eIdx].linkedTo = val || null;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+      char.activePowers[pIdx].effects[eIdx].linkedTo = val || null;
       buildPowersUI();
       refreshUI();
   }
@@ -1589,13 +2561,15 @@ function calculateEffectiveRange(effect, baseRange) {
 window.calculateEffectiveRange = calculateEffectiveRange;
 
 function getEffectiveEffectTraits(effect) {
-  if (!effect || !effect.effectName) return { action: "Standard", range: "Close" };
+  if (!effect || !effect.effectName) return { action: "Standard", range: "Close", duration: "Instant", check: "None" };
   const baseData = typeof POWER_EFFECTS_LIST !== 'undefined' 
     ? POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) 
     : null;
     
   let action = baseData?.action || "Standard";
   let range = calculateEffectiveRange(effect, baseData?.range || "Close");
+  let duration = baseData?.duration || "Instant";
+  let check = baseData?.check || "None";
   
   if (Array.isArray(effect.modifiers)) {
     effect.modifiers.forEach(m => {
@@ -1606,16 +2580,30 @@ function getEffectiveEffectTraits(effect) {
       else if (mName === "Action (Free)") action = "Free";
       else if (mName === "Action (Reaction)") action = "Reaction";
       else if (mName === "Action (Standard)") action = "Standard";
+      else if (mName === "Increased Action") {
+        const actionProgression = ["Free", "Move", "Standard", "Full", "Reaction"]; // Reaction shouldn't be reached but just in case
+        let idx = actionProgression.indexOf(action);
+        if (idx !== -1 && idx < 3) {
+            action = actionProgression[Math.min(3, idx + (parseInt(m.ranks) || 1))];
+        }
+      }
+      
+      if (mName === "Increased Duration (Concentration)") duration = "Concentration";
+      else if (mName === "Increased Duration (Sustained)") duration = "Sustained";
+      else if (mName === "Increased Duration (Continuous)") duration = "Continuous";
+      else if (mName === "Concentration") duration = "Concentration";
+      else if (mName === "Sustained") duration = "Sustained";
+      else if (mName === "Permanent") duration = "Permanent";
     });
   }
   
-  return { action, range };
+  return { action, range, duration, check };
 }
 window.getEffectiveEffectTraits = getEffectiveEffectTraits;
 
 window.updatePowerContainerName = function(pIdx, val) {
-  if (char.powers[pIdx]) {
-      char.powers[pIdx].name = val;
+  if (char.activePowers[pIdx]) {
+      char.activePowers[pIdx].name = val;
       const headerTitle = document.getElementById(`powerContainerName_${pIdx}`);
       if (headerTitle) headerTitle.value = val;
   }
@@ -1623,7 +2611,7 @@ window.updatePowerContainerName = function(pIdx, val) {
 
 
 window.navigateEffectHistory = function(pIdx, eIdx, dir) {
-    const effect = char.powers[pIdx]?.effects[eIdx];
+    const effect = char.activePowers[pIdx]?.effects[eIdx];
     if (!effect) return;
     if (!effect.effectHistory) {
         effect.effectHistory = [effect.effectName || ""];
@@ -1647,7 +2635,7 @@ window.navigateEffectHistory = function(pIdx, eIdx, dir) {
 };
 
 window.navigateConfigHistory = function(pIdx, eIdx, dir) {
-    const effect = char.powers[pIdx]?.effects[eIdx];
+    const effect = char.activePowers[pIdx]?.effects[eIdx];
     if (!effect) return;
     if (!effect.configHistory) {
         effect.configHistory = [effect.name && effect.name !== "New Effect" && effect.name !== effect.effectName ? effect.name : ""];
@@ -1671,14 +2659,15 @@ window.navigateConfigHistory = function(pIdx, eIdx, dir) {
 };
 
 function buildPowersUI() {
-  const container = document.getElementById("powersContainer");
+  const containerId = (window.activePowerContext === 'blueprints') ? "blueprintsContainer" : "powersContainer";
+  const container = document.getElementById(containerId);
   if (!container) return;
-  if (!char.powers || char.powers.length === 0) {
+  if (!char.activePowers || char.activePowers.length === 0) {
     container.innerHTML = `<p class="secondary-text" style="padding: 12px 0;">No powers constructed yet. Click <strong>+ Add New Power Container</strong> above to build a power container.</p>`;
     return;
   }
 
-  container.innerHTML = char.powers.map((powerContainer, pIdx) => {
+  container.innerHTML = char.activePowers.map((powerContainer, pIdx) => {
     const containerCost = char.calculateTotalPowerCost(powerContainer);
     const isCollapsed = powerContainer.collapsed ? 'collapsed' : '';
     const summaryText = powerContainer.effects.map(e => `${e.effectName || 'No Effect'} ${e.rank}`).join(" | ");
@@ -1694,6 +2683,8 @@ function buildPowersUI() {
         if (!effectData) {
             effectData = { name: "- Select Effect -", type: "—", action: "—", range: "—", duration: "—", check: "—", baseCost: 0, fullText: "Please select an effect from the dropdown list to configure your power.", shortDesc: "No effect selected." };
         }
+        
+        const effectiveTraits = getEffectiveEffectTraits(effect);
           
         if (!effect.options) effect.options = {};
         if (!effect.subPowers) effect.subPowers = [];
@@ -1701,7 +2692,10 @@ function buildPowersUI() {
         let maxPowerRank = window.getMaxPowerRank(effect);
         if (effect.rank > maxPowerRank) effect.rank = maxPowerRank;
         
-        const effectCost = char.calculateEffectCost(effect);
+        const rawEffectCost = char.calculateEffectCost(effect);
+        let effectCostDisplay = `${rawEffectCost} PP`;
+        if (effect.association === 'alternate') effectCostDisplay = `1 PP`;
+        if (effect.association === 'dynamic') effectCostDisplay = `2 PP`;
 
         let shortDescText = "";
         if (effect.effectName === "Enhanced Movement") shortDescText = "Provides one or more specialized forms of movement.";
@@ -1772,16 +2766,42 @@ function buildPowersUI() {
         let measurementHtml = "";
         if (typeof MEASUREMENT_TABLE !== 'undefined') {
           const mData = MEASUREMENT_TABLE[effect.rank.toString()] || MEASUREMENT_TABLE["20"];
+          
+          let effMassRank = parseInt(effect.rank) || 1;
+          const increasedMassMod = effect.modifiers ? effect.modifiers.find(m => m.name === "Increased Mass") : null;
+          if (increasedMassMod) {
+              effMassRank += parseInt(increasedMassMod.ranks) || 1;
+          }
+          const massData = MEASUREMENT_TABLE[effMassRank.toString()] || MEASUREMENT_TABLE["20"];
+
+          let effDistRank = parseInt(effect.rank) || 1;
+          if (effectiveRange === "Rank") {
+              effDistRank = Math.max(-5, effDistRank + rangeShift);
+          }
+          
+          let effVolRank = effDistRank;
+          const areaMod = effect.modifiers ? effect.modifiers.find(m => m.name && m.name.includes("Area Effect")) : null;
+          if (areaMod) {
+             const areaRanks = parseInt(areaMod.ranks) || 1;
+             effDistRank = areaRanks - 1; 
+             effVolRank = areaRanks - 1;
+          }
+          
+          const distData = MEASUREMENT_TABLE[effDistRank.toString()] || MEASUREMENT_TABLE["20"];
+          const volData = MEASUREMENT_TABLE[effVolRank.toString()] || MEASUREMENT_TABLE["20"];
+
           if (mData && effect.effectName) {
-            const showDist = (effectiveRange === "Rank" || (effect.modifiers && effect.modifiers.some(m => m.name.includes("Area"))) || effectData.type === "Movement");
-            if (showDist && effect.effectName !== "Enhanced Movement") {
+            const showDist = (effectiveRange === "Rank" || areaMod || effectData.type === "Movement");
+            const showTable = showDist || ["Move Object", "Create", "Insubstantial"].includes(effect.effectName);
+            
+            if (showTable && effect.effectName !== "Enhanced Movement") {
                 measurementHtml = `
                   <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border-color); display: flex; gap: 16px; flex-wrap: wrap; font-size: calc(var(--font-size-secondary) * 0.95); font-family: monospace;">
                     <strong style="color: var(--accent-primary);">Table Equivalents:</strong>
-                    ${showDist ? `<span><strong>Dist:</strong> ${mData.dist_imp}</span>` : ''}
-                    <span><strong>Mass:</strong> ${mData.mass_imp}</span>
+                    ${showDist ? `<span><strong>Dist:</strong> ${distData.dist_imp}</span>` : ''}
+                    <span><strong>Mass:</strong> ${massData.mass_imp}</span>
                     <span><strong>Time:</strong> ${mData.time}</span>
-                    <span><strong>Vol:</strong> ${mData.vol_imp}</span>
+                    <span><strong>Vol:</strong> ${volData.vol_imp}</span>
                   </div>
                 `;
             }
@@ -1802,13 +2822,21 @@ function buildPowersUI() {
 
         const showAll = effect.showAllConfigs;
         const availableTemplates = showAll ? allTemplates : (effectData.configurations || []);
+        const hasPresets = availableTemplates && availableTemplates.length > 0;
         const isCustomConfig = effect.name && effect.name !== 'New Effect' && effect.name !== effect.effectName;
 
+        let configIndicatorBadge = "";
+        if (hasPresets && !showAll) {
+          configIndicatorBadge = `<span class="badge-config-indicator" title="This power has ${availableTemplates.length} ready-to-use configurations/presets">⚙ ${availableTemplates.length} Presets Available</span>`;
+        } else if (showAll) {
+          configIndicatorBadge = `<span class="badge-config-indicator" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.4);" title="Showing all ${allTemplates.length} global configurations">⚙ All Presets (${allTemplates.length})</span>`;
+        }
+
         let templateDropdownHtml = `
-          <div style="display: flex; align-items: center; gap: 6px;">
-            <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Config:</label>
+          <div class="config-control-group ${hasPresets ? 'has-configs' : ''}" style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">${hasPresets ? '<span style="color: #0284c7;">★</span> ' : ''}Config:</label>
             <select class="minor-control" style="width: 160px; ${isCustomConfig ? 'color: var(--accent-primary); font-weight: bold;' : ''}" onchange="applyEffectConfiguration(${pIdx}, ${eIdx}, this.value)">
-              <option value="" ${!isCustomConfig ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">- Select Config -</option>
+              <option value="" ${!isCustomConfig ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${hasPresets ? '- Select Config -' : '- No Presets -'}</option>
               ${availableTemplates.map(cfg => `<option value="${cfg.name}" ${cfg.name === effect.name ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${cfg.name}${showAll ? ` (${cfg.effectName || effectData.name})` : ''}</option>`).join('')}
             </select>
             <div style="display: flex; align-items: center; gap: 2px;">
@@ -1819,6 +2847,7 @@ function buildPowersUI() {
               <input type="checkbox" onchange="toggleAllConfigs(${pIdx}, ${eIdx}, this.checked)" ${showAll ? 'checked' : ''} style="margin: 0;">
               <span style="text-align: center;">Show<br>All</span>
             </label>
+            ${configIndicatorBadge}
           </div>
         `;
 
@@ -1855,6 +2884,10 @@ function buildPowersUI() {
                 if (sRank >= 6) { dest = "Any dimension known to you (Base 6 ranks)"; baseDestRank = 6; }
                 else if (sRank >= 4) { dest = "A related group of dimensions (Base 4 ranks)"; baseDestRank = 4; }
                 let massIncrease = Math.max(0, sRank - baseDestRank);
+                
+                const incMassMod = sub.modifiers ? sub.modifiers.find(m => m.name === "Increased Mass") : null;
+                if (incMassMod) massIncrease += parseInt(incMassMod.ranks) || 1;
+
                 let massStr = "50 lbs (Rank 0)";
                 if (typeof MEASUREMENT_TABLE !== 'undefined' && MEASUREMENT_TABLE[massIncrease.toString()]) {
                     massStr = MEASUREMENT_TABLE[massIncrease.toString()].mass_imp + " (Rank " + massIncrease + ")";
@@ -1921,7 +2954,7 @@ function buildPowersUI() {
             } else if (effect.effectName === "Enhanced Trait") {
               if (typeof ADVANTAGES_LIST !== 'undefined' && ADVANTAGES_LIST.some(a => a.name === sType)) {
                 let adv = ADVANTAGES_LIST.find(a => a.name === sType);
-                dynDesc = adv ? (adv.shortDesc || "Enhanced advantage.") : "Enhanced advantage.";
+                dynDesc = adv ? (adv.description || adv.conditionalSummary || "Enhanced advantage.") : "Enhanced advantage.";
               } else if (typeof SKILLS_LIST !== 'undefined' && SKILLS_LIST.some(s => s.name === sType)) {
                 dynDesc = `Provides +${sRank} enhanced skill rank to ${sType} checks.`;
               } else {
@@ -2087,7 +3120,7 @@ function buildPowersUI() {
             }
 
             let isImmunityLocked = effect.effectName === "Immunity" && !sType.includes("Custom");
-            let isFlatAdvantage = effect.effectName === "Enhanced Trait" && typeof ADVANTAGES_LIST !== 'undefined' && ADVANTAGES_LIST.some(a => a.name === sType && !a.hasRanks);
+            let isFlatAdvantage = effect.effectName === "Enhanced Trait" && typeof ADVANTAGES_LIST !== 'undefined' && ADVANTAGES_LIST.some(a => a.name === sType && !(a.hasRanks || a.ranked));
             let allowsRanks = (sub.costType === "per_rank") || (effect.effectName === "Enhanced Trait" && !isFlatAdvantage);
 
             let stepperControls = subMaxR > 1 && allowsRanks && !isImmunityLocked ? `
@@ -2098,12 +3131,30 @@ function buildPowersUI() {
               <input type="number" class="stepper-input" style="width: 50px !important; min-width: 50px !important; font-size: var(--font-size-minor-controls); background: transparent; border: none;" value="${sRank}" readonly title="${isImmunityLocked ? 'Rank Locked by Tier' : (isFlatAdvantage ? 'Rank 1 (Standard Advantage)' : 'Rank Locked')}">
             `;
 
+            let cardStyle = "background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 10px;";
+            if (effect.effectName === "Enhanced Trait") {
+                cardStyle += " flex: 1; min-width: calc(50% - 10px);";
+            } else {
+                cardStyle += " width: 100%;";
+            }
+            
+            let arrowIcon = "";
+            if (effect.effectName === "Enhanced Trait") {
+                arrowIcon = sub.isReduced ? '<span style="color: #ef4444; font-size: 14px;" title="Reduced Trait">▼</span> ' : '<span style="color: #10b981; font-size: 14px;" title="Enhanced Trait">▲</span> ';
+            }
+
             return `
-              <div class="sub-power-card" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 4px; padding: 8px 10px; margin-top: 6px;">
+              <div class="sub-power-card" style="${cardStyle}">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
-                    <strong style="font-size: var(--font-size-controls); color: var(--accent-primary);">${sub.name.split(" [")[0] || sub.type}</strong>
-                    <span class="badge effect-cost-badge" style="font-size: 11px;">${sub.baseCost || 1} ${sub.costType === 'per_rank' ? 'PP/r' : 'PP'}</span>
+                  <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                    <strong style="font-size: var(--font-size-controls); color: var(--accent-primary); white-space: nowrap;">
+                      ${arrowIcon}${sub.name.split(" [")[0] || sub.type}
+                      ${dynDesc ? `<button type="button" class="btn-info-circle" style="min-width: 16px; min-height: 16px; font-size: 10px; margin-left: 4px; vertical-align: middle;" onclick="showOptionInfo('${(sub.name.split(" [")[0] || sub.type).replace(/'/g, "\\'")}', '${dynDesc.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" title="View Option Info">?</button>` : ''}
+                    </strong>
+                    <span class="badge effect-cost-badge" style="font-size: 11px; white-space: nowrap;">${sub.baseCost || 1} ${sub.costType === 'per_rank' ? 'PP/r' : 'PP'}</span>
+                    ${effect.effectName !== "Enhanced Trait" ? `
+                        <input type="text" class="minor-control" placeholder="${placeholderText}" value="${sub.details || ''}" oninput="updateSubPowerDetails(${pIdx}, ${eIdx}, ${sIdx}, this.value)" style="flex: 1; min-width: 80px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-size: 12px; padding: 2px 6px; margin-left: 4px; height: 24px;">
+                    ` : ''}
                   </div>
 
                   <div style="display: flex; align-items: center; gap: 10px;">
@@ -2117,12 +3168,10 @@ function buildPowersUI() {
                   </div>
                 </div>
                 
+                ${metaPickerHtml ? `
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
-                    <input type="text" class="minor-control" placeholder="${placeholderText}" value="${sub.details || ''}" oninput="updateSubPowerDetails(${pIdx}, ${eIdx}, ${sIdx}, this.value)" style="flex: 1; min-width: 150px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-size: 12px; padding: 4px;">
                     ${metaPickerHtml}
-                </div>
-
-                ${dynDesc ? `<div class="secondary-text" style="margin-top: 6px; font-size: var(--font-size-secondary); line-height: 1.3;">${dynDesc}</div>` : ''}
+                </div>` : ''}
 
                 ${subMeasurementHtml}
 
@@ -2243,24 +3292,27 @@ function buildPowersUI() {
             );
           }
 
+          const hasReducedTrait = effect.modifiers && effect.modifiers.some(m => m.name === 'Reduced Trait');
+
           optionPickersHtml = `
             <div class="power-options-row" style="display: flex; flex-direction: column; gap: 10px; background: var(--bg-panel); padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 4px;">
+              <div style="font-size: var(--font-size-secondary); font-weight: 600; color: var(--accent-primary); margin-bottom: -4px;"><span style="color: #10b981;">▲</span> Enhanced Traits</div>
               <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
                 
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Abilities / Defenses:</label>
+                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Abils/Defs:</label>
                   <select id="selEnhAbility_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
                     ${abilityChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                   </select>
-                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAbility_${pIdx}_${eIdx}')">+ Add Ability</button>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAbility_${pIdx}_${eIdx}', false)">+ Ability</button>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Advantages:</label>
+                  <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Advs:</label>
                   <select id="selEnhAdvantage_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
                     ${advChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                   </select>
-                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAdvantage_${pIdx}_${eIdx}')">+ Add Advantage</button>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhAdvantage_${pIdx}_${eIdx}', false)">+ Adv</button>
                 </div>
 
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
@@ -2268,10 +3320,41 @@ function buildPowersUI() {
                   <select id="selEnhSkill_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
                     ${skillChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                   </select>
-                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhSkill_${pIdx}_${eIdx}')">+ Add Skill</button>
+                  <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selEnhSkill_${pIdx}_${eIdx}', false)">+ Skill</button>
                 </div>
 
               </div>
+              
+              ${hasReducedTrait ? `
+              <div style="border-top: 1px dashed var(--border-color); margin-top: 4px; padding-top: 10px;">
+                  <div style="font-size: var(--font-size-secondary); font-weight: 600; color: var(--accent-primary); margin-bottom: 6px;"><span style="color: #ef4444;">▼</span> Reduced Traits</div>
+                  <div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Abils/Defs:</label>
+                      <select id="selRedAbility_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                        ${abilityChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                      </select>
+                      <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selRedAbility_${pIdx}_${eIdx}', true)">- Ability</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Advs:</label>
+                      <select id="selRedAdvantage_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                        ${advChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                      </select>
+                      <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selRedAdvantage_${pIdx}_${eIdx}', true)">- Adv</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <label style="font-size: var(--font-size-secondary); font-weight: 600; white-space: nowrap;">Skills:</label>
+                      <select id="selRedSkill_${pIdx}_${eIdx}" class="minor-control" style="width: 175px;">
+                        ${skillChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
+                      </select>
+                      <button type="button" class="btn minor-control-btn btn-add-option" style="height: 26px;" onclick="addOptionSubPower(${pIdx}, ${eIdx}, 'selRedSkill_${pIdx}_${eIdx}', true)">- Skill</button>
+                    </div>
+                  </div>
+              </div>
+              ` : ''}
             </div>
           `;
         } else if (effect.effectName === "Affliction") {
@@ -2477,7 +3560,7 @@ function buildPowersUI() {
 
         effect.id = effect.id || ("eff_" + pIdx + "_" + eIdx + "_" + Math.random().toString(36).substr(2, 6));
         if (effect.linkedTo === undefined) effect.linkedTo = null;
-        if (!effect.association) effect.association = "primary";
+        if (effect.association === undefined) effect.association = "";
 
         const isLinked = effect.linkedTo === "previous" || (typeof effect.linkedTo === "string" && effect.linkedTo !== "") || effect.association === "linked";
 
@@ -2489,7 +3572,7 @@ function buildPowersUI() {
           linkOptions += `<option value="previous" ${effect.linkedTo === 'previous' ? 'selected' : ''}>🔗 Link to Previous (${prevName})</option>`;
         }
 
-        char.powers.forEach((otherContainer, otherPIdx) => {
+        char.activePowers.forEach((otherContainer, otherPIdx) => {
           if (Array.isArray(otherContainer.effects)) {
             otherContainer.effects.forEach((otherEff, otherEIdx) => {
               if (otherEff.id && otherEff.id !== effect.id) {
@@ -2518,7 +3601,7 @@ function buildPowersUI() {
 
         // Find all other effects linked TO this effect (incoming)
         let linkedChildren = [];
-        char.powers.forEach((otherContainer, otherPIdx) => {
+        char.activePowers.forEach((otherContainer, otherPIdx) => {
           if (Array.isArray(otherContainer.effects)) {
             otherContainer.effects.forEach((otherEff, otherEIdx) => {
               if (otherEff.id !== effect.id) {
@@ -2585,9 +3668,10 @@ function buildPowersUI() {
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     
                     <select onchange="updateEffectAssociation(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="width: 135px; background: var(--bg-app);" title="Slot Role in Array">
+                        <option value="" ${!effect.association || effect.association === '' ? 'selected' : ''}>- Select Array Role -</option>
                         <option value="primary" ${effect.association === 'primary' ? 'selected' : ''}>Primary Slot</option>
-                        <option value="alternate" ${effect.association === 'alternate' ? 'selected' : ''}>Alternate (1 PP)</option>
-                        <option value="dynamic" ${effect.association === 'dynamic' ? 'selected' : ''}>Dynamic (2 PP)</option>
+                        <option value="alternate" ${effect.association === 'alternate' ? 'selected' : ''} ${powerContainer.effects.length === 1 ? 'disabled style="color: var(--text-muted);"' : ''}>Alternate (1 PP)</option>
+                        <option value="dynamic" ${effect.association === 'dynamic' ? 'selected' : ''} ${powerContainer.effects.length === 1 ? 'disabled style="color: var(--text-muted);"' : ''}>Dynamic (2 PP)</option>
                     </select>
 
                     <select onchange="updateEffectLink(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="max-width: 175px; background: var(--bg-app);" title="Link this effect to another effect">
@@ -2596,7 +3680,11 @@ function buildPowersUI() {
                     
                     <select onchange="updateEffectDirect(${pIdx}, ${eIdx}, this.value)" class="minor-control" style="min-width: 160px; color: var(--accent-primary); font-weight: bold;">
                       <option value="" ${effect.effectName === "" ? "selected" : ""} style="color: var(--text-main); font-weight: normal;">- Select Effect -</option>
-                      ${POWER_EFFECTS_LIST.map(eff => `<option value="${eff.name}" ${eff.name === effect.effectName ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${eff.name} (${eff.baseCost} PP/r)</option>`).join('')}
+                      ${POWER_EFFECTS_LIST.map(eff => {
+  const hasConfigs = (eff.configurations && eff.configurations.length > 0) || (typeof EXTRACTED_CONFIGS !== 'undefined' && EXTRACTED_CONFIGS[eff.name] && EXTRACTED_CONFIGS[eff.name].length > 0);
+  const mark = hasConfigs ? ' ⚙' : '';
+  return `<option value="${eff.name}" ${eff.name === effect.effectName ? 'selected' : ''} style="color: var(--text-main); font-weight: normal;">${eff.name}${mark} (${eff.baseCost} PP/r)</option>`;
+}).join('')}
                     </select>
                     <div style="display: flex; align-items: center; gap: 2px;">
                         <button type="button" class="btn minor-control-btn" style="padding: 2px 6px; font-weight: bold;" onclick="navigateEffectHistory(${pIdx}, ${eIdx}, -1)" title="Back">&lt;</button>
@@ -2608,7 +3696,7 @@ function buildPowersUI() {
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <label>Rank:</label>
                     ${rankStepperHtml}
-                    <span class="badge effect-cost-badge" style="margin-left: 8px; font-size: 11px;">${effectCost} PP</span>
+                    <span class="badge effect-cost-badge" style="margin-left: 8px; font-size: 11px;" title="Base Cost: ${rawEffectCost} PP">${effectCostDisplay}</span>
                     <button type="button" class="btn" style="padding: 2px 6px; font-size: 11px; margin-left: 8px;" onclick="resetEffect(${pIdx}, ${eIdx})" title="Reset Effect Config">Reset</button>
                     <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 11px; margin-left: 4px;" onclick="deleteEffect(${pIdx}, ${eIdx})" title="Delete Effect">Delete</button>
                 </div>
@@ -2628,7 +3716,7 @@ function buildPowersUI() {
 
             ${optionPickersHtml}
 
-            ${subPowersHtml ? `<div style="margin-top: 8px;"><strong style="font-size: var(--font-size-secondary); color: var(--text-main);">Configured Options:</strong>${subPowersHtml}</div>` : ''}
+            ${subPowersHtml ? `<div style="margin-top: 8px;"><strong style="font-size: var(--font-size-secondary); color: var(--text-main);">Configured Options:</strong><div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px;">${subPowersHtml}</div></div>` : ''}
 
             ${effect.effectName !== "" ? `
             <div class="power-modifiers-row" style="margin-top: 8px;">
@@ -2640,6 +3728,7 @@ function buildPowersUI() {
                     ${availableRootExtras.map(e => `<option value="${e.name}">${e.name} (+${e.cost}/r)</option>`).join('')}
                   </optgroup>
                 </select>
+                <button type="button" class="btn-info-circle" style="min-width: 18px; min-height: 18px; font-size: calc(var(--font-size-minor-controls) * 0.85); margin-left: -2px; margin-right: 2px;" onclick="const val = document.getElementById('selRootExtra_${pIdx}_${eIdx}').value; if(val) showModifierInfo(val);" title="View Info for Selected Extra">?</button>
                 <button type="button" class="btn minor-control-btn" onclick="addModifierToEffect(${pIdx}, ${eIdx}, 'selRootExtra_${pIdx}_${eIdx}')">+ Extra</button>
               </div>
 
@@ -2651,6 +3740,7 @@ function buildPowersUI() {
                     ${availableRootFlaws.map(f => `<option value="${f.name}">${f.name} (-${f.cost}/r)</option>`).join('')}
                   </optgroup>
                 </select>
+                <button type="button" class="btn-info-circle" style="min-width: 18px; min-height: 18px; font-size: calc(var(--font-size-minor-controls) * 0.85); margin-left: -2px; margin-right: 2px;" onclick="const val = document.getElementById('selRootFlaw_${pIdx}_${eIdx}').value; if(val) showModifierInfo(val);" title="View Info for Selected Flaw">?</button>
                 <button type="button" class="btn btn-secondary minor-control-btn" onclick="addModifierToEffect(${pIdx}, ${eIdx}, 'selRootFlaw_${pIdx}_${eIdx}')">+ Flaw</button>
               </div>
 
@@ -2667,10 +3757,10 @@ function buildPowersUI() {
 
             <div class="power-meta-row">
               <span><strong>Type:</strong> ${effectData ? effectData.type : '—'}</span>
-              <span><strong>Action:</strong> ${effectData ? effectData.action : '—'}</span>
+              <span><strong>Action:</strong> ${effectiveTraits.action}</span>
               <span><strong>Range:</strong> ${rangeDisplay}</span>
-              <span><strong>Duration:</strong> ${effectData ? effectData.duration : '—'}</span>
-              <span><strong>Check:</strong> ${effectData ? effectData.check : '—'}</span>
+              <span><strong>Duration:</strong> ${effectiveTraits.duration}</span>
+              <span><strong>Check:</strong> ${effectiveTraits.check}</span>
             </div>
 
             <div class="power-notes-row" style="margin-top: 8px;">
@@ -2691,6 +3781,12 @@ function buildPowersUI() {
           </div>
 
           <div style="display: flex; align-items: center; gap: 12px;" onclick="event.stopPropagation();">
+            ${window.activePowerContext === 'blueprints' ? `
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--accent-success); display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 8px;">
+                <strong>Check DC: ${10 + containerCost}</strong>
+                <span>Normal: ${containerCost * 4} hrs | Fast: ${containerCost * 10} min</span>
+              </div>
+            ` : ''}
             <span class="badge" id="powerCostBadge_${pIdx}" style="font-size: var(--font-size-labels); font-weight: normal;">${containerCost} PP</span>
             <button type="button" id="btnPowerCollapse_${pIdx}" class="btn" style="padding: 4px 8px;" onclick="togglePowerCollapse(${pIdx})" title="${powerContainer.collapsed ? 'Edit Power Container' : 'Save and Collapse'}">${powerContainer.collapsed ? 'Edit' : 'Save'}</button>
             <button type="button" class="btn-delete-power" onclick="deletePowerContainer(${pIdx})" title="Delete Entire Container">Delete Container</button>
@@ -2708,11 +3804,11 @@ function buildPowersUI() {
   }).join("");
 }
 
-window.addOptionSubPower = function(pIdx, eIdx, selectId) {
+window.addOptionSubPower = function(pIdx, eIdx, selectId, isReduced = false) {
   const sel = document.getElementById(selectId);
   if (!sel || !sel.value || sel.value.startsWith("- Select")) return;
   const optChoice = sel.value;
-  const effect = char.powers[pIdx].effects[eIdx];
+  const effect = char.activePowers[pIdx].effects[eIdx];
 
   if (!effect.subPowers) effect.subPowers = [];
   
@@ -2783,7 +3879,8 @@ window.addOptionSubPower = function(pIdx, eIdx, selectId) {
     baseCost: bCost,
     costType: cType,
     details: "",
-    modifiers: []
+    modifiers: [],
+    isReduced: isReduced
   });
 
   sel.selectedIndex = 0;
@@ -2795,7 +3892,7 @@ window.addSubPowerMeta = function(pIdx, eIdx, subIdx, selectId) {
   const sel = document.getElementById(selectId);
   if (!sel || !sel.value || sel.value.startsWith("- Select") || sel.value.startsWith("- None")) return;
   const metaName = sel.value;
-  const effect = char.powers[pIdx].effects[eIdx];
+  const effect = char.activePowers[pIdx].effects[eIdx];
 
   if (effect && effect.subPowers && effect.subPowers[subIdx]) {
     let sub = effect.subPowers[subIdx];
@@ -2851,12 +3948,12 @@ window.addSubPowerMeta = function(pIdx, eIdx, subIdx, selectId) {
 };
 
 window.removeSubPower = function(pIdx, eIdx, subIdx) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].subPowers) {
-    char.powers[pIdx].effects[eIdx].subPowers.splice(subIdx, 1);
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].subPowers) {
+    char.activePowers[pIdx].effects[eIdx].subPowers.splice(subIdx, 1);
     
-    let maxR = window.getMaxPowerRank(char.powers[pIdx].effects[eIdx]);
-    if (char.powers[pIdx].effects[eIdx].rank > maxR) {
-        char.powers[pIdx].effects[eIdx].rank = maxR;
+    let maxR = window.getMaxPowerRank(char.activePowers[pIdx].effects[eIdx]);
+    if (char.activePowers[pIdx].effects[eIdx].rank > maxR) {
+        char.activePowers[pIdx].effects[eIdx].rank = maxR;
     }
 
     buildPowersUI();
@@ -2865,8 +3962,8 @@ window.removeSubPower = function(pIdx, eIdx, subIdx) {
 };
 
 window.stepSubPowerRank = function(pIdx, eIdx, subIdx, delta, minVal, maxVal) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].subPowers && char.powers[pIdx].effects[eIdx].subPowers[subIdx]) {
-    let sub = char.powers[pIdx].effects[eIdx].subPowers[subIdx];
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].subPowers && char.activePowers[pIdx].effects[eIdx].subPowers[subIdx]) {
+    let sub = char.activePowers[pIdx].effects[eIdx].subPowers[subIdx];
     let val = (parseInt(sub.rank) || 1) + delta;
     if (minVal !== undefined && val < minVal) val = minVal;
     if (maxVal !== undefined && val > maxVal) val = maxVal;
@@ -2882,7 +3979,7 @@ window.addSubPowerModifier = function(pIdx, eIdx, subIdx, selectId, category) {
   const modName = sel.value;
 
   let modData = POWER_MODIFIERS_LIST.find(m => m.name === modName) || { name: modName, cost: 1, costType: "flat", category: category };
-  const sub = char.powers[pIdx].effects[eIdx].subPowers[subIdx];
+  const sub = char.activePowers[pIdx].effects[eIdx].subPowers[subIdx];
   if (!sub.modifiers) sub.modifiers = [];
   sub.modifiers.push({
     name: modName,
@@ -2899,8 +3996,8 @@ window.addSubPowerModifier = function(pIdx, eIdx, subIdx, selectId, category) {
 };
 
 window.stepSubPowerModifierRank = function(pIdx, eIdx, subIdx, modIdx, delta, minVal, maxVal) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].subPowers && char.powers[pIdx].effects[eIdx].subPowers[subIdx]) {
-    let sMod = char.powers[pIdx].effects[eIdx].subPowers[subIdx].modifiers[modIdx];
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].subPowers && char.activePowers[pIdx].effects[eIdx].subPowers[subIdx]) {
+    let sMod = char.activePowers[pIdx].effects[eIdx].subPowers[subIdx].modifiers[modIdx];
     if (sMod) {
        let val = (parseInt(sMod.ranks) || 1) + delta;
        if (minVal !== undefined && val < minVal) val = minVal;
@@ -2913,8 +4010,8 @@ window.stepSubPowerModifierRank = function(pIdx, eIdx, subIdx, modIdx, delta, mi
 };
 
 window.removeSubPowerModifier = function(pIdx, eIdx, subIdx, modIdx) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].subPowers && char.powers[pIdx].effects[eIdx].subPowers[subIdx]) {
-    char.powers[pIdx].effects[eIdx].subPowers[subIdx].modifiers.splice(modIdx, 1);
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].subPowers && char.activePowers[pIdx].effects[eIdx].subPowers[subIdx]) {
+    char.activePowers[pIdx].effects[eIdx].subPowers[subIdx].modifiers.splice(modIdx, 1);
     buildPowersUI();
     refreshUI();
   }
@@ -2923,24 +4020,24 @@ window.removeSubPowerModifier = function(pIdx, eIdx, subIdx, modIdx) {
 window.addAfflictionCondition = function(pIdx, eIdx, degKey, selectId) {
     const sel = document.getElementById(selectId);
     if(!sel || !sel.value || sel.value.startsWith("-")) return;
-    if(!char.powers[pIdx].effects[eIdx].options) char.powers[pIdx].effects[eIdx].options = {};
-    char.powers[pIdx].effects[eIdx].options[degKey] = sel.value;
+    if(!char.activePowers[pIdx].effects[eIdx].options) char.activePowers[pIdx].effects[eIdx].options = {};
+    char.activePowers[pIdx].effects[eIdx].options[degKey] = sel.value;
     sel.selectedIndex = 0;
     buildPowersUI();
     refreshUI();
 };
 
 window.removeAfflictionCondition = function(pIdx, eIdx, degKey) {
-    if(char.powers[pIdx].effects[eIdx].options) {
-        char.powers[pIdx].effects[eIdx].options[degKey] = "";
+    if(char.activePowers[pIdx].effects[eIdx].options) {
+        char.activePowers[pIdx].effects[eIdx].options[degKey] = "";
         buildPowersUI();
         refreshUI();
     }
 };
 
 window.resetEffect = function(pIdx, eIdx) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-      let effect = char.powers[pIdx].effects[eIdx];
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+      let effect = char.activePowers[pIdx].effects[eIdx];
       
       if (!effect.effectHistory) { effect.effectHistory = [effect.effectName || ""]; effect.effectHistoryIdx = 0; }
       if (effect.effectHistory[effect.effectHistoryIdx] !== "") {
@@ -2973,12 +4070,12 @@ window.resetEffect = function(pIdx, eIdx) {
 };
 
 window.addEffectToPower = function(pIdx) {
-    if (char.powers[pIdx]) {
+    if (char.activePowers[pIdx]) {
         let assoc = "primary";
-        if (char.powers[pIdx].effects.length > 0) {
+        if (char.activePowers[pIdx].effects.length > 0) {
             assoc = "alternate";
         }
-        char.powers[pIdx].effects.push({
+        char.activePowers[pIdx].effects.push({
             id: "eff_" + Math.random().toString(36).substr(2, 9),
             name: "New Effect",
             effectName: "",
@@ -3003,10 +4100,42 @@ window.addEffectToPower = function(pIdx) {
 
 function setupPowerHandlers() {
   const btnAdd = document.getElementById("btnAddPower");
+  const btnAddBlueprint = document.getElementById("btnAddBlueprint");
+  
+  if (btnAddBlueprint) {
+      btnAddBlueprint.addEventListener("click", () => {
+          char.blueprints.push({
+            name: "New Improvised Effect",
+            collapsed: false,
+            effects: [
+                {
+                  id: "imp_" + Math.random().toString(36).substr(2, 9),
+                  name: "New Effect",
+                  effectName: "",
+                  association: "primary",
+                  linkedTo: null,
+                  rank: 1,
+                  descriptors: "",
+                  notes: "",
+                  modifiers: [],
+                  options: {},
+                  subPowers: [],
+                  effectCache: {},
+                  effectHistory: [""],
+                  effectHistoryIdx: 0,
+                  configHistory: ["New Effect"],
+                  configHistoryIdx: 0
+                }
+            ]
+          });
+          buildPowersUI();
+          refreshUI();
+      });
+  }
   if (!btnAdd) return;
   btnAdd.textContent = "+ Add New Power Container"; 
   btnAdd.addEventListener("click", () => {
-    char.powers.push({
+    char.activePowers.push({
       name: "New Power Container",
       collapsed: false,
       effects: [
@@ -3036,13 +4165,13 @@ function setupPowerHandlers() {
 }
 
 window.togglePowerCollapse = function(index) {
-  if (char.powers[index]) {
-    char.powers[index].collapsed = !char.powers[index].collapsed;
+  if (char.activePowers[index]) {
+    char.activePowers[index].collapsed = !char.activePowers[index].collapsed;
     const card = document.getElementById(`powerCard_${index}`);
     const icon = document.getElementById(`powerCollapseIcon_${index}`);
     const btn = document.getElementById(`btnPowerCollapse_${index}`);
     if (card && icon) {
-      if (char.powers[index].collapsed) {
+      if (char.activePowers[index].collapsed) {
         card.classList.add('collapsed');
         icon.textContent = '▶';
         if (btn) { btn.textContent = 'Edit'; btn.title = 'Edit Power Container'; }
@@ -3056,36 +4185,36 @@ window.togglePowerCollapse = function(index) {
 };
 
 window.updateEffectDescriptorsDirect = function(pIdx, eIdx, value) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    char.powers[pIdx].effects[eIdx].descriptors = value;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    char.activePowers[pIdx].effects[eIdx].descriptors = value;
   }
 };
 
 window.updateEffectNotesDirect = function(pIdx, eIdx, value) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    char.powers[pIdx].effects[eIdx].notes = value;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    char.activePowers[pIdx].effects[eIdx].notes = value;
   }
 };
 
 window.updateEffectOptionSelect = function(pIdx, eIdx, optionKey, value) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    if (!char.powers[pIdx].effects[eIdx].options) char.powers[pIdx].effects[eIdx].options = {};
-    char.powers[pIdx].effects[eIdx].options[optionKey] = value;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    if (!char.activePowers[pIdx].effects[eIdx].options) char.activePowers[pIdx].effects[eIdx].options = {};
+    char.activePowers[pIdx].effects[eIdx].options[optionKey] = value;
     buildPowersUI();
     refreshUI();
   }
 };
 
 window.updateEffectOptionText = function(pIdx, eIdx, optionKey, value) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    if (!char.powers[pIdx].effects[eIdx].options) char.powers[pIdx].effects[eIdx].options = {};
-    char.powers[pIdx].effects[eIdx].options[optionKey] = value;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    if (!char.activePowers[pIdx].effects[eIdx].options) char.activePowers[pIdx].effects[eIdx].options = {};
+    char.activePowers[pIdx].effects[eIdx].options[optionKey] = value;
   }
 };
 
 window.updateEffectDirect = function(pIdx, eIdx, value, skipHistory = false) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    let effect = char.powers[pIdx].effects[eIdx];
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    let effect = char.activePowers[pIdx].effects[eIdx];
     
     if (!skipHistory) {
         if (!effect.effectHistory) { effect.effectHistory = [effect.effectName || ""]; effect.effectHistoryIdx = 0; }
@@ -3137,16 +4266,16 @@ window.updateEffectDirect = function(pIdx, eIdx, value, skipHistory = false) {
 };
 
 window.updatePowerProp = function(pIdx, eIdx, prop, value) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
     if (prop === 'rank') {
       let val = parseInt(value) || 1;
-      let effect = char.powers[pIdx].effects[eIdx];
+      let effect = char.activePowers[pIdx].effects[eIdx];
       let maxRank = window.getMaxPowerRank(effect);
       if (val > maxRank) val = maxRank;
       if (val < 1) val = 1;
-      char.powers[pIdx].effects[eIdx][prop] = val;
+      char.activePowers[pIdx].effects[eIdx][prop] = val;
     } else {
-      char.powers[pIdx].effects[eIdx][prop] = value;
+      char.activePowers[pIdx].effects[eIdx][prop] = value;
     }
     buildPowersUI();
     refreshUI();
@@ -3154,8 +4283,8 @@ window.updatePowerProp = function(pIdx, eIdx, prop, value) {
 };
 
 window.stepEffectRank = function(pIdx, eIdx, delta) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx]) {
-    let effect = char.powers[pIdx].effects[eIdx];
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx]) {
+    let effect = char.activePowers[pIdx].effects[eIdx];
     let maxRank = window.getMaxPowerRank(effect);
     
     let val = (parseInt(effect.rank) || 1) + delta;
@@ -3171,26 +4300,26 @@ window.stepEffectRank = function(pIdx, eIdx, delta) {
 };
 
 window.deletePowerContainer = function(index) {
-  if (char.powers[index]) {
+  if (char.activePowers[index]) {
     let warningsDisabled = localStorage.getItem("mm4e_disable_delete_warning") === "true";
     if (!warningsDisabled) {
         if (!confirm("Are you sure you want to delete this entire power container and all its effects?")) {
             return;
         }
     }
-    char.powers.splice(index, 1);
+    char.activePowers.splice(index, 1);
     buildPowersUI();
     refreshUI();
   }
 };
 
 window.deleteEffect = function(pIdx, eIdx) {
-    if (char.powers[pIdx] && char.powers[pIdx].effects) {
-        char.powers[pIdx].effects.splice(eIdx, 1);
-        if (char.powers[pIdx].effects.length === 0) {
-            char.powers.splice(pIdx, 1);
-        } else if (char.powers[pIdx].effects.length === 1) {
-            char.powers[pIdx].effects[0].association = "primary";
+    if (char.activePowers[pIdx] && char.activePowers[pIdx].effects) {
+        char.activePowers[pIdx].effects.splice(eIdx, 1);
+        if (char.activePowers[pIdx].effects.length === 0) {
+            char.activePowers.splice(pIdx, 1);
+        } else if (char.activePowers[pIdx].effects.length === 1) {
+            char.activePowers[pIdx].effects[0].association = "primary";
         }
         buildPowersUI();
         refreshUI();
@@ -3201,7 +4330,7 @@ window.addModifierToEffect = function(pIdx, eIdx, selectElemId) {
   const sel = document.getElementById(selectElemId);
   if (!sel || !sel.value) return;
   const modName = sel.value;
-  const effect = char.powers[pIdx].effects[eIdx];
+  const effect = char.activePowers[pIdx].effects[eIdx];
 
   let effName = effect.effectName;
   let effData = POWER_EFFECTS_LIST.find(e => e.name === effName);
@@ -3234,19 +4363,19 @@ window.addModifierToEffect = function(pIdx, eIdx, selectElemId) {
 };
 
 window.stepModifierRank = function(pIdx, eIdx, modIdx, delta, minVal, maxVal) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].modifiers && char.powers[pIdx].effects[eIdx].modifiers[modIdx]) {
-    let val = (parseInt(char.powers[pIdx].effects[eIdx].modifiers[modIdx].ranks) || 1) + delta;
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].modifiers && char.activePowers[pIdx].effects[eIdx].modifiers[modIdx]) {
+    let val = (parseInt(char.activePowers[pIdx].effects[eIdx].modifiers[modIdx].ranks) || 1) + delta;
     if (minVal !== undefined && val < minVal) val = minVal;
     if (maxVal !== undefined && val > maxVal) val = maxVal;
-    char.powers[pIdx].effects[eIdx].modifiers[modIdx].ranks = val;
+    char.activePowers[pIdx].effects[eIdx].modifiers[modIdx].ranks = val;
     buildPowersUI();
     refreshUI();
   }
 };
 
 window.removeModifier = function(pIdx, eIdx, modIdx) {
-  if (char.powers[pIdx] && char.powers[pIdx].effects[eIdx] && char.powers[pIdx].effects[eIdx].modifiers) {
-    char.powers[pIdx].effects[eIdx].modifiers.splice(modIdx, 1);
+  if (char.activePowers[pIdx] && char.activePowers[pIdx].effects[eIdx] && char.activePowers[pIdx].effects[eIdx].modifiers) {
+    char.activePowers[pIdx].effects[eIdx].modifiers.splice(modIdx, 1);
     buildPowersUI();
     refreshUI();
   }
@@ -3665,6 +4794,7 @@ window.applyEquipmentTemplate = function(type, idx, templateName) {
 
 function populateUIFromCharacter() {
   if (document.getElementById("heroNameInput")) document.getElementById("heroNameInput").value = char.name || "New Hero";
+  if (document.getElementById("playerNameInput")) document.getElementById("playerNameInput").value = char.playerName || "";
   if (document.getElementById("heroPLInput")) document.getElementById("heroPLInput").value = char.powerLevel || 10;
   if (document.getElementById("heroSizeInput")) document.getElementById("heroSizeInput").value = char.sizeCategory || "Medium";
   if (document.getElementById("heroMassInput")) document.getElementById("heroMassInput").value = char.massRank !== undefined ? char.massRank : 3;
@@ -3714,6 +4844,30 @@ function applyLoadedCharacter(loaded) {
 function refreshUI() {
   document.getElementById("lblHeroName").textContent = char.name;
   document.getElementById("lblPL").textContent = char.powerLevel;
+
+  // Title Bar Hero & Alt Name Display
+  const titleHeroEl = document.getElementById("titleHeroName");
+  const titleAltBadge = document.getElementById("titleAltBadge");
+  const btnDeleteAlt = document.getElementById("btnDeleteCurrentAlt");
+
+  if (window.activeCompanionId && window.primaryHero) {
+    const comp = (window.primaryHero.companions || []).find(c => c.id === window.activeCompanionId);
+    if (comp) {
+      if (titleHeroEl) titleHeroEl.textContent = window.primaryHero.name || "Hero";
+      if (titleAltBadge) {
+        const typeLabels = { minion: "Minion", mecha: "Mecha", alt_form: "Alt Form" };
+        titleAltBadge.textContent = `[${comp.name} (${typeLabels[comp.type] || "Alt"})]`;
+        titleAltBadge.className = `header-alt-badge ${comp.type}`;
+        titleAltBadge.style.display = "inline-block";
+      }
+      if (btnDeleteAlt) btnDeleteAlt.style.display = "inline-block";
+    }
+  } else {
+    if (titleHeroEl) titleHeroEl.textContent = char.name || "New Hero";
+    if (titleAltBadge) titleAltBadge.style.display = "none";
+    if (btnDeleteAlt) btnDeleteAlt.style.display = "none";
+  }
+
 
   if (typeof MEASUREMENT_TABLE !== 'undefined') {
     const massData = MEASUREMENT_TABLE[char.massRank ? char.massRank.toString() : "3"];
@@ -4336,3 +5490,329 @@ function setupFileHandlers() {
   }
 }
 
+
+/* ==========================================================================
+   MINIONS, MECHA & ALTERNATE FORMS (ALTS) MANAGEMENT
+   ========================================================================== */
+
+function syncActiveCompanionToPrimary() {
+  if (window.activeCompanionId && window.primaryHero) {
+    const comp = (window.primaryHero.companions || []).find(c => c.id === window.activeCompanionId);
+    if (comp) {
+      comp.name = window.char.name;
+      comp.powerLevel = window.char.powerLevel;
+      comp.totalPointsAllowed = window.char.totalPointsAllowed;
+      comp.data = window.char.serialize().character;
+    }
+  }
+}
+window.syncActiveCompanionToPrimary = syncActiveCompanionToPrimary;
+
+function updateAltSelectorUI() {
+  const sel = document.getElementById("selActiveCharacter");
+  if (!sel) return;
+
+  const hero = window.primaryHero || window.char;
+  const comps = hero.companions || [];
+
+  let html = `<option value="main" ${!window.activeCompanionId ? 'selected' : ''}>🦸 Primary Hero: ${escapeHtml(hero.name || 'Hero')}</option>`;
+
+  if (comps.length > 0) {
+    comps.forEach(c => {
+      const icon = c.type === 'mecha' ? '🤖' : (c.type === 'minion' ? '👾' : '⚡');
+      const isSel = window.activeCompanionId === c.id ? 'selected' : '';
+      html += `<option value="${c.id}" ${isSel}>${icon} ${escapeHtml(c.name)} [PL ${c.powerLevel || 10}]</option>`;
+    });
+  }
+
+  html += `<option disabled>──────────</option>`;
+  html += `<option value="__add_minion">+ Add Minion...</option>`;
+  html += `<option value="__add_mecha">+ Add Mecha...</option>`;
+  html += `<option value="__add_alt_form">+ Add Alternate Form...</option>`;
+
+  sel.innerHTML = html;
+}
+window.updateAltSelectorUI = updateAltSelectorUI;
+
+function switchToCompanion(targetId) {
+  syncActiveCompanionToPrimary();
+
+  if (targetId === "main") {
+    window.char = window.primaryHero;
+    window.activeCompanionId = null;
+    populateUIFromCharacter();
+    updateAltSelectorUI();
+  TablesPopoutManager.init();
+    renderCompanionsTab();
+    showToast("Switched to Primary Hero.", "info");
+    return;
+  }
+
+  const hero = window.primaryHero || window.char;
+  const comp = (hero.companions || []).find(c => c.id === targetId);
+  if (!comp) return;
+
+  window.activeCompanionId = comp.id;
+  const newChar = new CharacterModel();
+  newChar.deserialize(comp.data);
+  newChar.name = comp.name;
+  newChar.powerLevel = comp.powerLevel || hero.powerLevel;
+  newChar.totalPointsAllowed = comp.totalPointsAllowed || (newChar.powerLevel * 15);
+  newChar.isMecha = comp.type === 'mecha';
+  newChar.isMinion = comp.type === 'minion';
+  newChar.isAltForm = comp.type === 'alt_form';
+  newChar.altType = comp.type;
+  newChar.altParentHeroName = hero.name;
+
+  window.char = newChar;
+  populateUIFromCharacter();
+  updateAltSelectorUI();
+  renderCompanionsTab();
+  showToast(`Switched to ${comp.name}.`, "info");
+}
+window.switchToCompanion = switchToCompanion;
+
+function createNewCompanion(type, customName = "") {
+  syncActiveCompanionToPrimary();
+  const hero = window.primaryHero || window.char;
+  const entry = hero.addCompanion(type, customName);
+  updateAltSelectorUI();
+  switchToCompanion(entry.id);
+  renderCompanionsTab();
+  showToast(`Created ${entry.type}: ${entry.name}`, "success");
+}
+window.createNewCompanion = createNewCompanion;
+
+function deleteCurrentAlt() {
+  if (!window.activeCompanionId || !window.primaryHero) return;
+  const comp = (window.primaryHero.companions || []).find(c => c.id === window.activeCompanionId);
+  if (!comp) return;
+
+  if (confirm(`Are you sure you want to delete "${comp.name}"?`)) {
+    window.primaryHero.removeCompanion(comp.id);
+    switchToCompanion("main");
+    renderCompanionsTab();
+    showToast("Deleted companion form.", "info");
+  }
+}
+window.deleteCurrentAlt = deleteCurrentAlt;
+
+function renderCompanionsTab() {
+  const container = document.getElementById("companionsListContainer");
+  if (!container) return;
+
+  const hero = window.primaryHero || window.char;
+  const comps = hero.companions || [];
+
+  let html = "";
+
+  // 1. Primary Hero Card
+  const heroPP = hero.powerPointsSummary ? hero.powerPointsSummary.totalSpent : 0;
+  const heroAllowed = hero.totalPointsAllowed || (hero.powerLevel * 15);
+  const isHeroActive = !window.activeCompanionId;
+
+  html += `
+    <div class="companion-card" style="${isHeroActive ? 'border: 2px solid var(--accent-primary); background: rgba(37,99,235,0.04);' : ''}">
+      <div class="companion-card-header">
+        <span class="companion-card-title">🦸 ${escapeHtml(hero.name || 'Hero')}</span>
+        <span class="companion-type-badge" style="background: rgba(37,99,235,0.15); color: var(--accent-primary);">PRIMARY HERO</span>
+      </div>
+      <div style="font-size: 13px; color: var(--text-muted);">
+        <strong>Power Level:</strong> ${hero.powerLevel || 10} • <strong>Points:</strong> ${heroPP} / ${heroAllowed} PP
+      </div>
+      <div style="margin-top: 8px;">
+        ${isHeroActive ? '<span style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('main')">Switch to Primary Hero</button>`}
+      </div>
+    </div>
+  `;
+
+  // 2. Each Companion
+  if (comps.length === 0) {
+    html += `<div style="grid-column: 1 / -1; font-style: italic; color: var(--text-muted); padding: 12px 0;">No minions, mecha, or alternate forms added yet. Click an Add button above to create one.</div>`;
+  } else {
+    comps.forEach(c => {
+      const isCompActive = window.activeCompanionId === c.id;
+      const icon = c.type === 'mecha' ? '🤖' : (c.type === 'minion' ? '👾' : '⚡');
+      const typeLabel = c.type === 'mecha' ? 'MECHA' : (c.type === 'minion' ? 'MINION' : 'ALT FORM');
+      const budget = c.totalPointsAllowed || (c.powerLevel * 15);
+
+      html += `
+        <div class="companion-card" style="${isCompActive ? 'border: 2px solid var(--accent-primary); background: rgba(37,99,235,0.04);' : ''}">
+          <div class="companion-card-header">
+            <span class="companion-card-title">${icon} ${escapeHtml(c.name)}</span>
+            <span class="companion-type-badge ${c.type}">${typeLabel}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--text-muted);">
+            <strong>Power Level:</strong> ${c.powerLevel || 10} • <strong>Budget:</strong> ${budget} PP
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+            ${isCompActive ? '<span style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('${c.id}')">Edit Form</button>`}
+            <button type="button" class="btn btn-sm" style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px;" onclick="if(confirm('Delete ${escapeHtml(c.name)}?')){ window.primaryHero.removeCompanion('${c.id}'); if(window.activeCompanionId === '${c.id}') switchToCompanion('main'); else { updateAltSelectorUI(); renderCompanionsTab(); } }">Delete</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  container.innerHTML = html;
+}
+window.renderCompanionsTab = renderCompanionsTab;
+
+/* ==========================================================================
+   MAIN MENU & HEADER BUTTON BINDINGS
+   ========================================================================== */
+
+
+
+function setupMainMenuAndHeader() {
+  // Main Menu Toggle
+  const btnMainMenu = document.getElementById("btnMainMenu");
+  const mainMenuDropdown = document.getElementById("mainMenuDropdown");
+  if (btnMainMenu && mainMenuDropdown) {
+    btnMainMenu.onclick = (e) => {
+      e.stopPropagation();
+      const isVisible = mainMenuDropdown.style.display === "block";
+      mainMenuDropdown.style.display = isVisible ? "none" : "block";
+      btnMainMenu.setAttribute("aria-expanded", !isVisible);
+    };
+
+    document.addEventListener("click", (e) => {
+      if (!mainMenuDropdown.contains(e.target) && e.target !== btnMainMenu && !btnMainMenu.contains(e.target)) {
+        mainMenuDropdown.style.display = "none";
+        btnMainMenu.setAttribute("aria-expanded", "false");
+      }
+    });
+
+    // Close menu when menu action buttons are clicked (except options which handles itself)
+    mainMenuDropdown.querySelectorAll(".menu-action-btn").forEach(b => {
+      if (b.id !== "btnToggleOptions") {
+        b.addEventListener("click", () => {
+          mainMenuDropdown.style.display = "none";
+          btnMainMenu.setAttribute("aria-expanded", "false");
+        });
+      }
+    });
+  }
+
+  // Main Menu Position Preference (Left / Right)
+  const savedMenuPos = localStorage.getItem("mm4e_menu_position") || "right";
+  const headerEl = document.getElementById("appTopHeader");
+  if (headerEl) {
+    headerEl.classList.remove("menu-left", "menu-right");
+    headerEl.classList.add(`menu-${savedMenuPos}`);
+  }
+
+  const radioLeft = document.getElementById("optMenuLeft");
+  const radioRight = document.getElementById("optMenuRight");
+  if (radioLeft && radioRight) {
+    if (savedMenuPos === "left") radioLeft.checked = true;
+    else radioRight.checked = true;
+
+    radioLeft.addEventListener("change", () => {
+      if (radioLeft.checked) {
+        localStorage.setItem("mm4e_menu_position", "left");
+        if (headerEl) {
+          headerEl.classList.remove("menu-right");
+          headerEl.classList.add("menu-left");
+        }
+      }
+    });
+
+    radioRight.addEventListener("change", () => {
+      if (radioRight.checked) {
+        localStorage.setItem("mm4e_menu_position", "right");
+        if (headerEl) {
+          headerEl.classList.remove("menu-left");
+          headerEl.classList.add("menu-right");
+        }
+      }
+    });
+  }
+
+  // Active Form Selector dropdown
+  const selActive = document.getElementById("selActiveCharacter");
+  if (selActive) {
+    selActive.addEventListener("change", (e) => {
+      const val = e.target.value;
+      if (val === "__add_minion") {
+        createNewCompanion("minion");
+      } else if (val === "__add_mecha") {
+        createNewCompanion("mecha");
+      } else if (val === "__add_alt_form") {
+        createNewCompanion("alt_form");
+      } else {
+        switchToCompanion(val);
+      }
+    });
+  }
+
+  // Delete current alt button
+  const btnDeleteAlt = document.getElementById("btnDeleteCurrentAlt");
+  if (btnDeleteAlt) {
+    btnDeleteAlt.addEventListener("click", () => deleteCurrentAlt());
+  }
+
+  // Quick Add Companion buttons in Main Menu
+  const btnQuickMinion = document.getElementById("btnQuickAddMinion");
+  const btnQuickMecha = document.getElementById("btnQuickAddMecha");
+  const btnQuickAlt = document.getElementById("btnQuickAddAltForm");
+  if (btnQuickMinion) btnQuickMinion.addEventListener("click", () => createNewCompanion("minion"));
+  if (btnQuickMecha) btnQuickMecha.addEventListener("click", () => createNewCompanion("mecha"));
+  if (btnQuickAlt) btnQuickAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+
+  // Add Companion buttons on Companions Tab
+  const btnAddMinion = document.getElementById("btnAddMinion");
+  const btnAddMecha = document.getElementById("btnAddMecha");
+  const btnAddAlt = document.getElementById("btnAddAltForm");
+  if (btnAddMinion) btnAddMinion.addEventListener("click", () => createNewCompanion("minion"));
+  if (btnAddMecha) btnAddMecha.addEventListener("click", () => createNewCompanion("mecha"));
+  if (btnAddAlt) btnAddAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+
+  // PDF Export and Print Preview buttons
+  const btnExportPdf = document.getElementById("btnExportPdf");
+  const btnPrintHero = document.getElementById("btnPrintHero");
+  const btnModalExportPdf = document.getElementById("btnModalExportPdf");
+  const btnClosePrintPreview = document.getElementById("btnClosePrintPreview");
+
+  if (btnExportPdf) btnExportPdf.addEventListener("click", () => {
+    if (typeof window.exportToPdf === 'function') window.exportToPdf();
+  });
+  if (btnModalExportPdf) btnModalExportPdf.addEventListener("click", () => {
+    if (typeof window.exportToPdf === 'function') window.exportToPdf();
+  });
+
+  if (btnPrintHero) btnPrintHero.addEventListener("click", () => {
+    if (typeof window.openPrintPreview === 'function') window.openPrintPreview();
+  });
+
+  if (btnClosePrintPreview) btnClosePrintPreview.addEventListener("click", () => {
+    if (typeof window.closePrintPreview === 'function') window.closePrintPreview();
+  });
+
+  updateAltSelectorUI();
+  TablesPopoutManager.init();
+  OptionsPopoutManager.init();
+}
+
+// Hook setupMainMenuAndHeader into window load or DOMContentLoaded
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  setupMainMenuAndHeader();
+  TablesPopoutManager.init();
+  OptionsPopoutManager.init();
+} else {
+  window.addEventListener("DOMContentLoaded", () => {
+    setupMainMenuAndHeader();
+    TablesPopoutManager.init();
+    OptionsPopoutManager.init();
+  });
+}
+
+// Popout window cleanup on main window unload
+window.addEventListener("beforeunload", () => {
+  if (typeof TablesPopoutManager !== "undefined" && TablesPopoutManager.win && !TablesPopoutManager.win.closed) {
+    try { TablesPopoutManager.win.close(); } catch (e) {}
+  }
+  if (typeof OptionsPopoutManager !== "undefined" && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed) {
+    try { OptionsPopoutManager.win.close(); } catch (e) {}
+  }
+});

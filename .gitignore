@@ -3,5 +3,16 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
+# Development & Scratch
+.vscode/
+scratch/
+backup.js
+
 # Local Backups
 _backups/
+backup_*/
+*.zip
+
+# Character PDFs & Saves
+*.pdf
+*.mm4e

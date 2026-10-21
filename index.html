@@ -97,6 +97,7 @@
         <button type="button" class="menu-action-btn" id="btnQuickAddAltForm"><span class="menu-btn-icon">⚡</span> + Add Alternate Form</button>
 
         <div class="menu-divider"></div>
+        <button type="button" class="menu-action-btn" id="btnOpenHelpModal"><span class="menu-btn-icon">📖</span> Help &amp; Tab Guide <span id="lblF1HelpBadge" style="margin-left: auto; font-size: 11px; opacity: 0.7;">(F1)</span></button>
         <button type="button" class="menu-action-btn" id="btnToggleOptions"><span class="menu-btn-icon">⚙️</span> Options &amp; Display...</button>
       </div>
 
@@ -702,6 +703,340 @@
       </div>
     </div>
   </section>
+
+  
+  <!-- HELP & TAB GUIDE MODAL (F1) -->
+  <div class="help-modal-overlay" id="modalHelpGuide" style="display: none;">
+    <div class="help-modal-dialog">
+      <div class="help-modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">📖</span>
+          <div>
+            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">M&amp;M 4E Hero Builder Manual &amp; Tab Guide</h3>
+            <div style="font-size: 11px; color: var(--text-muted);">Detailed guide to builder tabs, power point budgeting, mechanics &amp; rules</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 320px; margin: 0 12px;">
+          <input type="text" id="txtHelpFilter" placeholder="🔍 Search help topics (e.g. powers, skills, caps)..." style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnCloseHelpModal" title="Close Guide (Esc)">✕ Close</button>
+        </div>
+      </div>
+      
+      <!-- Quick Navigation Pills -->
+      <div class="help-nav-pills" id="helpNavPills">
+        <button type="button" class="help-pill active" data-target="help-sec-overview">Overview</button>
+        <button type="button" class="help-pill" data-target="help-sec-basics">Basics &amp; Stats</button>
+        <button type="button" class="help-pill" data-target="help-sec-skills">Skills</button>
+        <button type="button" class="help-pill" data-target="help-sec-advantages">Advantages</button>
+        <button type="button" class="help-pill" data-target="help-sec-powers">Powers</button>
+        <button type="button" class="help-pill" data-target="help-sec-equipment">Equipment &amp; HQ</button>
+        <button type="button" class="help-pill" data-target="help-sec-companions">Companions &amp; Forms</button>
+        <button type="button" class="help-pill" data-target="help-sec-blueprints">Improv Builder</button>
+        <button type="button" class="help-pill" data-target="help-sec-background">Background</button>
+        <button type="button" class="help-pill" data-target="help-sec-shortcuts">Shortcuts &amp; Tools</button>
+      </div>
+
+      <div class="help-modal-body" id="helpModalBody">
+
+        <!-- 0. Overview -->
+        <div class="help-topic-card" id="help-sec-overview">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🌟</span>
+              <span>Overview &amp; Power Point Economy</span>
+            </div>
+            <span class="help-badge">Core Engine</span>
+          </div>
+          <div class="help-card-content">
+            <p>Welcome to the <strong>Mutants &amp; Masterminds 4th Edition (4E) Hero Builder</strong>! This application gives you a fast, rules-accurate, and fully interactive workshop for creating superheroes, villains, minions, mecha, and alternate forms.</p>
+            <ul class="help-feature-list">
+              <li><strong>Power Level (PL):</strong> The global benchmark of your campaign (default PL 10). Controls total starting Power Points (PL × 15) and maximum defense/attack caps.</li>
+              <li><strong>Hero Points:</strong> In 4E, starting Hero Points are calculated automatically as <code>1 + Luck advantage ranks</code>. Used during play to reroll d20 checks, counter effects, or perform heroic extra effort.</li>
+              <li><strong>Top Summary Bar:</strong> Displays real-time point expenditures across Abilities, Skills, Advantages, Powers, and Defenses, and warns you whenever you exceed your total allowed Power Points.</li>
+            </ul>
+            <div class="help-tip-box">
+              💡 <strong>Pro-Tip:</strong> All calculations update in real time as you adjust ranks, advantages, or modifiers. The active editing context can be switched at any time between your Primary Hero and any companion, mecha, or alternate form using the top header dropdown.
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Basics & Stats -->
+        <div class="help-topic-card" id="help-sec-basics">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🦸</span>
+              <span>Basics &amp; Stats Tab</span>
+            </div>
+            <span class="help-badge">Tab 1: tab-basics</span>
+          </div>
+          <div class="help-card-content">
+            <p>The foundation of your character's physical, mental, and defensive capabilities.</p>
+            <ul class="help-feature-list">
+              <li><strong>Hero &amp; Player Info:</strong> Set Character Name, Player Name, Power Level, Archetype, and Point Budget multiplier.</li>
+              <li><strong>The 8 Core Abilities (2 PP per rank):</strong>
+                <ul>
+                  <li><code>STR (Strength):</code> Lifting, close damage, Athletics checks.</li>
+                  <li><code>STA (Stamina):</code> Health, natural Toughness, Fortitude baseline.</li>
+                  <li><code>AGI (Agility):</code> Body control, Dodge defense, Stealth, Acrobatics, Initiative.</li>
+                  <li><code>DEX (Dexterity):</code> Hand-eye coordination, ranged attack checks, Sleight of Hand, Vehicles.</li>
+                  <li><code>FGT (Fighting):</code> Close combat attack bonuses, Parry defense baseline.</li>
+                  <li><code>INT (Intellect):</code> Reasoning, Knowledge, Technology, Treatment, Investigation.</li>
+                  <li><code>AWE (Awareness):</code> Perception, Insight, Will defense baseline.</li>
+                  <li><code>PRE (Presence):</code> Personality, Deception, Intimidation, Persuasion.</li>
+                </ul>
+              </li>
+              <li><strong>Combat Maneuvers &amp; Unarmed Attack:</strong> Displays unarmed attack bonus (FGT + Close Attack) and damage (STR rank). Offers quick reference for tactical combat maneuvers (Power Attack, Defensive Attack, All-Out Attack).</li>
+              <li><strong>Defenses &amp; Resistance Checks:</strong>
+                <ul>
+                  <li><code>Dodge &amp; Parry:</code> Avoid ranged and melee attacks.</li>
+                  <li><code>Toughness:</code> Resist physical damage (STA rank + Protection + Defensive Roll).</li>
+                  <li><code>Fortitude:</code> Resist toxins, radiation, diseases, fatigue.</li>
+                  <li><code>Will:</code> Resist mental, psychic, and emotional attacks.</li>
+                </ul>
+              </li>
+            </ul>
+            <div class="help-warn-box">
+              ⚠️ <strong>Power Level Trade-off Limits:</strong>
+              <br>• <code>Dodge + Toughness ≤ 2 × PL</code> and <code>Parry + Toughness ≤ 2 × PL</code>
+              <br>• <code>Fortitude + Will ≤ 2 × PL</code>
+              <br>• <code>Attack Bonus + Effect Rank ≤ 2 × PL</code>
+              <br>The builder automatically validates these pairs and highlights any violations in red.
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Skills -->
+        <div class="help-topic-card" id="help-sec-skills">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🎯</span>
+              <span>Skills Tab</span>
+            </div>
+            <span class="help-badge">Tab 2: tab-skills</span>
+          </div>
+          <div class="help-card-content">
+            <p>Represents training, specialized expertise, and learned disciplines.</p>
+            <ul class="help-feature-list">
+              <li><strong>Cost:</strong> 1 Power Point buys <strong>2 skill ranks</strong> (0.5 PP per rank).</li>
+              <li><strong>Total Modifier Calculation:</strong> <code>Governing Ability rank + Trained Ranks + Advantage / Enhanced Trait bonuses</code>.</li>
+              <li><strong>Power Level Cap:</strong> No skill modifier can exceed <code>PL + 10</code> (e.g. at PL 10, maximum skill check modifier is +20).</li>
+              <li><strong>Interactive Sorting:</strong> Click any table header (<em>Skill Name, Ability, Ranks, Bonus, Total</em>) to toggle ascending/descending order.</li>
+            </ul>
+            <div class="help-tip-box">
+              💡 <strong>Pro-Tip:</strong> Untrained skills automatically use their base ability score. Hover over skill names to review their common uses, check types, and trained-only restrictions.
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Advantages -->
+        <div class="help-topic-card" id="help-sec-advantages">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🎖️</span>
+              <span>Advantages Tab</span>
+            </div>
+            <span class="help-badge">Tab 3: tab-advantages</span>
+          </div>
+          <div class="help-card-content">
+            <p>Minor special talents, combat tricks, resources, and tactical benefits.</p>
+            <ul class="help-feature-list">
+              <li><strong>Cost:</strong> Standard 1 PP per advantage rank.</li>
+              <li><strong>Four Distinct Categories:</strong>
+                <ul>
+                  <li><code>Combat:</code> Accurate Attack, All-Out Attack, Defensive Roll, Improved Critical, Power Attack, Takedown, Precise Attack.</li>
+                  <li><code>Fortune:</code> Luck (bonus hero points), Seize Initiative, Inspire, Ultimate Effort.</li>
+                  <li><code>General:</code> Benefit (Wealth, Status), Diehard, Eidetic Memory, Equipment, Fearless, Languages, Trance.</li>
+                  <li><code>Skill:</code> Attractive, Daze, Fascinate, Jack-of-All-Trades, Skill Mastery, Well-Informed.</li>
+                </ul>
+              </li>
+              <li><strong>Heroic Limits:</strong> Multi-rank advantages (e.g. <em>Improved Critical</em> up to 4 ranks, <em>Luck</em> up to PL/2) enforce rules caps automatically.</li>
+              <li><strong>Category &amp; Keyword Search:</strong> Use the category filter dropdown and search input to quickly locate specific advantages.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 4. Powers -->
+        <div class="help-topic-card" id="help-sec-powers">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>⚡</span>
+              <span>Powers Tab</span>
+            </div>
+            <span class="help-badge">Tab 4: tab-powers</span>
+          </div>
+          <div class="help-card-content">
+            <p>The powerhouse of character creation. Create superhuman abilities, technological gadgets, magic spells, and psychic phenomena.</p>
+            <ul class="help-feature-list">
+              <li><strong>Power Containers:</strong> Group effects into logical powers. Each container has its own name, descriptors (e.g. <em>Fire, Magic, Tech, Mutant</em>), and structure.</li>
+              <li><strong>Alternate Effect (AE) Arrays:</strong> Containers can host alternate powers for just 1 PP each. Only one alternate configuration in an array is active at a time, sharing the highest-cost effect's point budget.</li>
+              <li><strong>Extras &amp; Flaws:</strong>
+                <ul>
+                  <li><em>Extras:</em> Increase effect potency (+1, +2 per rank, or flat +1 PP). Examples: Multiattack, Increased Range, Area Effect.</li>
+                  <li><em>Flaws:</em> Limit or restrict an effect (-1, -2 per rank, or flat -1 PP). Examples: Distracting, Limited, Tiring, Removable.</li>
+                  <li><em>Fractional Cost Rule:</em> If flaws exceed base cost, cost becomes 1 PP per 2, 3, 4, or 5 ranks.</li>
+                </ul>
+              </li>
+              <li><strong>⚙️ Power Configurations:</strong> Effects with specialized options show a <code>⚙️ Has Configs</code> indicator. Click to configure:
+                <ul>
+                  <li><em>Affliction:</em> Choose 1st, 2nd, and 3rd degree conditions (Dazed, Stunned, Incapacitated, Transformed).</li>
+                  <li><em>Enhanced Trait:</em> Select which abilities, skills, or advantages this power enhances.</li>
+                  <li><em>Senses:</em> Pick accurate, acute, analytical, darkvision, or penetrating senses.</li>
+                  <li><em>Compound Presets:</em> One-click multi-effect powers like <em>Absorption</em>, <em>Berserker Rage</em>, and <em>Poltergeist</em>.</li>
+                </ul>
+              </li>
+            </ul>
+            <div class="help-tip-box">
+              💡 <strong>Pro-Tip:</strong> The builder dynamically tracks the base cost per rank, active modifiers, and total container cost in real time.
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Equipment & HQ -->
+        <div class="help-topic-card" id="help-sec-equipment">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🛡️</span>
+              <span>Equipment &amp; HQ Tab</span>
+            </div>
+            <span class="help-badge">Tab 5: tab-equipment</span>
+          </div>
+          <div class="help-card-content">
+            <p>Manage mortal gear, weapons, body armor, vehicles, and super-headquarters.</p>
+            <ul class="help-feature-list">
+              <li><strong>Equipment Point (EP) Economy:</strong> 1 Power Point invested in the <em>Equipment</em> advantage grants <strong>5 Equipment Points (EP)</strong>.</li>
+              <li><strong>Equipment vs. Devices:</strong> Equipment is mundane, commercially available technology (can be taken away, run out of ammo, or break). Inherent superhero gadgets and indestructible devices should be built in the <em>Powers</em> tab with the <em>Removable</em> flaw.</li>
+              <li><strong>Personal Gear:</strong> Weapons (handguns, swords, energy blasters), tactical armor, commlinks, night vision goggles.</li>
+              <li><strong>Vehicles:</strong> Build cars, motorcycles, jets, and starships with custom size categories, strength, speed, toughness, defense, and vehicular weapons.</li>
+              <li><strong>Headquarters:</strong> Design secret sanctums, orbital watchtowers, and underground caves with size, toughness, and features (Computers, Defense Systems, Laboratories, Infirmaries, Teleport Pads).</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 6. Companions & Forms -->
+        <div class="help-topic-card" id="help-sec-companions">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🤖</span>
+              <span>Companions &amp; Alternate Forms Tab</span>
+            </div>
+            <span class="help-badge">Tab 6: tab-companions</span>
+          </div>
+          <div class="help-card-content">
+            <p>Full support for secondary characters, allied summons, piloted mecha, and transformative identities.</p>
+            <ul class="help-feature-list">
+              <li><strong>Minions (1 PP per 15 PP minion):</strong> Faithful side-characters, henchmen, automated drones, or animal companions. Subject to standard M&amp;M minion rules (cannot score critical hits, fail resistance checks against damage on a single degree of failure).</li>
+              <li><strong>Mecha:</strong> Giant piloted suits and robot allies with their own equipment frameworks, armor, and cockpits.</li>
+              <li><strong>Alternate Forms &amp; Metamorph:</strong> Characters with dual identities (e.g. Bruce Banner / The Hulk, Billy Batson / Shazam, civilian / armored battle-form).</li>
+              <li><strong>Seamless Form Switching:</strong> Use the <strong>Active Form</strong> dropdown in the top header bar to instantly swap between your Primary Hero and any companion. The entire builder UI updates to edit that specific form's sheet!</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 7. Improv Builder -->
+        <div class="help-topic-card" id="help-sec-blueprints">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>📐</span>
+              <span>Improv Builder / Blueprints Tab</span>
+            </div>
+            <span class="help-badge">Tab 7: tab-blueprints</span>
+          </div>
+          <div class="help-card-content">
+            <p>An isolated testing workbench and blueprint scratchpad for power stunt design.</p>
+            <ul class="help-feature-list">
+              <li><strong>Isolated Scratchpad:</strong> Prototype complex compound powers, calculate modifier math, and experiment with novel effect combinations without cluttering your hero's active power list.</li>
+              <li><strong>Instant Stunt Math:</strong> Quickly verify if an alternate effect stunt fits within your existing power array's point budget during a session.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 8. Background -->
+        <div class="help-topic-card" id="help-sec-background">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>🎭</span>
+              <span>Background &amp; Complications Tab</span>
+            </div>
+            <span class="help-badge">Tab 8: tab-background</span>
+          </div>
+          <div class="help-card-content">
+            <p>The roleplaying heart and narrative engine of your character.</p>
+            <ul class="help-feature-list">
+              <li><strong>Motivations:</strong> Why does your character put their life on the line? (Justice, Doing Good, Responsibility, Greed, Thrills, Acceptance).</li>
+              <li><strong>Complications:</strong> The primary source of <strong>Hero Points</strong> in Mutants &amp; Masterminds! Whenever a complication impacts your character negatively in a scene, your GM awards you a Hero Point.
+                <br><em>Examples:</em> Secret Identity, Enemy, Phobia, Vulnerability, Relationship, Reputation, Disability, Code of Honor.
+              </li>
+              <li><strong>Dossier Details:</strong> Real name, secret vs. public identity, height, weight, eyes, hair, costume description, group affiliations, and personal backstory.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 9. Shortcuts & System Tools -->
+        <div class="help-topic-card" id="help-sec-shortcuts">
+          <div class="help-card-header">
+            <div class="help-card-title">
+              <span>⌨️</span>
+              <span>Shortcuts &amp; System Tools</span>
+            </div>
+            <span class="help-badge">Productivity</span>
+          </div>
+          <div class="help-card-content">
+            <p>Key utilities, pop-out windows, and keyboard shortcuts to streamline your workflow:</p>
+            <table class="reference-table" style="width: 100%; font-size: 12px; margin: 4px 0;">
+              <thead>
+                <tr>
+                  <th style="width: 140px; text-align: left; padding: 4px 8px;">Shortcut / Control</th>
+                  <th style="text-align: left; padding: 4px 8px;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;"><kbd>F1</kbd></td>
+                  <td style="padding: 4px 8px;">Toggle this Help Manual &amp; Tab Guide (with automatic conflict detection).</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;"><kbd>Esc</kbd></td>
+                  <td style="padding: 4px 8px;">Close any open modal (Help, Options, Tables, Print Preview).</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;"><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+                  <td style="padding: 4px 8px;">Save character to local <code>.mm4e</code> file.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;"><kbd>Ctrl</kbd> + <kbd>P</kbd></td>
+                  <td style="padding: 4px 8px;">Open Tactical Dossier &amp; Print / PDF Export Preview.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;">📊 Tables Button</td>
+                  <td style="padding: 4px 8px;">Opens the Reference Tables modal. Click <strong>⧉ Pop Out</strong> to detach tables into an independent resizable window across monitors. Click <strong>⬅ Redock</strong> to return.</td>
+                </tr>
+                <tr>
+                  <td style="padding: 4px 8px; font-weight: 600;">⚙️ Options Button</td>
+                  <td style="padding: 4px 8px;">Toggle Display &amp; Settings (Dark, Light, Parchment themes; font scaling sliders; Main Menu left/right placement; F1 help key toggle).</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="help-tip-box" style="margin-top: 6px;">
+              🛡️ <strong>F1 Conflict Detection Engine:</strong> If your browser or operating system reserves the F1 key for system help, the builder automatically detects the mapping collision, safely disables the F1 shortcut to prevent browser freezing, and notifies you. Help always remains accessible at any time via <strong>Main Menu &gt; Help &amp; Tab Guide</strong>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Help Modal Footer -->
+      <div class="help-modal-footer">
+        <div id="lblHelpF1Status" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+          <span style="color: #10b981;">●</span> F1 Shortcut: <strong>Active</strong>
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted);">
+          Tip: Press <kbd style="padding: 1px 4px; border: 1px solid var(--border-color); border-radius: 3px;">F1</kbd> anywhere or open from <strong>Main Menu &gt; Help &amp; Tab Guide</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- REFERENCE TABLES MODAL POPUP & POPOUT SHELL -->
   <div class="tables-modal-overlay" id="modalReferenceTables" style="display: none;">

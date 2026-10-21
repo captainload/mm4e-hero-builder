@@ -1832,6 +1832,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setupMainMenuAndHeader();
   TablesPopoutManager.init();
   OptionsPopoutManager.init();
+  HelpModalManager.init();
   refreshUI();
 });
 
@@ -1891,10 +1892,17 @@ function setupOptionsModal() {
               <input type="checkbox" id="chkDisableDeleteWarning" ${isDeleteWarningDisabled ? "checked" : ""}>
               Disable power container deletion warnings
           </label>
-          <label style="display: flex; align-items: center; gap: 8px; font-size: var(--font-size-labels); cursor: pointer;">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: var(--font-size-labels); cursor: pointer; margin-bottom: 8px;">
               <input type="checkbox" id="chkDisableResWarning" ${isResWarningDisabled ? "checked" : ""}>
               Disable screen resolution warning
           </label>
+          <label style="display: flex; align-items: center; gap: 8px; font-size: var(--font-size-labels); cursor: pointer; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+              <input type="checkbox" id="chkEnableF1Help" ${HelpModalManager.isF1Enabled() ? "checked" : ""}>
+              Enable F1 key for Help
+          </label>
+          <div id="lblF1ConflictNotice" style="${localStorage.getItem('mm4e_f1_conflict_reason') ? 'display: block;' : 'display: none;'} font-size: 11px; color: #f59e0b; margin-left: 24px; margin-top: 2px;">
+              ⚠️ F1 was disabled due to browser/OS conflict: ${localStorage.getItem('mm4e_f1_conflict_reason') || ''}
+          </div>
       `;
       modalContent.appendChild(warningsDiv);
 
@@ -1904,6 +1912,12 @@ function setupOptionsModal() {
       document.getElementById("chkDisableDeleteWarning").addEventListener("change", (e) => {
           localStorage.setItem("mm4e_disable_delete_warning", e.target.checked);
       });
+      const chkF1 = document.getElementById("chkEnableF1Help");
+      if (chkF1) {
+          chkF1.addEventListener("change", (e) => {
+              HelpModalManager.setF1Enabled(e.target.checked);
+          });
+      }
       document.getElementById("chkDisableResWarning").addEventListener("change", (e) => {
           localStorage.setItem("mm4e_disable_res_warning", e.target.checked);
           window.checkScreenResolution(); 
@@ -1911,6 +1925,7 @@ function setupOptionsModal() {
   }
 
   OptionsPopoutManager.init();
+  HelpModalManager.init();
 }
 
 function setupInfoModalHandlers() {
@@ -5664,6 +5679,264 @@ window.renderCompanionsTab = renderCompanionsTab;
 
 
 
+
+/* ==========================================================================
+   HELP & TAB GUIDE MODAL MANAGER (F1 & MAIN MENU)
+   ========================================================================== */
+const HelpModalManager = {
+  f1Enabled: true,
+  f1Conflict: false,
+
+  getModalOverlay() {
+    return document.getElementById("modalHelpGuide");
+  },
+
+  isOpenModal() {
+    const modal = this.getModalOverlay();
+    return modal && modal.style.display === "flex";
+  },
+
+  isF1Enabled() {
+    return localStorage.getItem("mm4e_f1_help_enabled") !== "false";
+  },
+
+  setF1Enabled(enabled, reason) {
+    if (enabled) {
+      this.f1Enabled = true;
+      this.f1Conflict = false;
+      localStorage.removeItem("mm4e_f1_help_enabled");
+      localStorage.removeItem("mm4e_f1_conflict_reason");
+      if (typeof showToast === "function") showToast("F1 Help shortcut enabled.", "info");
+    } else {
+      this.f1Enabled = false;
+      localStorage.setItem("mm4e_f1_help_enabled", "false");
+      if (reason) {
+        this.f1Conflict = true;
+        localStorage.setItem("mm4e_f1_conflict_reason", reason);
+        if (typeof showToast === "function") {
+          showToast(`F1 mapping conflict detected (${reason}). F1 Help shortcut disabled. Use Main Menu > Help anytime.`, "warning");
+        }
+      } else {
+        if (typeof showToast === "function") showToast("F1 Help shortcut disabled.", "info");
+      }
+    }
+    this.updateF1UI();
+  },
+
+  disableF1(reason) {
+    this.setF1Enabled(false, reason || "Conflict detected");
+  },
+
+  updateF1UI() {
+    const isEnabled = this.isF1Enabled();
+    const conflictReason = localStorage.getItem("mm4e_f1_conflict_reason");
+
+    const badge = document.getElementById("lblF1HelpBadge");
+    if (badge) {
+      if (isEnabled) {
+        badge.textContent = "(F1)";
+        badge.style.color = "";
+        badge.style.opacity = "0.7";
+      } else {
+        badge.textContent = conflictReason ? "(F1 Off)" : "(F1 Off)";
+        badge.style.color = "var(--accent-warning, #f59e0b)";
+        badge.style.opacity = "1";
+      }
+    }
+
+    const chk = document.getElementById("chkEnableF1Help");
+    if (chk) chk.checked = isEnabled;
+
+    const notice = document.getElementById("lblF1ConflictNotice");
+    if (notice) {
+      if (conflictReason) {
+        notice.style.display = "block";
+        notice.textContent = `⚠️ F1 disabled due to browser/OS conflict: ${conflictReason}`;
+      } else {
+        notice.style.display = "none";
+      }
+    }
+
+    const modalStatus = document.getElementById("lblHelpF1Status");
+    if (modalStatus) {
+      if (isEnabled) {
+        modalStatus.innerHTML = `<span style="color: #10b981;">●</span> F1 Shortcut: <strong>Active</strong>`;
+      } else if (conflictReason) {
+        modalStatus.innerHTML = `<span style="color: #f59e0b;">⚠️</span> F1 Shortcut: <strong>Disabled (${conflictReason})</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Test &amp; Re-enable</button>`;
+        const btnRe = document.getElementById("btnReenableF1");
+        if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
+      } else {
+        modalStatus.innerHTML = `<span style="color: var(--text-muted);">○</span> F1 Shortcut: <strong>Disabled</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Enable</button>`;
+        const btnRe = document.getElementById("btnReenableF1");
+        if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
+      }
+    }
+  },
+
+  openModal(tabTarget) {
+    const modal = this.getModalOverlay();
+    if (modal) {
+      modal.style.display = "flex";
+      this.updateF1UI();
+      if (tabTarget) {
+        this.scrollToSection(tabTarget);
+      } else {
+        const input = document.getElementById("txtHelpFilter");
+        if (input) {
+          input.value = "";
+          this.filterTopics("");
+          setTimeout(() => input.focus(), 60);
+        }
+      }
+    }
+  },
+
+  closeModal() {
+    const modal = this.getModalOverlay();
+    if (modal) modal.style.display = "none";
+  },
+
+  toggleModal() {
+    if (this.isOpenModal()) this.closeModal();
+    else this.openModal();
+  },
+
+  scrollToSection(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.add("highlight-pulse");
+      setTimeout(() => el.classList.remove("highlight-pulse"), 1500);
+
+      // Update active pill
+      document.querySelectorAll(".help-pill").forEach(p => {
+        if (p.dataset.target === sectionId) p.classList.add("active");
+        else p.classList.remove("active");
+      });
+    }
+  },
+
+  filterTopics(query) {
+    const q = (query || "").trim().toLowerCase();
+    const cards = document.querySelectorAll(".help-topic-card");
+    cards.forEach(card => {
+      if (!q) {
+        card.style.display = "";
+        return;
+      }
+      const text = card.textContent.toLowerCase();
+      if (text.includes(q)) {
+        card.style.display = "";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  },
+
+  init() {
+    const btnMenu = document.getElementById("btnOpenHelpModal");
+    const btnClose = document.getElementById("btnCloseHelpModal");
+    const modal = this.getModalOverlay();
+    const filterInput = document.getElementById("txtHelpFilter");
+
+    if (btnMenu && !btnMenu.__helpBound) {
+      btnMenu.__helpBound = true;
+      btnMenu.addEventListener("click", () => this.openModal());
+    }
+
+    if (btnClose && !btnClose.__helpBound) {
+      btnClose.__helpBound = true;
+      btnClose.addEventListener("click", () => this.closeModal());
+    }
+
+    if (modal && !modal.__helpBound) {
+      modal.__helpBound = true;
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) this.closeModal();
+      });
+    }
+
+    if (filterInput && !filterInput.__helpBound) {
+      filterInput.__helpBound = true;
+      filterInput.addEventListener("input", (e) => {
+        this.filterTopics(e.target.value);
+      });
+    }
+
+    // Quick jump pills
+    document.querySelectorAll(".help-pill").forEach(pill => {
+      if (pill.__helpBound) return;
+      pill.__helpBound = true;
+      pill.addEventListener("click", () => {
+        const target = pill.dataset.target;
+        if (target) this.scrollToSection(target);
+      });
+    });
+
+    // Global keyboard listener for F1 with conflict detection & Esc to close
+    if (!document.__helpKeyBound) {
+      document.__helpKeyBound = true;
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "F1" || e.keyCode === 112) {
+          if (!this.isF1Enabled()) {
+            return;
+          }
+
+          let conflictReason = null;
+
+          if (e.defaultPrevented) {
+            conflictReason = "Pre-intercepted by browser/extension";
+          }
+
+          try {
+            e.preventDefault();
+            e.stopPropagation();
+          } catch (err) {
+            conflictReason = err && err.message ? err.message : "preventDefault error";
+          }
+
+          if (!e.defaultPrevented) {
+            conflictReason = "Browser rejected event cancellation";
+          }
+
+          if (conflictReason) {
+            console.warn("F1 conflict detected:", conflictReason);
+            this.disableF1(conflictReason);
+            return;
+          }
+
+          // Monitor if the browser seized focus anyway (e.g. Edge/Windows Help popup)
+          if (this.activeBlurConflictHandler) {
+            clearTimeout(this.activeBlurTimeout);
+            window.removeEventListener("blur", this.activeBlurConflictHandler);
+          }
+          this.activeBlurConflictHandler = () => {
+            clearTimeout(this.activeBlurTimeout);
+            window.removeEventListener("blur", this.activeBlurConflictHandler);
+            this.activeBlurConflictHandler = null;
+            console.warn("F1 conflict: window lost focus immediately upon F1 keypress.");
+            this.disableF1("OS/Browser intercepted F1");
+          };
+          this.activeBlurTimeout = setTimeout(() => {
+            if (this.activeBlurConflictHandler) {
+              window.removeEventListener("blur", this.activeBlurConflictHandler);
+              this.activeBlurConflictHandler = null;
+            }
+          }, 300);
+          window.addEventListener("blur", this.activeBlurConflictHandler, { once: true });
+
+          this.toggleModal();
+        } else if (e.key === "Escape" && this.isOpenModal()) {
+          this.closeModal();
+        }
+      });
+    }
+
+    this.updateF1UI();
+  }
+};
+window.HelpModalManager = HelpModalManager;
+
 function setupMainMenuAndHeader() {
   // Main Menu Toggle
   const btnMainMenu = document.getElementById("btnMainMenu");
@@ -5792,6 +6065,7 @@ function setupMainMenuAndHeader() {
   updateAltSelectorUI();
   TablesPopoutManager.init();
   OptionsPopoutManager.init();
+  HelpModalManager.init();
 }
 
 // Hook setupMainMenuAndHeader into window load or DOMContentLoaded
@@ -5799,11 +6073,13 @@ if (document.readyState === "complete" || document.readyState === "interactive")
   setupMainMenuAndHeader();
   TablesPopoutManager.init();
   OptionsPopoutManager.init();
+  HelpModalManager.init();
 } else {
   window.addEventListener("DOMContentLoaded", () => {
     setupMainMenuAndHeader();
     TablesPopoutManager.init();
     OptionsPopoutManager.init();
+  HelpModalManager.init();
   });
 }
 

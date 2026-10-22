@@ -6,6 +6,7 @@ class CharacterModel {
     this.playerName = "";
     this.powerLevel = 10;
     this.totalPointsAllowed = 150;
+    this.heroPoints = 1;
     this.sizeCategory = "Medium";
     this.massRank = 3;
 
@@ -49,6 +50,7 @@ class CharacterModel {
     this.motivation = "";
     this.complications = "";
     this.history = "";
+    this.heroPoints = 1;
   }
 
   reset() {
@@ -118,6 +120,7 @@ class CharacterModel {
         motivation: this.motivation || "",
         complications: this.complications || "",
         history: this.history || "",
+        heroPoints: typeof this.heroPoints === "number" ? this.heroPoints : 1,
         companions: JSON.parse(JSON.stringify(this.companions || [])),
         isMecha: this.isMecha || false,
         isMinion: this.isMinion || false,
@@ -236,6 +239,7 @@ class CharacterModel {
     this.motivation = data.motivation || (data.background?.motivation || "");
     this.complications = data.complications || (data.background?.complications || "");
     this.history = data.history || (data.background?.history || "");
+    this.heroPoints = typeof data.heroPoints === "number" ? data.heroPoints : 1;
   }
 
   findEffectById(effectId) {

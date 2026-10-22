@@ -4933,6 +4933,12 @@ function populateUIFromCharacter() {
   if (document.getElementById("bgMotivation")) document.getElementById("bgMotivation").value = char.motivation || "";
   if (document.getElementById("bgComplications")) document.getElementById("bgComplications").value = char.complications || "";
   if (document.getElementById("bgHistory")) document.getElementById("bgHistory").value = char.history || "";
+  if (document.getElementById("txtHeroPoints")) {
+    document.getElementById("txtHeroPoints").value = typeof char.heroPoints === "number" ? char.heroPoints : 1;
+  }
+  if (document.getElementById("txtTotalPointsAllowed")) {
+    document.getElementById("txtTotalPointsAllowed").value = char.totalPointsAllowed || (char.powerLevel * 15);
+  }
 
   buildSkillsUI();
   buildAdvantagesUI();
@@ -4989,6 +4995,55 @@ function refreshUI() {
   document.getElementById("lblAdvPP").textContent = `${pp.advantages} PP`;
   document.getElementById("lblPowerPP").textContent = `${pp.powers} PP`;
   document.getElementById("lblTotalPP").textContent = `${pp.totalSpent} / ${char.totalPointsAllowed} PP`;
+
+  // History Tab Trackers & Summary Hero Points
+  const hpVal = typeof char.heroPoints === "number" ? char.heroPoints : 1;
+  const luckRanks = (char.advantages && char.advantages["Luck"]) || 0;
+  const startingHP = 1 + luckRanks;
+
+  const summaryHPElem = document.getElementById("lblSummaryHeroPoints");
+  if (summaryHPElem) summaryHPElem.textContent = `${hpVal} HP`;
+
+  const heroPointsBadge = document.getElementById("lblHeroPointsBadge");
+  if (heroPointsBadge) heroPointsBadge.textContent = `${hpVal} HP`;
+
+  const txtHP = document.getElementById("txtHeroPoints");
+  if (txtHP && document.activeElement !== txtHP) txtHP.value = hpVal;
+
+  const lblStartingHP = document.getElementById("lblStartingHeroPoints");
+  if (lblStartingHP) {
+    lblStartingHP.innerHTML = `Starting (per scene/session): <strong>${startingHP}</strong> (1 + ${luckRanks} Luck)`;
+  }
+
+  // Power Points Tracker on History Tab
+  const totalAllowed = typeof char.totalPointsAllowed === "number" ? char.totalPointsAllowed : (char.powerLevel * 15);
+  const totalSpent = pp.totalSpent || 0;
+  const remainingPP = totalAllowed - totalSpent;
+  const basePLPP = char.powerLevel * 15;
+
+  const txtTotalPP = document.getElementById("txtTotalPointsAllowed");
+  if (txtTotalPP && document.activeElement !== txtTotalPP) txtTotalPP.value = totalAllowed;
+
+  const lblPLMult = document.getElementById("lblPLMultiplier");
+  if (lblPLMult) lblPLMult.textContent = char.powerLevel;
+
+  const lblBasePP = document.getElementById("lblBasePLPP");
+  if (lblBasePP) lblBasePP.textContent = basePLPP;
+
+  const lblTrackerSpent = document.getElementById("lblTrackerSpentPP");
+  if (lblTrackerSpent) lblTrackerSpent.textContent = totalSpent;
+
+  const lblTrackerRem = document.getElementById("lblTrackerRemainingPP");
+  if (lblTrackerRem) {
+    lblTrackerRem.textContent = remainingPP;
+    lblTrackerRem.style.color = remainingPP < 0 ? "#ef4444" : "var(--accent-primary)";
+  }
+
+  const lblRemBadge = document.getElementById("lblRemainingPPBadge");
+  if (lblRemBadge) {
+    lblRemBadge.textContent = remainingPP < 0 ? `${Math.abs(remainingPP)} Over Budget` : `${remainingPP} Unspent`;
+    lblRemBadge.style.background = remainingPP < 0 ? "#ef4444" : (remainingPP === 0 ? "var(--bg-card)" : "#10b981");
+  }
 
   const limits = char.advantageLimitsCheck;
   const heroicElem = document.getElementById("lblHeroicLimit");
@@ -5202,6 +5257,43 @@ function setupBackgroundHandlers() {
   if (bgMot) bgMot.addEventListener("input", (e) => { char.motivation = e.target.value; });
   if (bgComp) bgComp.addEventListener("input", (e) => { char.complications = e.target.value; });
   if (bgHist) bgHist.addEventListener("input", (e) => { char.history = e.target.value; });
+
+  // Hero Points Tracker Controls
+  const txtHP = document.getElementById("txtHeroPoints");
+  if (txtHP) {
+    txtHP.addEventListener("input", (e) => {
+      char.heroPoints = Math.max(0, parseInt(e.target.value) || 0);
+      refreshUI();
+    });
+  }
+
+  const btnResetHP = document.getElementById("btnResetHeroPoints");
+  if (btnResetHP) {
+    btnResetHP.addEventListener("click", () => {
+      const luck = (char.advantages && char.advantages["Luck"]) || 0;
+      char.heroPoints = 1 + luck;
+      refreshUI();
+      if (typeof showToast === "function") showToast(`Hero Points reset to starting (${1 + luck}).`, "info");
+    });
+  }
+
+  // Power Points Tracker Controls
+  const txtTotPP = document.getElementById("txtTotalPointsAllowed");
+  if (txtTotPP) {
+    txtTotPP.addEventListener("input", (e) => {
+      char.totalPointsAllowed = Math.max(0, parseInt(e.target.value) || 0);
+      refreshUI();
+    });
+  }
+
+  const btnResetTotPP = document.getElementById("btnResetTotalPP");
+  if (btnResetTotPP) {
+    btnResetTotPP.addEventListener("click", () => {
+      char.totalPointsAllowed = (char.powerLevel || 10) * 15;
+      refreshUI();
+      if (typeof showToast === "function") showToast(`Total Power Points reset to PL standard (${char.powerLevel * 15} PP).`, "info");
+    });
+  }
 }
 
 /* ==========================================================================

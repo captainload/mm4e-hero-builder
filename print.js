@@ -167,7 +167,7 @@ function buildPrintHeader(c) {
           <span style="font-size: 7.5pt; color: #64748b;">(1 + ${(c.advantages && c.advantages["Luck"]) || 0} Luck)</span>
         </div>
         <div style="font-size: 8pt; color: #475569; margin-top: 2px;">
-          Current: [ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ]
+          Current: <strong style="color: #0f172a; font-size: 9.5pt;">${typeof c.heroPoints === 'number' ? c.heroPoints : 1}</strong>
         </div>
       </div>
     </div>

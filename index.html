@@ -255,6 +255,7 @@
       Advantages: <span class="badge" id="lblAdvPP">0 PP</span>
       Powers: <span class="badge" id="lblPowerPP">0 PP</span>
       | Total: <span class="badge" id="lblTotalPP">0 / 150 PP</span>
+      | Hero Points: <span class="badge" id="lblSummaryHeroPoints" style="background: var(--accent-primary); font-weight: 700;">1 HP</span>
     </div>
   </div>
 
@@ -265,7 +266,7 @@
     <button class="tab-btn" data-tab="tab-advantages">Advantages</button>
     <button class="tab-btn" data-tab="tab-powers">Powers</button>
     <button class="tab-btn" data-tab="tab-equipment">Equipment & HQ</button>
-    <button class="tab-btn" data-tab="tab-background">Background</button>
+    <button class="tab-btn" data-tab="tab-background">History</button>
     <button class="tab-btn" data-tab="tab-companions">Companions &amp; Forms</button>
     <button class="tab-btn" data-tab="tab-blueprints">Improv Builder</button>
   </nav>
@@ -636,11 +637,87 @@
     </div>
   </section>
 
-  <!-- TAB 6: BACKGROUND -->
+  <!-- TAB 6: HISTORY & TRACKERS -->
   <section id="tab-background" class="tab-content">
+    
+    <!-- 1. HERO POINTS & POWER POINTS TRACKER PANEL -->
     <div class="collapsible-panel">
       <div class="panel-header">
-        <span>Character Background, Motivations & Complications</span>
+        <span>🌟 Hero Points &amp; Power Points Tracker</span>
+        <span>▼</span>
+      </div>
+      <div class="panel-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+          
+          <!-- HERO POINTS TRACKER -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">🌟</span>
+                <div>
+                  <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--accent-primary);">Hero Points</h4>
+                  <div style="font-size: 11px; color: var(--text-muted);">Session reserve for rerolls, extra effort &amp; recovery</div>
+                </div>
+              </div>
+              <span class="badge" id="lblHeroPointsBadge" style="font-size: 13px; font-weight: 800; padding: 4px 10px; background: var(--accent-primary);">1 HP</span>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-panel); border-radius: 6px; border: 1px solid var(--border-color);">
+              <span style="font-size: 13px; font-weight: 600;">Current Hero Points:</span>
+              <div class="stepper-group">
+                <button type="button" class="stepper-btn stepper-dec" id="btnDecHeroPoints" onclick="stepVal('txtHeroPoints', -1, 0, 99)" title="Spend / decrease Hero Point">−</button>
+                <input type="number" id="txtHeroPoints" class="stepper-input" min="0" max="99" value="1" style="width: 50px; text-align: center;">
+                <button type="button" class="stepper-btn stepper-inc" id="btnIncHeroPoints" onclick="stepVal('txtHeroPoints', 1, 0, 99)" title="Award / increase Hero Point">+</button>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+              <span id="lblStartingHeroPoints">Starting (per scene/session): <strong>1</strong> (1 + 0 Luck)</span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnResetHeroPoints" style="padding: 2px 8px; font-size: 11px;" title="Reset to starting default based on Luck advantage">Reset to Starting</button>
+            </div>
+          </div>
+
+          <!-- POWER POINTS TRACKER -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 20px;">⚡</span>
+                <div>
+                  <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--accent-primary);">Power Points (PP)</h4>
+                  <div style="font-size: 11px; color: var(--text-muted);">Campaign progression &amp; earned experience</div>
+                </div>
+              </div>
+              <span class="badge" id="lblRemainingPPBadge" style="font-size: 13px; font-weight: 800; padding: 4px 10px; background: #10b981;">0 Unspent</span>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-panel); border-radius: 6px; border: 1px solid var(--border-color);">
+              <div>
+                <div style="font-size: 13px; font-weight: 600;">Total PP Allowed / Earned:</div>
+                <div style="font-size: 11px; color: var(--text-muted);">Base: PL <span id="lblPLMultiplier">10</span> × 15 = <span id="lblBasePLPP">150</span> PP</div>
+              </div>
+              <div class="stepper-group">
+                <button type="button" class="stepper-btn stepper-dec" id="btnDecTotalPP" onclick="stepVal('txtTotalPointsAllowed', -1, 0, 9999)" title="Decrease Total Power Points">−</button>
+                <input type="number" id="txtTotalPointsAllowed" class="stepper-input" min="0" max="9999" value="150" style="width: 60px; text-align: center;">
+                <button type="button" class="stepper-btn stepper-inc" id="btnIncTotalPP" onclick="stepVal('txtTotalPointsAllowed', 1, 0, 9999)" title="Increase Total Power Points">+</button>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+              <div>
+                Spent: <strong id="lblTrackerSpentPP" style="color: var(--text-main);">0</strong> PP &bull; Remaining: <strong id="lblTrackerRemainingPP" style="color: var(--accent-primary);">150</strong> PP
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnResetTotalPP" style="padding: 2px 8px; font-size: 11px;" title="Reset total points to standard PL budget (PL × 15)">Reset to PL Standard</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. CHARACTER BACKGROUND & HISTORY PANEL -->
+    <div class="collapsible-panel">
+      <div class="panel-header">
+        <span>Character History, Motivations &amp; Complications</span>
         <span>▼</span>
       </div>
       <div class="panel-body grid-2">
@@ -737,7 +814,7 @@
         <button type="button" class="help-pill" data-target="help-sec-equipment">Equipment &amp; HQ</button>
         <button type="button" class="help-pill" data-target="help-sec-companions">Companions &amp; Forms</button>
         <button type="button" class="help-pill" data-target="help-sec-blueprints">Improv Builder</button>
-        <button type="button" class="help-pill" data-target="help-sec-background">Background</button>
+        <button type="button" class="help-pill" data-target="help-sec-background">History &amp; Trackers</button>
         <button type="button" class="help-pill" data-target="help-sec-shortcuts">Shortcuts &amp; Tools</button>
       </div>
 
@@ -960,7 +1037,7 @@
           <div class="help-card-header">
             <div class="help-card-title">
               <span>🎭</span>
-              <span>Background &amp; Complications Tab</span>
+              <span>History, Trackers &amp; Complications Tab</span>
             </div>
             <span class="help-badge">Tab 8: tab-background</span>
           </div>

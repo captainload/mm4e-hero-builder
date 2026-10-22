@@ -1933,6 +1933,7 @@ document.addEventListener("DOMContentLoaded", () => {
   TablesPopoutManager.init();
   OptionsPopoutManager.init();
   HelpModalManager.init();
+  UpdateCheckerManager.init();
   refreshUI();
 });
 
@@ -6533,6 +6534,362 @@ const HelpModalManager = {
   }
 };
 window.HelpModalManager = HelpModalManager;
+
+
+// --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
+const UpdateCheckerManager = {
+  currentVersion: "1.4.0",
+  buildDate: "2026-10-22",
+  githubRepo: "https://github.com/captainload/mm4e-hero-builder",
+  rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
+  commitApiUrl: "https://api.github.com/repos/captainload/mm4e-hero-builder/commits/main",
+  downloadZipUrl: "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",
+
+  init() {
+    const btnCheck = document.getElementById("btnCheckUpdates");
+    const btnOptionsCheck = document.getElementById("btnOptionsCheckUpdates");
+    const btnClose = document.getElementById("btnUpdateModalClose");
+    const modal = document.getElementById("updateModal");
+
+    if (btnCheck && !btnCheck.__updateBound) {
+      btnCheck.__updateBound = true;
+      btnCheck.addEventListener("click", () => {
+        const mainMenuDropdown = document.getElementById("mainMenuDropdown");
+        if (mainMenuDropdown) mainMenuDropdown.style.display = "none";
+        this.check(false);
+      });
+    }
+
+    if (btnOptionsCheck && !btnOptionsCheck.__updateBound) {
+      btnOptionsCheck.__updateBound = true;
+      btnOptionsCheck.addEventListener("click", () => {
+        this.check(false);
+      });
+    }
+
+    if (btnClose && !btnClose.__updateBound) {
+      btnClose.__updateBound = true;
+      btnClose.addEventListener("click", () => this.close());
+    }
+
+    if (modal && !modal.__updateBound) {
+      modal.__updateBound = true;
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) this.close();
+      });
+    }
+
+    if (!document.__updateEscBound) {
+      document.__updateEscBound = true;
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal && modal.style.display !== "none") {
+          this.close();
+        }
+      });
+    }
+
+    // Gentle background update check on startup when online
+    if (navigator.onLine && typeof window !== "undefined") {
+      setTimeout(() => this.check(true), 3500);
+    }
+  },
+
+  open() {
+    const modal = document.getElementById("updateModal");
+    if (modal) modal.style.display = "flex";
+  },
+
+  close() {
+    const modal = document.getElementById("updateModal");
+    if (modal) modal.style.display = "none";
+  },
+
+  compareVersions(vA, vB) {
+    const pA = String(vA).replace(/^v/i, '').split('.').map(n => parseInt(n) || 0);
+    const pB = String(vB).replace(/^v/i, '').split('.').map(n => parseInt(n) || 0);
+    for (let i = 0; i < Math.max(pA.length, pB.length); i++) {
+      const a = pA[i] || 0;
+      const b = pB[i] || 0;
+      if (a > b) return 1;
+      if (a < b) return -1;
+    }
+    return 0;
+  },
+
+  safeEscape(str) {
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  },
+
+  async check(silent = false) {
+    const modalBody = document.getElementById("updateModalBody");
+    if (!silent) {
+      this.open();
+      if (modalBody) {
+        modalBody.innerHTML = `
+          <div style="text-align: center; padding: 24px 12px;">
+            <div style="font-size: 34px; animation: spin 1.2s linear infinite; display: inline-block;">🔄</div>
+            <div style="font-size: 11.5pt; font-weight: 700; margin-top: 14px; color: var(--text-main);">Checking for Updates...</div>
+            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 4px;">Connecting to GitHub (Current: v${this.currentVersion})...</div>
+          </div>
+        `;
+      }
+    }
+
+    try {
+      let remoteData = null;
+      let checkSource = "version_json";
+
+      // 1. First try fetching version.json directly with cache-busting
+      try {
+        const resp = await fetch(`${this.rawVersionUrl}?_t=${Date.now()}`, { cache: "no-store" });
+        if (resp.ok) {
+          remoteData = await resp.json();
+        }
+      } catch (err) {}
+
+      // 2. If version.json failed or returned 404, fall back to GitHub commits API
+      if (!remoteData || !remoteData.version) {
+        try {
+          const resp = await fetch(`${this.commitApiUrl}?_t=${Date.now()}`, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' },
+            cache: "no-store"
+          });
+          if (resp.ok) {
+            const commitData = await resp.json();
+            checkSource = "commit_api";
+            remoteData = {
+              version: this.currentVersion,
+              commitSha: commitData.sha ? commitData.sha.substring(0, 7) : null,
+              commitDate: commitData.commit?.committer?.date,
+              commitMessage: commitData.commit?.message?.split("\n")[0] || ""
+            };
+          }
+        } catch (err) {}
+      }
+
+      if (!remoteData) {
+        throw new Error("Unable to reach GitHub. Please check your network connection.");
+      }
+
+      if (checkSource === "version_json") {
+        const isNewer = this.compareVersions(remoteData.version, this.currentVersion) > 0;
+        const isSameVersionNewerBuild = this.compareVersions(remoteData.version, this.currentVersion) === 0 && 
+                                        remoteData.buildDate && remoteData.buildDate > this.buildDate;
+
+        if (isNewer || isSameVersionNewerBuild) {
+          this.notifyUpdateAvailable(remoteData, silent);
+        } else {
+          if (!silent) this.renderUpToDate(remoteData);
+        }
+      } else {
+        const commitDate = remoteData.commitDate ? new Date(remoteData.commitDate) : null;
+        const localBuildDate = new Date(this.buildDate);
+        const isCommitNewer = commitDate && commitDate > localBuildDate;
+
+        if (isCommitNewer) {
+          this.notifyCommitUpdateAvailable(remoteData, silent);
+        } else {
+          if (!silent) this.renderUpToDate(remoteData);
+        }
+      }
+
+    } catch (err) {
+      if (!silent) {
+        this.renderError(err.message);
+      }
+    }
+  },
+
+  notifyUpdateAvailable(data, silent) {
+    const btnCheck = document.getElementById("btnCheckUpdates");
+    if (btnCheck && !document.getElementById("badgeNewUpdate")) {
+      const badge = document.createElement("span");
+      badge.id = "badgeNewUpdate";
+      badge.className = "badge";
+      badge.style.background = "#10b981";
+      badge.style.color = "#ffffff";
+      badge.style.fontSize = "10pt";
+      badge.style.marginLeft = "auto";
+      badge.style.padding = "1px 6px";
+      badge.textContent = "NEW";
+      btnCheck.appendChild(badge);
+    }
+
+    if (silent) {
+      if (typeof showToast === "function") {
+        showToast(`A new update is available (v${data.version})! Check Main Menu to update.`, "success");
+      }
+      return;
+    }
+
+    this.renderUpdateAvailable(data);
+  },
+
+  notifyCommitUpdateAvailable(data, silent) {
+    if (silent) {
+      if (typeof showToast === "function") {
+        showToast("New updates are available on GitHub! Check Main Menu to update.", "info");
+      }
+      return;
+    }
+
+    const modalBody = document.getElementById("updateModalBody");
+    if (!modalBody) return;
+
+    modalBody.innerHTML = `
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 26px;">🎉</span>
+        <div>
+          <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Update Available on GitHub</div>
+          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
+            Latest Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 4px; color: var(--text-main);">Latest Change:</div>
+        <div style="font-size: 10pt; color: var(--text-muted); font-style: italic;">"${this.safeEscape(data.commitMessage)}"</div>
+      </div>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+        <div style="font-weight: 700; font-size: 10pt; margin-bottom: 4px; color: var(--accent-primary);">📦 How to Update Your Local Installation:</div>
+        <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
+          <li>Click <strong>Download Latest ZIP</strong> below.</li>
+          <li>Extract and replace files in your local folder.</li>
+          <li>Launch the builder using <code>Launch Hero Builder.bat</code>.</li>
+          <li><em style="color: var(--text-main);">Your saved character files (.mm4e) and browser saves will remain completely safe!</em></li>
+        </ol>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          ⬇️ Download Latest ZIP
+        </a>
+        <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          View on GitHub ↗
+        </a>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+      </div>
+    `;
+
+    const btnDismiss = document.getElementById("btnDismissUpdate");
+    if (btnDismiss) btnDismiss.onclick = () => this.close();
+  },
+
+  renderUpdateAvailable(data) {
+    const modalBody = document.getElementById("updateModalBody");
+    if (!modalBody) return;
+
+    const notes = Array.isArray(data.releaseNotes) 
+      ? data.releaseNotes.map(n => `<li style="margin-bottom: 3px;">${this.safeEscape(n)}</li>`).join("")
+      : (data.releaseNotes ? `<p style="margin: 0;">${this.safeEscape(data.releaseNotes)}</p>` : "<li>Performance enhancements and rules refinements.</li>");
+
+    modalBody.innerHTML = `
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 26px;">🎉</span>
+        <div>
+          <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Version Available: v${this.safeEscape(data.version)}</div>
+          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
+            Installed Version: <strong>v${this.currentVersion}</strong> • Released: <strong>${this.safeEscape(data.buildDate || "Latest")}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 6px; color: var(--text-main);">What's New in v${this.safeEscape(data.version)}:</div>
+        <ul style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-main); line-height: 1.5;">
+          ${notes}
+        </ul>
+      </div>
+
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+        <div style="font-weight: 700; font-size: 10pt; margin-bottom: 4px; color: var(--accent-primary);">📦 How to Update Your Local Installation:</div>
+        <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
+          <li>Click <strong>Download Latest ZIP</strong> below to save the latest files.</li>
+          <li>Extract the ZIP and copy/replace the files into your local program folder.</li>
+          <li>Launch the builder using <code>Launch Hero Builder.bat</code> (or <code>index.html</code>).</li>
+          <li><em style="color: var(--text-main);">Your saved character files (.mm4e) and browser saves will remain completely safe and untouched!</em></li>
+        </ol>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          ⬇️ Download Latest ZIP
+        </a>
+        <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          View on GitHub ↗
+        </a>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+      </div>
+    `;
+
+    const btnDismiss = document.getElementById("btnDismissUpdate");
+    if (btnDismiss) btnDismiss.onclick = () => this.close();
+  },
+
+  renderUpToDate(data) {
+    const modalBody = document.getElementById("updateModalBody");
+    if (!modalBody) return;
+
+    modalBody.innerHTML = `
+      <div style="text-align: center; padding: 12px 6px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">✅</div>
+        <h4 style="margin: 0 0 6px 0; font-size: 12pt; color: #10b981; font-weight: 700;">You are running the latest version!</h4>
+        <div style="font-size: 10.5pt; color: var(--text-main); margin-bottom: 4px;">
+          Current Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+        </div>
+        <div style="font-size: 10pt; color: var(--text-muted); max-width: 440px; margin: 0 auto 16px auto;">
+          Your local installation of the Mutants &amp; Masterminds 4E Hero Builder is completely up to date with the latest official repository release.
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+            View GitHub Repository ↗
+          </a>
+          <button type="button" class="btn" id="btnDismissUpdate" style="padding: 6px 18px; font-size: 10pt;">Great!</button>
+        </div>
+      </div>
+    `;
+
+    const btnDismiss = document.getElementById("btnDismissUpdate");
+    if (btnDismiss) btnDismiss.onclick = () => this.close();
+  },
+
+  renderError(msg) {
+    const modalBody = document.getElementById("updateModalBody");
+    if (!modalBody) return;
+
+    modalBody.innerHTML = `
+      <div style="text-align: center; padding: 12px 6px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🌐</div>
+        <h4 style="margin: 0 0 6px 0; font-size: 12pt; color: #f59e0b; font-weight: 700;">Unable to check for updates</h4>
+        <div style="font-size: 10pt; color: var(--text-muted); max-width: 440px; margin: 0 auto 12px auto;">
+          Could not connect to GitHub. This usually means you are working offline or GitHub could not be reached.
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; margin: 0 auto 16px auto; max-width: 420px; text-align: left; font-size: 10pt;">
+          <div><strong>Installed Version:</strong> v${this.currentVersion} (${this.buildDate})</div>
+          <div style="margin-top: 4px; font-size: 10pt; color: var(--text-muted);">You can always download releases and updates manually on GitHub.</div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn" id="btnRetryUpdate" style="padding: 6px 14px; font-size: 10pt;">
+            🔄 Retry Check
+          </button>
+          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt;">
+            Open GitHub ↗
+          </a>
+          <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+        </div>
+      </div>
+    `;
+
+    const btnRetry = document.getElementById("btnRetryUpdate");
+    if (btnRetry) btnRetry.onclick = () => this.check(false);
+    const btnDismiss = document.getElementById("btnDismissUpdate");
+    if (btnDismiss) btnDismiss.onclick = () => this.close();
+  }
+};
+window.UpdateCheckerManager = UpdateCheckerManager;
 
 function setupMainMenuAndHeader() {
   // Main Menu Toggle

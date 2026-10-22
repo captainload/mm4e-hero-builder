@@ -1,0 +1,17 @@
+{
+  "version": "1.4.0",
+  "buildDate": "2026-10-22",
+  "releaseName": "M&M 4E Hero Builder v1.4.0",
+  "releaseNotes": [
+    "Interactive Hero Point and Power Point trackers with steppers on History tab",
+    "Renamed Background tab to History with updated navigation and help guide",
+    "Smart travel mode stats: Flight and Space Speed only display on Basics tab when active",
+    "Options popup now displays side-by-side with Main Menu instead of overlapping it",
+    "Skills and Advantages tabs converted to clean, non-collapsible panels",
+    "Enforced 10pt minimum font accessibility floor across entire application",
+    "Added 'Check for Updates' function in Main Menu for local offline installations"
+  ],
+  "githubRepo": "https://github.com/captainload/mm4e-hero-builder",
+  "downloadZipUrl": "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",
+  "releasesUrl": "https://github.com/captainload/mm4e-hero-builder/releases"
+}

@@ -99,6 +99,12 @@
         <div class="menu-divider"></div>
         <button type="button" class="menu-action-btn" id="btnOpenHelpModal"><span class="menu-btn-icon">📖</span> Help &amp; Tab Guide <span id="lblF1HelpBadge" style="margin-left: auto; font-size: 10pt; opacity: 0.7;">(F1)</span></button>
         <button type="button" class="menu-action-btn" id="btnToggleOptions"><span class="menu-btn-icon">⚙️</span> Options &amp; Display...</button>
+        <button type="button" class="menu-action-btn" id="btnCheckUpdates"><span class="menu-btn-icon">🔄</span> Check for Updates...</button>
+        <div class="menu-divider" style="margin-top: 4px;"></div>
+        <div style="padding: 6px 12px 4px 12px; font-size: 10pt; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+          <span>Version <strong id="lblMenuAppVersion">1.4.0</strong></span>
+          <a href="https://github.com/captainload/mm4e-hero-builder" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: none; font-size: 10pt;" title="View repository on GitHub">GitHub ↗</a>
+        </div>
       </div>
 
       <!-- Options Drop-Down Window / Modal Anchored to Main Menu -->
@@ -215,6 +221,14 @@
               <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
                 <input type="radio" name="menuPosition" value="right" id="optMenuRight" checked> Right Side
               </label>
+            </div>
+          </div>
+
+          <!-- Application Updates Option -->
+          <div class="font-control-group" style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-weight: 600; font-size: var(--font-size-secondary);">Version: <strong>1.4.0</strong></span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnOptionsCheckUpdates" style="padding: 2px 8px; font-size: 10pt;">🔄 Check Updates</button>
             </div>
           </div>
         </div>
@@ -1353,6 +1367,21 @@
       </div>
       <div class="print-preview-modal-body" id="printPreviewModalBody">
         <!-- Rendered print sheet -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Check for Updates Modal Dialog -->
+  <div class="modal-overlay" id="updateModal" style="display: none; align-items: center; justify-content: center; z-index: 2200;">
+    <div class="info-popup-box update-modal-dialog">
+      <div class="info-popup-header">
+        <h3 id="updateModalTitle" style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--font-size-labels, 16px);">
+          <span>🔄</span> Check for Updates
+        </h3>
+        <button type="button" class="info-popup-close" id="btnUpdateModalClose" title="Close">✕</button>
+      </div>
+      <div class="info-popup-body" id="updateModalBody" style="padding: 16px; font-size: 10.5pt; line-height: 1.5;">
+        <!-- Rendered dynamically -->
       </div>
     </div>
   </div>

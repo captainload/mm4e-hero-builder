@@ -229,6 +229,18 @@ body {
   overflow: hidden;
 }
 
+.panel-header-static {
+  background: var(--bg-card);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+  font-size: var(--font-size-labels);
+  font-weight: bold;
+  border-bottom: 1px solid var(--border-color);
+}
+
 .panel-header {
   background: var(--bg-card);
   padding: 6px 12px;

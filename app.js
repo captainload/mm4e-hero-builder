@@ -2303,6 +2303,13 @@ function buildAbilitiesUI() {
     char.name = e.target.value;
     refreshUI();
   });
+  const heroHPInput = document.getElementById("heroHPInput");
+  if (heroHPInput) {
+    heroHPInput.addEventListener("input", (e) => {
+      char.heroPoints = Math.max(0, parseInt(e.target.value) || 0);
+      refreshUI();
+    });
+  }
   document.getElementById("playerNameInput").addEventListener("input", (e) => {
     char.playerName = e.target.value;
   });
@@ -4900,6 +4907,7 @@ window.applyEquipmentTemplate = function(type, idx, templateName) {
 
 function populateUIFromCharacter() {
   if (document.getElementById("heroNameInput")) document.getElementById("heroNameInput").value = char.name || "New Hero";
+  if (document.getElementById("heroHPInput")) document.getElementById("heroHPInput").value = typeof char.heroPoints === "number" ? char.heroPoints : 1;
   if (document.getElementById("playerNameInput")) document.getElementById("playerNameInput").value = char.playerName || "";
   if (document.getElementById("heroPLInput")) document.getElementById("heroPLInput").value = char.powerLevel || 10;
   if (document.getElementById("heroSizeInput")) document.getElementById("heroSizeInput").value = char.sizeCategory || "Medium";
@@ -4954,7 +4962,12 @@ function applyLoadedCharacter(loaded) {
 }
 
 function refreshUI() {
-  document.getElementById("lblHeroName").textContent = char.name;
+  const lblHeroName = document.getElementById("lblHeroName");
+  if (lblHeroName) lblHeroName.textContent = char.name;
+  const heroHPEl = document.getElementById("heroHPInput");
+  if (heroHPEl && document.activeElement !== heroHPEl) {
+    heroHPEl.value = typeof char.heroPoints === "number" ? char.heroPoints : 1;
+  }
   document.getElementById("lblPL").textContent = char.powerLevel;
 
   // Title Bar Hero & Alt Name Display
@@ -5103,16 +5116,33 @@ function refreshUI() {
     const groundDist = MEASUREMENT_TABLE[derived.groundSpeed] ? MEASUREMENT_TABLE[derived.groundSpeed].dist_imp : "Special";
     document.getElementById("resGroundSpeed").textContent = `Rank ${derived.groundSpeed} (${groundDist})`;
     
-    if (derived.airSpeed !== null) {
-      const airDist = MEASUREMENT_TABLE[derived.airSpeed] ? MEASUREMENT_TABLE[derived.airSpeed].dist_imp : "Special";
-      document.getElementById("resAirSpeed").textContent = `Rank ${derived.airSpeed} (${airDist})`;
-    } else {
-      document.getElementById("resAirSpeed").textContent = "—";
+    const rowAirSpeed = document.getElementById("rowAirSpeed");
+    if (rowAirSpeed) {
+      if (derived.airSpeed !== null && derived.airSpeed > 0) {
+        rowAirSpeed.style.display = "";
+        const airDist = MEASUREMENT_TABLE[derived.airSpeed] ? MEASUREMENT_TABLE[derived.airSpeed].dist_imp : "Special";
+        document.getElementById("resAirSpeed").textContent = `Rank ${derived.airSpeed} (${airDist})`;
+      } else {
+        rowAirSpeed.style.display = "none";
+      }
     }
 
     const waterDist = MEASUREMENT_TABLE[derived.waterSpeed] ? MEASUREMENT_TABLE[derived.waterSpeed].dist_imp : "Special";
     document.getElementById("resWaterSpeed").textContent = `Rank ${derived.waterSpeed} (${waterDist})`;
-    document.getElementById("resSpaceSpeed").textContent = "—";
+    
+    const rowSpaceSpeed = document.getElementById("rowSpaceSpeed");
+    if (rowSpaceSpeed) {
+      if (derived.spaceSpeed !== null && derived.spaceSpeed > 0) {
+        rowSpaceSpeed.style.display = "";
+        let spaceDesc = "Orbital";
+        if (derived.spaceSpeed >= 6) spaceDesc = "Intergalactic";
+        else if (derived.spaceSpeed >= 4) spaceDesc = "Interstellar";
+        else if (derived.spaceSpeed >= 2) spaceDesc = "Solar System";
+        document.getElementById("resSpaceSpeed").textContent = `Rank ${derived.spaceSpeed} (${spaceDesc})`;
+      } else {
+        rowSpaceSpeed.style.display = "none";
+      }
+    }
     
     const liftDist = MEASUREMENT_TABLE[derived.maxLiftingMassRank] ? MEASUREMENT_TABLE[derived.maxLiftingMassRank].mass_imp : "—";
     document.getElementById("resMaxLifting").textContent = `Rank ${derived.maxLiftingMassRank} (${liftDist})`;

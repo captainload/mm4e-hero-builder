@@ -203,6 +203,7 @@ function buildPrintHeader(c) {
   if (typeof c.massRank === "number") traits.push(`<strong>Mass Rank:</strong> ${c.massRank}`);
   traits.push(`<strong>Ground Speed:</strong> ${derived.groundSpeed || 2} (30 ft/rnd)`);
   if (derived.airSpeed) traits.push(`<strong>Flight:</strong> Rank ${derived.airSpeed}`);
+  if (derived.spaceSpeed) traits.push(`<strong>Space Speed:</strong> Rank ${derived.spaceSpeed}`);
   if (derived.waterSpeed) traits.push(`<strong>Swimming:</strong> Rank ${derived.waterSpeed}`);
   if (derived.initiative !== undefined) traits.push(`<strong>Initiative:</strong> ${derived.initiative >= 0 ? '+' : ''}${derived.initiative}`);
 

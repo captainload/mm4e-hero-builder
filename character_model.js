@@ -477,6 +477,7 @@ class CharacterModel {
     let protectionToughness = 0;
     let speedBonus = 0;
     let flightRank = null;
+    let spaceSpeedRank = null;
     let swimRank = 0;
     let extraLifting = 0;
 
@@ -488,6 +489,18 @@ class CharacterModel {
           if (p.effectName === "Protection") protectionToughness += rank;
           if (p.effectName === "Speed") speedBonus += rank;
           if (p.effectName === "Flight") flightRank = (flightRank === null ? rank : Math.max(flightRank, rank));
+          if ((p.effectName === "Movement" || p.effectName === "Enhanced Movement") && p.options && p.options.enh_mov_type) {
+            const movType = String(p.options.enh_mov_type).toLowerCase();
+            if (movType.includes("flight")) {
+              flightRank = (flightRank === null ? rank : Math.max(flightRank, rank));
+            }
+            if (movType.includes("space travel")) {
+              spaceSpeedRank = (spaceSpeedRank === null ? rank : Math.max(spaceSpeedRank, rank));
+            }
+          }
+          if (p.effectName && p.effectName.toLowerCase().includes("space travel")) {
+            spaceSpeedRank = (spaceSpeedRank === null ? rank : Math.max(spaceSpeedRank, rank));
+          }
           if (p.effectName === "Swimming") swimRank += rank;
           if (p.effectName === "Lifting") extraLifting += rank;
         });
@@ -498,6 +511,7 @@ class CharacterModel {
       protectionToughness,
       speedBonus,
       flightRank,
+      spaceSpeedRank,
       swimRank,
       extraLifting
     };
@@ -554,6 +568,7 @@ class CharacterModel {
       rangedAttack: rangedAtk,
       groundSpeed: baseSpeed,
       airSpeed: pMods.flightRank,
+      spaceSpeed: pMods.spaceSpeedRank,
       waterSpeed: pMods.swimRank,
       spaces: sizeData.spaces,
       reach: sizeData.reach,

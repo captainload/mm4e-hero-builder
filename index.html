@@ -720,10 +720,13 @@
           <input type="text" id="txtHelpFilter" placeholder="🔍 Search help topics (e.g. powers, skills, caps)..." style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
         </div>
         <div style="display: flex; align-items: center; gap: 6px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutHelp" title="Open in separate resizable window">⧉ Pop Out</button>
           <button type="button" class="btn btn-secondary btn-sm" id="btnCloseHelpModal" title="Close Guide (Esc)">✕ Close</button>
         </div>
       </div>
       
+      <!-- DOCKABLE HELP CONTENT -->
+      <div class="help-dockable-content" id="helpDockableBody" style="display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden;">
       <!-- Quick Navigation Pills -->
       <div class="help-nav-pills" id="helpNavPills">
         <button type="button" class="help-pill active" data-target="help-sec-overview">Overview</button>
@@ -1034,6 +1037,7 @@
         <div style="font-size: 11px; color: var(--text-muted);">
           Tip: Press <kbd style="padding: 1px 4px; border: 1px solid var(--border-color); border-radius: 3px;">F1</kbd> anywhere or open from <strong>Main Menu &gt; Help &amp; Tab Guide</strong>.
         </div>
+      </div>
       </div>
     </div>
   </div>

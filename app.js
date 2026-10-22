@@ -5684,6 +5684,15 @@ window.renderCompanionsTab = renderCompanionsTab;
    HELP & TAB GUIDE MODAL MANAGER (F1 & MAIN MENU)
    ========================================================================== */
 const HelpModalManager = {
+  storageKey: "mm4e_help_bounds",
+  defaultBounds: { width: 1060, height: 860, left: 120, top: 60 },
+  win: null,
+  placeholder: null,
+  pollTimer: null,
+  activeFilter: "",
+  activeContentEl: null,
+  parentContainer: null,
+  isRedocking: false,
   f1Enabled: true,
   f1Conflict: false,
 
@@ -5691,9 +5700,115 @@ const HelpModalManager = {
     return document.getElementById("modalHelpGuide");
   },
 
+  getContentEl() {
+    if (this.activeContentEl && this.activeContentEl.ownerDocument) {
+      return this.activeContentEl;
+    }
+    let el = document.getElementById("helpDockableBody");
+    if (!el && this.win && !this.win.closed) {
+      try {
+        el = this.win.document.getElementById("helpDockableBody");
+      } catch (e) {}
+    }
+    if (el) {
+      this.activeContentEl = el;
+      if (el.parentNode && el.parentNode.classList && el.parentNode.classList.contains("help-modal-dialog")) {
+        this.parentContainer = el.parentNode;
+      }
+    }
+    return this.activeContentEl;
+  },
+
+  getPopoutBtn() {
+    return document.getElementById("btnPopoutHelp");
+  },
+
+  getSearchInput() {
+    return document.getElementById("txtHelpFilter");
+  },
+
   isOpenModal() {
     const modal = this.getModalOverlay();
     return modal && modal.style.display === "flex";
+  },
+
+  isPoppedOut() {
+    return !!(this.win && !this.win.closed);
+  },
+
+  updateHeaderBtnState() {
+    const btn = document.getElementById("btnOpenHelpModal");
+    if (!btn) return;
+    if (this.isPoppedOut()) {
+      btn.title = "Help Manual is open in pop-out window (Click to bring to front)";
+      btn.classList.add("btn-popped-out-active");
+    } else {
+      btn.title = "Open Help Manual & Tab Guide (F1)";
+      btn.classList.remove("btn-popped-out-active");
+    }
+  },
+
+  getSavedBounds() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          let w = Math.max(480, Math.min(window.screen.availWidth || 2560, Number(parsed.width) || this.defaultBounds.width));
+          let h = Math.max(380, Math.min(window.screen.availHeight || 1440, Number(parsed.height) || this.defaultBounds.height));
+          let l = Number(parsed.left);
+          let t = Number(parsed.top);
+          if (isNaN(l) || l < -1000 || l > (window.screen.availWidth || 2560)) l = this.defaultBounds.left;
+          if (isNaN(t) || t < -1000 || t > (window.screen.availHeight || 1440)) t = this.defaultBounds.top;
+          return { width: Math.round(w), height: Math.round(h), left: Math.round(l), top: Math.round(t) };
+        }
+      }
+    } catch (e) {}
+    return { ...this.defaultBounds };
+  },
+
+  saveBounds() {
+    if (!this.win || this.win.closed) return;
+    try {
+      const x = this.win.screenX !== undefined ? this.win.screenX : this.win.screenLeft;
+      const y = this.win.screenY !== undefined ? this.win.screenY : this.win.screenTop;
+      const w = this.win.outerWidth || this.win.innerWidth;
+      const h = this.win.outerHeight || this.win.innerHeight;
+      if (typeof x === "number" && typeof y === "number" && typeof w === "number" && typeof h === "number" &&
+          !isNaN(x) && !isNaN(y) && !isNaN(w) && !isNaN(h) && w >= 360 && h >= 240) {
+        const bounds = { width: Math.round(w), height: Math.round(h), left: Math.round(x), top: Math.round(y) };
+        localStorage.setItem(this.storageKey, JSON.stringify(bounds));
+      }
+    } catch (e) {}
+  },
+
+  ensureDocked() {
+    const contentEl = this.getContentEl();
+    const parent = this.parentContainer || (document.getElementById("modalHelpGuide") ? document.getElementById("modalHelpGuide").querySelector(".help-modal-dialog") : null);
+    if (!contentEl || !parent) return;
+
+    if (contentEl.ownerDocument === document && contentEl.parentNode === parent) {
+      if (this.placeholder && this.placeholder.parentNode) {
+        this.placeholder.remove();
+        this.placeholder = null;
+      }
+      return;
+    }
+
+    try {
+      if (document.adoptNode && contentEl.ownerDocument !== document) {
+        document.adoptNode(contentEl);
+      }
+    } catch (e) {}
+
+    if (this.placeholder && this.placeholder.parentNode) {
+      this.placeholder.parentNode.insertBefore(contentEl, this.placeholder);
+      this.placeholder.remove();
+      this.placeholder = null;
+    } else {
+      parent.appendChild(contentEl);
+    }
+    contentEl.style.display = "";
   },
 
   isF1Enabled() {
@@ -5757,23 +5872,39 @@ const HelpModalManager = {
       }
     }
 
-    const modalStatus = document.getElementById("lblHelpF1Status");
+    const contentEl = this.getContentEl();
+    const activeDoc = contentEl && contentEl.ownerDocument ? contentEl.ownerDocument : document;
+    const modalStatus = activeDoc.getElementById("lblHelpF1Status");
     if (modalStatus) {
       if (isEnabled) {
         modalStatus.innerHTML = `<span style="color: #10b981;">●</span> F1 Shortcut: <strong>Active</strong>`;
       } else if (conflictReason) {
         modalStatus.innerHTML = `<span style="color: #f59e0b;">⚠️</span> F1 Shortcut: <strong>Disabled (${conflictReason})</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Test &amp; Re-enable</button>`;
-        const btnRe = document.getElementById("btnReenableF1");
+        const btnRe = modalStatus.querySelector("#btnReenableF1");
         if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
       } else {
         modalStatus.innerHTML = `<span style="color: var(--text-muted);">○</span> F1 Shortcut: <strong>Disabled</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Enable</button>`;
-        const btnRe = document.getElementById("btnReenableF1");
+        const btnRe = modalStatus.querySelector("#btnReenableF1");
         if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
       }
     }
   },
 
   openModal(tabTarget) {
+    if (this.isPoppedOut()) {
+      try {
+        this.win.focus();
+      } catch (e) {}
+      if (typeof showToast === "function") {
+        showToast("Help Manual window focused.", "info");
+      }
+      if (tabTarget) {
+        this.scrollToSection(tabTarget);
+      }
+      return;
+    }
+
+    this.ensureDocked();
     const modal = this.getModalOverlay();
     if (modal) {
       modal.style.display = "flex";
@@ -5783,8 +5914,8 @@ const HelpModalManager = {
       } else {
         const input = document.getElementById("txtHelpFilter");
         if (input) {
-          input.value = "";
-          this.filterTopics("");
+          input.value = this.activeFilter;
+          this.filterTopics(this.activeFilter);
           setTimeout(() => input.focus(), 60);
         }
       }
@@ -5797,19 +5928,24 @@ const HelpModalManager = {
   },
 
   toggleModal() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      return;
+    }
     if (this.isOpenModal()) this.closeModal();
     else this.openModal();
   },
 
   scrollToSection(sectionId) {
-    const el = document.getElementById(sectionId);
+    const contentEl = this.getContentEl();
+    const activeDoc = contentEl && contentEl.ownerDocument ? contentEl.ownerDocument : document;
+    const el = activeDoc.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       el.classList.add("highlight-pulse");
       setTimeout(() => el.classList.remove("highlight-pulse"), 1500);
 
-      // Update active pill
-      document.querySelectorAll(".help-pill").forEach(p => {
+      activeDoc.querySelectorAll(".help-pill").forEach(p => {
         if (p.dataset.target === sectionId) p.classList.add("active");
         else p.classList.remove("active");
       });
@@ -5817,8 +5953,11 @@ const HelpModalManager = {
   },
 
   filterTopics(query) {
+    this.activeFilter = query || "";
+    const contentEl = this.getContentEl();
+    const activeDoc = contentEl && contentEl.ownerDocument ? contentEl.ownerDocument : document;
     const q = (query || "").trim().toLowerCase();
-    const cards = document.querySelectorAll(".help-topic-card");
+    const cards = activeDoc.querySelectorAll(".help-topic-card");
     cards.forEach(card => {
       if (!q) {
         card.style.display = "";
@@ -5833,9 +5972,187 @@ const HelpModalManager = {
     });
   },
 
+  popout() {
+    if (this.isPoppedOut()) {
+      try { this.win.focus(); } catch (e) {}
+      return;
+    }
+
+    this.ensureDocked();
+    const contentEl = this.getContentEl();
+    if (!contentEl) return;
+
+    if (!this.parentContainer) {
+      this.parentContainer = contentEl.parentNode || (document.getElementById("modalHelpGuide") ? document.getElementById("modalHelpGuide").querySelector(".help-modal-dialog") : null);
+    }
+
+    const bounds = this.getSavedBounds();
+    const features = `popup=yes,width=${bounds.width},height=${bounds.height},left=${bounds.left},top=${bounds.top},resizable=yes,scrollbars=yes`;
+
+    try {
+      this.win = window.open("", "_blank", features);
+    } catch (err) {
+      console.warn("Popout window open error:", err);
+    }
+
+    if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
+      alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      return;
+    }
+
+    const popDoc = this.win.document;
+    const baseHref = document.baseURI || window.location.href || "";
+
+    popDoc.open();
+    popDoc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>📖 Hero Builder Manual &amp; Tab Guide - M&amp;M 4E</title>
+  ${baseHref ? `<base href="${baseHref}">` : ""}
+</head>
+<body class="popout-help-body">
+  <div class="popout-help-header" id="popoutHelpHeader">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 16px;">📖</span>
+      <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">Hero Builder Manual &amp; Tab Guide</h3>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 360px; margin: 0 12px;">
+      <input type="text" id="txtPopoutHelpFilter" placeholder="🔍 Search help topics..." value="${(this.activeFilter || "").replace(/"/g, "&quot;")}" style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutHelpRedock" title="Redock back to main builder window">⬅ Redock</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutHelpClose" title="Close window">✕ Close</button>
+    </div>
+  </div>
+  <div class="popout-help-container" id="popoutHelpMountContainer"></div>
+</body>
+</html>`);
+    popDoc.close();
+
+    // Copy stylesheet and style tags from parent
+    document.querySelectorAll('link[rel="stylesheet"], style').forEach(node => {
+      try {
+        popDoc.head.appendChild(popDoc.importNode ? popDoc.importNode(node, true) : node.cloneNode(true));
+      } catch (e) {}
+    });
+
+    // Mirror data-theme
+    const curTheme = document.documentElement.getAttribute("data-theme") || "dark";
+    popDoc.documentElement.setAttribute("data-theme", curTheme);
+    popDoc.body.setAttribute("data-theme", curTheme);
+
+    // Setup placeholder and move DOM element
+    if (!this.placeholder) {
+      this.placeholder = document.createComment("helpDockableBody-placeholder");
+    }
+    if (contentEl.parentNode) {
+      contentEl.parentNode.insertBefore(this.placeholder, contentEl);
+    }
+    const mount = popDoc.getElementById("popoutHelpMountContainer");
+    if (mount) {
+      try {
+        if (popDoc.adoptNode) popDoc.adoptNode(contentEl);
+      } catch (e) {}
+      mount.appendChild(contentEl);
+      contentEl.style.display = "";
+    }
+
+    // Completely close the main window modal overlay so no popup or backdrop is left behind
+    this.closeModal();
+
+    this.updateHeaderBtnState();
+    this.updateF1UI();
+
+    // Track geometry
+    if (this.pollTimer) clearInterval(this.pollTimer);
+    this.pollTimer = setInterval(() => {
+      if (this.win && !this.win.closed) {
+        this.saveBounds();
+      } else {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+        this.redock({ openMainModal: false });
+      }
+    }, 500);
+
+    // Listeners in popout
+    this.win.addEventListener("resize", () => this.saveBounds());
+    this.win.addEventListener("beforeunload", () => {
+      this.saveBounds();
+      this.redock({ openMainModal: false });
+    });
+    this.win.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        this.redock({ openMainModal: false });
+      }
+    });
+
+    const popFilterInput = popDoc.getElementById("txtPopoutHelpFilter");
+    if (popFilterInput) {
+      popFilterInput.addEventListener("input", (e) => {
+        this.activeFilter = e.target.value;
+        const mainInput = this.getSearchInput();
+        if (mainInput) mainInput.value = this.activeFilter;
+        this.filterTopics(this.activeFilter);
+      });
+    }
+
+    const btnRedock = popDoc.getElementById("btnPopoutHelpRedock");
+    if (btnRedock) {
+      btnRedock.addEventListener("click", () => this.redock({ openMainModal: true }));
+    }
+
+    const btnClose = popDoc.getElementById("btnPopoutHelpClose");
+    if (btnClose) {
+      btnClose.addEventListener("click", () => {
+        this.redock({ openMainModal: false });
+      });
+    }
+
+    this.filterTopics(this.activeFilter);
+  },
+
+  redock(options = {}) {
+    if (this.isRedocking) return;
+    this.isRedocking = true;
+
+    try {
+      if (this.pollTimer) {
+        clearInterval(this.pollTimer);
+        this.pollTimer = null;
+      }
+
+      this.ensureDocked();
+
+      if (this.win && !this.win.closed) {
+        try {
+          this.win.close();
+        } catch (e) {}
+      }
+      this.win = null;
+
+      this.updateHeaderBtnState();
+      this.updateF1UI();
+
+      const mainInput = this.getSearchInput();
+      if (mainInput) {
+        mainInput.value = this.activeFilter;
+      }
+      this.filterTopics(this.activeFilter);
+
+      if (options.openMainModal) {
+        this.openModal();
+      }
+    } finally {
+      this.isRedocking = false;
+    }
+  },
+
   init() {
     const btnMenu = document.getElementById("btnOpenHelpModal");
     const btnClose = document.getElementById("btnCloseHelpModal");
+    const btnPopout = document.getElementById("btnPopoutHelp");
     const modal = this.getModalOverlay();
     const filterInput = document.getElementById("txtHelpFilter");
 
@@ -5847,6 +6164,11 @@ const HelpModalManager = {
     if (btnClose && !btnClose.__helpBound) {
       btnClose.__helpBound = true;
       btnClose.addEventListener("click", () => this.closeModal());
+    }
+
+    if (btnPopout && !btnPopout.__helpBound) {
+      btnPopout.__helpBound = true;
+      btnPopout.addEventListener("click", () => this.popout());
     }
 
     if (modal && !modal.__helpBound) {
@@ -5933,6 +6255,7 @@ const HelpModalManager = {
     }
 
     this.updateF1UI();
+    this.updateHeaderBtnState();
   }
 };
 window.HelpModalManager = HelpModalManager;
@@ -6090,5 +6413,8 @@ window.addEventListener("beforeunload", () => {
   }
   if (typeof OptionsPopoutManager !== "undefined" && OptionsPopoutManager.win && !OptionsPopoutManager.win.closed) {
     try { OptionsPopoutManager.win.close(); } catch (e) {}
+  }
+  if (typeof HelpModalManager !== "undefined" && HelpModalManager.win && !HelpModalManager.win.closed) {
+    try { HelpModalManager.win.close(); } catch (e) {}
   }
 });

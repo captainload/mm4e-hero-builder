@@ -1771,6 +1771,47 @@ body.popout-options-body {
   gap: 10px;
 }
 
+body.popout-help-body {
+  margin: 0;
+  padding: 10px 14px 14px;
+  background: var(--bg-app);
+  color: var(--text-main);
+  font-family: system-ui, -apple-system, sans-serif;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.popout-help-header {
+  background: var(--bg-card);
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.popout-help-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+
+.popout-help-container .help-modal-body {
+  padding: 14px 18px;
+}
+
 /* Active indicator when window is popped out */
 .btn-popped-out-active {
   border-color: var(--accent-primary) !important;
@@ -1794,7 +1835,7 @@ body.popout-options-body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 12px;
   box-sizing: border-box;
 }
 
@@ -1804,10 +1845,10 @@ body.popout-options-body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   width: 100%;
-  max-width: 1020px;
-  height: calc(100vh - 100px);
-  max-height: 860px;
-  min-height: 380px;
+  max-width: 1120px;
+  height: calc(100vh - 36px);
+  max-height: calc(100vh - 36px);
+  min-height: 480px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

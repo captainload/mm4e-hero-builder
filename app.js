@@ -870,7 +870,7 @@ window.checkScreenResolution = function() {
             banner.style.fontSize = "14px";
             banner.style.fontWeight = "bold";
             banner.style.boxShadow = "0 2px 4px rgba(0,0,0,0.2)";
-            banner.innerHTML = `⚠️ Your screen width is less than 1080px. For the best builder experience, please use a wider screen or switch your device to landscape mode. <button id="dismissResWarning" style="margin-left:12px; background:rgba(0,0,0,0.2); border:1px solid #fff; color:white; padding:4px 8px; cursor:pointer; border-radius:4px; font-size:12px;">Dismiss</button>`;
+            banner.innerHTML = `⚠️ Your screen width is less than 1080px. For the best builder experience, please use a wider screen or switch your device to landscape mode. <button id="dismissResWarning" style="margin-left:12px; background:rgba(0,0,0,0.2); border:1px solid #fff; color:white; padding:4px 8px; cursor:pointer; border-radius:4px; font-size:10pt;">Dismiss</button>`;
             document.body.prepend(banner);
             
             document.getElementById("dismissResWarning").addEventListener("click", () => {
@@ -1168,7 +1168,7 @@ const TablesPopoutManager = {
       <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">Reference Tables &amp; Rules</h3>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 400px; margin: 0 12px;">
-      <input type="text" id="txtPopoutTableFilter" placeholder="🔍 Filter tables..." value="${this.activeFilter.replace(/"/g, '&quot;')}" style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+      <input type="text" id="txtPopoutTableFilter" placeholder="🔍 Filter tables..." value="${this.activeFilter.replace(/"/g, '&quot;')}" style="width: 100%; height: 28px; font-size: 10pt; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
     </div>
     <div style="display: flex; align-items: center; gap: 6px;">
       <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutToggleAll" title="Expand or collapse all reference tables">Expand / Collapse All</button>
@@ -1991,7 +1991,7 @@ function setupOptionsModal() {
               <input type="checkbox" id="chkEnableF1Help" ${HelpModalManager.isF1Enabled() ? "checked" : ""}>
               Enable F1 key for Help
           </label>
-          <div id="lblF1ConflictNotice" style="${localStorage.getItem('mm4e_f1_conflict_reason') ? 'display: block;' : 'display: none;'} font-size: 11px; color: #f59e0b; margin-left: 24px; margin-top: 2px;">
+          <div id="lblF1ConflictNotice" style="${localStorage.getItem('mm4e_f1_conflict_reason') ? 'display: block;' : 'display: none;'} font-size: 10pt; color: #f59e0b; margin-left: 24px; margin-top: 2px;">
               ⚠️ F1 was disabled due to browser/OS conflict: ${localStorage.getItem('mm4e_f1_conflict_reason') || ''}
           </div>
       `;
@@ -3133,7 +3133,7 @@ function buildPowersUI() {
                       <span><strong>${m.split(" [+")[0]}</strong></span>
                       ${stepperHtml}
                       <button type="button" style="background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 4px; margin-left: 4px;" onclick="removeSubPowerModifier(${pIdx}, ${eIdx}, ${sIdx}, ${smIdx})" title="Remove Meta-Option">✕</button>
-                      ${mDescText ? `<div style="font-size: 10px; width: 100%; color: var(--text-muted); margin-top: 2px;">${mDescText}</div>` : ''}
+                      ${mDescText ? `<div style="font-size: 10pt; width: 100%; color: var(--text-muted); margin-top: 2px;">${mDescText}</div>` : ''}
                     </div>
                   `;
                 } else {
@@ -3199,10 +3199,10 @@ function buildPowersUI() {
               }
 
               metaPickerHtml = `
-                <select id="selSubMeta_${pIdx}_${eIdx}_${sIdx}" class="minor-control" style="font-size: 11px; max-width: 200px;">
+                <select id="selSubMeta_${pIdx}_${eIdx}_${sIdx}" class="minor-control" style="font-size: var(--font-size-minor-controls, 14px); max-width: 200px;">
                   ${metaChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                 </select>
-                <button type="button" class="btn minor-control-btn" style="font-size: 11px; padding: 2px 6px;" onclick="addSubPowerMeta(${pIdx}, ${eIdx}, ${sIdx}, 'selSubMeta_${pIdx}_${eIdx}_${sIdx}')">+ Add Modifier</button>
+                <button type="button" class="btn minor-control-btn" style="font-size: 10pt; padding: 2px 6px;" onclick="addSubPowerMeta(${pIdx}, ${eIdx}, ${sIdx}, 'selSubMeta_${pIdx}_${eIdx}_${sIdx}')">+ Add Modifier</button>
                 <div style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                   ${metaTagsHtml}
                 </div>
@@ -3222,10 +3222,10 @@ function buildPowersUI() {
                 "Resistance [-1 pt/r]"
               ];
               metaPickerHtml = `
-                <select id="selSubMeta_${pIdx}_${eIdx}_${sIdx}" class="minor-control" style="font-size: 11px; max-width: 200px;">
+                <select id="selSubMeta_${pIdx}_${eIdx}_${sIdx}" class="minor-control" style="font-size: var(--font-size-minor-controls, 14px); max-width: 200px;">
                   ${metaChoices.map(c => `<option value="${c}">${c}</option>`).join('')}
                 </select>
-                <button type="button" class="btn minor-control-btn" style="font-size: 11px; padding: 2px 6px;" onclick="addSubPowerMeta(${pIdx}, ${eIdx}, ${sIdx}, 'selSubMeta_${pIdx}_${eIdx}_${sIdx}')">+ Add Modifier</button>
+                <button type="button" class="btn minor-control-btn" style="font-size: 10pt; padding: 2px 6px;" onclick="addSubPowerMeta(${pIdx}, ${eIdx}, ${sIdx}, 'selSubMeta_${pIdx}_${eIdx}_${sIdx}')">+ Add Modifier</button>
                 <div style="display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap;">
                   ${subModsHtml}
                 </div>
@@ -3262,11 +3262,11 @@ function buildPowersUI() {
                   <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
                     <strong style="font-size: var(--font-size-controls); color: var(--accent-primary); white-space: nowrap;">
                       ${arrowIcon}${sub.name.split(" [")[0] || sub.type}
-                      ${dynDesc ? `<button type="button" class="btn-info-circle" style="min-width: 16px; min-height: 16px; font-size: 10px; margin-left: 4px; vertical-align: middle;" onclick="showOptionInfo('${(sub.name.split(" [")[0] || sub.type).replace(/'/g, "\\'")}', '${dynDesc.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" title="View Option Info">?</button>` : ''}
+                      ${dynDesc ? `<button type="button" class="btn-info-circle" style="min-width: 18px; min-height: 18px; font-size: 10pt; margin-left: 4px; vertical-align: middle;" onclick="showOptionInfo('${(sub.name.split(" [")[0] || sub.type).replace(/'/g, "\\'")}', '${dynDesc.replace(/'/g, "\\'").replace(/"/g, "&quot;")}')" title="View Option Info">?</button>` : ''}
                     </strong>
-                    <span class="badge effect-cost-badge" style="font-size: 11px; white-space: nowrap;">${sub.baseCost || 1} ${sub.costType === 'per_rank' ? 'PP/r' : 'PP'}</span>
+                    <span class="badge effect-cost-badge" style="font-size: 10pt; white-space: nowrap;">${sub.baseCost || 1} ${sub.costType === 'per_rank' ? 'PP/r' : 'PP'}</span>
                     ${effect.effectName !== "Enhanced Trait" ? `
-                        <input type="text" class="minor-control" placeholder="${placeholderText}" value="${sub.details || ''}" oninput="updateSubPowerDetails(${pIdx}, ${eIdx}, ${sIdx}, this.value)" style="flex: 1; min-width: 80px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-size: 12px; padding: 2px 6px; margin-left: 4px; height: 24px;">
+                        <input type="text" class="minor-control" placeholder="${placeholderText}" value="${sub.details || ''}" oninput="updateSubPowerDetails(${pIdx}, ${eIdx}, ${sIdx}, this.value)" style="flex: 1; min-width: 80px; border: 1px solid var(--border-color); background: var(--bg-panel); color: var(--text-main); font-size: var(--font-size-controls, 14px); padding: 2px 6px; margin-left: 4px; height: 26px;">
                     ` : ''}
                   </div>
 
@@ -3277,7 +3277,7 @@ function buildPowersUI() {
                         ${stepperControls}
                       </div>
                     </div>
-                    <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 11px;" onclick="removeSubPower(${pIdx}, ${eIdx}, ${sIdx})" title="Delete Option">Delete</button>
+                    <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 10pt;" onclick="removeSubPower(${pIdx}, ${eIdx}, ${sIdx})" title="Delete Option">Delete</button>
                   </div>
                 </div>
                 
@@ -3809,9 +3809,9 @@ function buildPowersUI() {
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                     <label>Rank:</label>
                     ${rankStepperHtml}
-                    <span class="badge effect-cost-badge" style="margin-left: 8px; font-size: 11px;" title="Base Cost: ${rawEffectCost} PP">${effectCostDisplay}</span>
-                    <button type="button" class="btn" style="padding: 2px 6px; font-size: 11px; margin-left: 8px;" onclick="resetEffect(${pIdx}, ${eIdx})" title="Reset Effect Config">Reset</button>
-                    <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 11px; margin-left: 4px;" onclick="deleteEffect(${pIdx}, ${eIdx})" title="Delete Effect">Delete</button>
+                    <span class="badge effect-cost-badge" style="margin-left: 8px; font-size: 10pt;" title="Base Cost: ${rawEffectCost} PP">${effectCostDisplay}</span>
+                    <button type="button" class="btn" style="padding: 2px 6px; font-size: 10pt; margin-left: 8px;" onclick="resetEffect(${pIdx}, ${eIdx})" title="Reset Effect Config">Reset</button>
+                    <button type="button" class="btn-delete-power" style="padding: 2px 6px; font-size: 10pt; margin-left: 4px;" onclick="deleteEffect(${pIdx}, ${eIdx})" title="Delete Effect">Delete</button>
                 </div>
             </div>
 
@@ -3890,12 +3890,12 @@ function buildPowersUI() {
           <div style="display: flex; align-items: center; gap: 8px;">
             <span id="powerCollapseIcon_${pIdx}" style="font-size: var(--font-size-secondary);">${powerContainer.collapsed ? '▶' : '▼'}</span>
             <input type="text" id="powerContainerName_${pIdx}" value="${powerContainer.name}" placeholder="Power Container Name" style="font-weight: bold; font-size: var(--font-size-labels); width: 200px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 4px; padding: 2px 6px; color: var(--text-main);" onclick="event.stopPropagation();" oninput="updatePowerContainerName(${pIdx}, this.value)">
-            <span class="secondary-text" style="font-weight: normal; font-size: 13px;">(${summaryText})</span>
+            <span class="secondary-text" style="font-weight: normal; font-size: 10pt;">(${summaryText})</span>
           </div>
 
           <div style="display: flex; align-items: center; gap: 12px;" onclick="event.stopPropagation();">
             ${window.activePowerContext === 'blueprints' ? `
-              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--accent-success); display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 8px;">
+              <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; padding: 2px 8px; font-size: 10pt; color: var(--accent-success); display: flex; flex-direction: column; align-items: center; line-height: 1.1; margin-right: 8px;">
                 <strong>Check DC: ${10 + containerCost}</strong>
                 <span>Normal: ${containerCost * 4} hrs | Fast: ${containerCost * 10} min</span>
               </div>
@@ -4769,7 +4769,7 @@ function buildEquipmentUI() {
                         </div>
                         <button type="button" class="btn-delete-power" onclick="deleteEquipment('vehicle', ${idx})">✕</button>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted);">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 10pt; color: var(--text-muted);">
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <span style="font-weight: 600;">Size:</span>
                             <div class="stepper-group" style="height: 24px; min-width: 70px;">
@@ -4835,7 +4835,7 @@ function buildEquipmentUI() {
                         </div>
                         <button type="button" class="btn-delete-power" onclick="deleteEquipment('hq', ${idx})">✕</button>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--text-muted);">
+                    <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 10pt; color: var(--text-muted);">
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <span style="font-weight: 600;">Size:</span>
                             <div class="stepper-group" style="height: 24px; min-width: 70px;">
@@ -5845,11 +5845,11 @@ function renderCompanionsTab() {
         <span class="companion-card-title">🦸 ${escapeHtml(hero.name || 'Hero')}</span>
         <span class="companion-type-badge" style="background: rgba(37,99,235,0.15); color: var(--accent-primary);">PRIMARY HERO</span>
       </div>
-      <div style="font-size: 13px; color: var(--text-muted);">
+      <div style="font-size: 10pt; color: var(--text-muted);">
         <strong>Power Level:</strong> ${hero.powerLevel || 10} • <strong>Points:</strong> ${heroPP} / ${heroAllowed} PP
       </div>
       <div style="margin-top: 8px;">
-        ${isHeroActive ? '<span style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('main')">Switch to Primary Hero</button>`}
+        ${isHeroActive ? '<span style="font-size: 10pt; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('main')">Switch to Primary Hero</button>`}
       </div>
     </div>
   `;
@@ -5870,11 +5870,11 @@ function renderCompanionsTab() {
             <span class="companion-card-title">${icon} ${escapeHtml(c.name)}</span>
             <span class="companion-type-badge ${c.type}">${typeLabel}</span>
           </div>
-          <div style="font-size: 13px; color: var(--text-muted);">
+          <div style="font-size: 10pt; color: var(--text-muted);">
             <strong>Power Level:</strong> ${c.powerLevel || 10} • <strong>Budget:</strong> ${budget} PP
           </div>
           <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
-            ${isCompActive ? '<span style="font-size: 12px; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('${c.id}')">Edit Form</button>`}
+            ${isCompActive ? '<span style="font-size: 10pt; font-weight: bold; color: var(--accent-primary);">● Currently Active</span>' : `<button type="button" class="btn btn-secondary btn-sm" onclick="switchToCompanion('${c.id}')">Edit Form</button>`}
             <button type="button" class="btn btn-sm" style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 2px 8px;" onclick="if(confirm('Delete ${escapeHtml(c.name)}?')){ window.primaryHero.removeCompanion('${c.id}'); if(window.activeCompanionId === '${c.id}') switchToCompanion('main'); else { updateAltSelectorUI(); renderCompanionsTab(); } }">Delete</button>
           </div>
         </div>
@@ -6108,11 +6108,11 @@ const HelpModalManager = {
       if (isEnabled) {
         modalStatus.innerHTML = `<span style="color: #10b981;">●</span> F1 Shortcut: <strong>Active</strong>`;
       } else if (conflictReason) {
-        modalStatus.innerHTML = `<span style="color: #f59e0b;">⚠️</span> F1 Shortcut: <strong>Disabled (${conflictReason})</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Test &amp; Re-enable</button>`;
+        modalStatus.innerHTML = `<span style="color: #f59e0b;">⚠️</span> F1 Shortcut: <strong>Disabled (${conflictReason})</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 10pt; margin-left: 6px;">Test &amp; Re-enable</button>`;
         const btnRe = modalStatus.querySelector("#btnReenableF1");
         if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
       } else {
-        modalStatus.innerHTML = `<span style="color: var(--text-muted);">○</span> F1 Shortcut: <strong>Disabled</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 11px; margin-left: 6px;">Enable</button>`;
+        modalStatus.innerHTML = `<span style="color: var(--text-muted);">○</span> F1 Shortcut: <strong>Disabled</strong> <button type="button" class="btn btn-secondary btn-sm" id="btnReenableF1" style="padding: 1px 6px; font-size: 10pt; margin-left: 6px;">Enable</button>`;
         const btnRe = modalStatus.querySelector("#btnReenableF1");
         if (btnRe) btnRe.onclick = () => this.setF1Enabled(true);
       }
@@ -6264,7 +6264,7 @@ const HelpModalManager = {
       <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">Hero Builder Manual &amp; Tab Guide</h3>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 360px; margin: 0 12px;">
-      <input type="text" id="txtPopoutHelpFilter" placeholder="🔍 Search help topics..." value="${(this.activeFilter || "").replace(/"/g, "&quot;")}" style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
+      <input type="text" id="txtPopoutHelpFilter" placeholder="🔍 Search help topics..." value="${(this.activeFilter || "").replace(/"/g, "&quot;")}" style="width: 100%; height: 28px; font-size: 10pt; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
     </div>
     <div style="display: flex; align-items: center; gap: 6px;">
       <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutHelpRedock" title="Redock back to main builder window">⬅ Redock</button>

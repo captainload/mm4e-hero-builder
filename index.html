@@ -97,7 +97,7 @@
         <button type="button" class="menu-action-btn" id="btnQuickAddAltForm"><span class="menu-btn-icon">⚡</span> + Add Alternate Form</button>
 
         <div class="menu-divider"></div>
-        <button type="button" class="menu-action-btn" id="btnOpenHelpModal"><span class="menu-btn-icon">📖</span> Help &amp; Tab Guide <span id="lblF1HelpBadge" style="margin-left: auto; font-size: 11px; opacity: 0.7;">(F1)</span></button>
+        <button type="button" class="menu-action-btn" id="btnOpenHelpModal"><span class="menu-btn-icon">📖</span> Help &amp; Tab Guide <span id="lblF1HelpBadge" style="margin-left: auto; font-size: 10pt; opacity: 0.7;">(F1)</span></button>
         <button type="button" class="menu-action-btn" id="btnToggleOptions"><span class="menu-btn-icon">⚙️</span> Options &amp; Display...</button>
       </div>
 
@@ -108,16 +108,16 @@
             <span>⚙️</span> Display &amp; Settings
           </h3>
           <div style="display: flex; align-items: center; gap: 4px;">
-            <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutOptions" title="Open in separate resizable window" style="padding: 2px 8px; font-size: 11px;">⧉ Pop Out</button>
-            <button type="button" class="btn btn-secondary btn-sm" id="btnCloseOptions" title="Close" style="padding: 2px 7px; font-size: 11px;">✕</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutOptions" title="Open in separate resizable window" style="padding: 2px 8px; font-size: 10pt;">⧉ Pop Out</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="btnCloseOptions" title="Close" style="padding: 2px 7px; font-size: 10pt;">✕</button>
           </div>
         </div>
 
         <div id="boxPoppedOutOptionsNotice" style="display: none; padding: 12px; text-align: center; background: rgba(37,99,235,0.06); border: 1px solid var(--border-color); border-radius: 4px; flex-direction: column; align-items: center; gap: 6px;">
-          <div style="font-size: 13px; font-weight: 700; color: var(--accent-primary);">
+          <div style="font-size: 10.5pt; font-weight: 700; color: var(--accent-primary);">
             ⚙️ Options are open in a pop-out window.
           </div>
-          <div style="font-size: 11px; color: var(--text-muted);">
+          <div style="font-size: 10pt; color: var(--text-muted);">
             You can move and resize the options window across your screens.
           </div>
           <button type="button" class="btn btn-secondary btn-sm" id="btnRedockOptions" style="margin-top: 4px;">Return / Redock to Main App</button>
@@ -131,7 +131,7 @@
           <div class="font-control-group" style="margin-top: 4px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="btn btn-secondary" onclick="resetFont('Label', 16)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <button class="btn btn-secondary" onclick="resetFont('Label', 16)" title="Restore Default" style="padding: 2px 6px; font-size: 10pt; margin-right: 6px;">⟲</button>
                 <label>Labels &amp; Headers:</label>
               </div>
               <span class="secondary-text" id="valLabelFont">16px</span>
@@ -142,7 +142,7 @@
           <div class="font-control-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="btn btn-secondary" onclick="resetFont('Control', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <button class="btn btn-secondary" onclick="resetFont('Control', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 10pt; margin-right: 6px;">⟲</button>
                 <label>Interactive Controls:</label>
               </div>
               <span class="secondary-text" id="valControlFont">14px</span>
@@ -153,7 +153,7 @@
           <div class="font-control-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="btn btn-secondary" onclick="resetFont('Link', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <button class="btn btn-secondary" onclick="resetFont('Link', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 10pt; margin-right: 6px;">⟲</button>
                 <label>Links &amp; Tags (Touch Target):</label>
               </div>
               <span class="secondary-text" id="valLinkFont">14px</span>
@@ -164,7 +164,7 @@
           <div class="font-control-group">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="btn btn-secondary" onclick="resetFont('Secondary', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <button class="btn btn-secondary" onclick="resetFont('Secondary', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 10pt; margin-right: 6px;">⟲</button>
                 <label>Secondary Details:</label>
               </div>
               <span class="secondary-text" id="valSecondaryFont">14px</span>
@@ -175,7 +175,7 @@
           <div class="font-control-group" style="margin-top: 4px; border-top: 1px dashed var(--border-color); padding-top: 6px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
-                <button class="btn btn-secondary" onclick="resetFont('MinorControl', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 12px; margin-right: 6px;">⟲</button>
+                <button class="btn btn-secondary" onclick="resetFont('MinorControl', 14)" title="Restore Default" style="padding: 2px 6px; font-size: 10pt; margin-right: 6px;">⟲</button>
                 <label>Sub-Controls &amp; Dropdowns:</label>
               </div>
               <span class="secondary-text" id="valMinorControlFont">14px</span>
@@ -658,25 +658,25 @@
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 20px;">🌟</span>
                 <div>
-                  <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--accent-primary);">Hero Points</h4>
-                  <div style="font-size: 11px; color: var(--text-muted);">Session reserve for rerolls, extra effort &amp; recovery</div>
+                  <h4 style="margin: 0; font-size: var(--font-size-labels, 16px); font-weight: 700; color: var(--accent-primary);">Hero Points</h4>
+                  <div style="font-size: 10pt; color: var(--text-muted);">Session reserve for rerolls, extra effort &amp; recovery</div>
                 </div>
               </div>
-              <span class="badge" id="lblHeroPointsBadge" style="font-size: 13px; font-weight: 800; padding: 4px 10px; background: var(--accent-primary);">1 HP</span>
+              <span class="badge" id="lblHeroPointsBadge" style="font-size: 10.5pt; font-weight: 800; padding: 4px 10px; background: var(--accent-primary);">1 HP</span>
             </div>
 
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-panel); border-radius: 6px; border: 1px solid var(--border-color);">
-              <span style="font-size: 13px; font-weight: 600;">Current Hero Points:</span>
+              <span style="font-size: var(--font-size-controls, 14px); font-weight: 600;">Current Hero Points:</span>
               <div class="stepper-group">
                 <button type="button" class="stepper-btn stepper-dec" id="btnDecHeroPoints" onclick="stepVal('txtHeroPoints', -1, 0, 99)" title="Spend / decrease Hero Point">−</button>
-                <input type="number" id="txtHeroPoints" class="stepper-input" min="0" max="99" value="1" style="width: 50px; text-align: center;">
+                <input type="number" id="txtHeroPoints" class="stepper-input" min="0" max="99" value="1" style="width: 50px; text-align: center; font-size: var(--font-size-controls, 14px);">
                 <button type="button" class="stepper-btn stepper-inc" id="btnIncHeroPoints" onclick="stepVal('txtHeroPoints', 1, 0, 99)" title="Award / increase Hero Point">+</button>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
-              <span id="lblStartingHeroPoints">Starting (per scene/session): <strong>1</strong> (1 + 0 Luck)</span>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnResetHeroPoints" style="padding: 2px 8px; font-size: 11px;" title="Reset to starting default based on Luck advantage">Reset to Starting</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10pt; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+              <span id="lblStartingHeroPoints">Starting (per scene/session): <strong style="color: var(--text-main);">1</strong> (1 + 0 Luck)</span>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnResetHeroPoints" style="padding: 3px 10px; font-size: 10pt;" title="Reset to starting default based on Luck advantage">Reset to Starting</button>
             </div>
           </div>
 
@@ -686,30 +686,30 @@
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 20px;">⚡</span>
                 <div>
-                  <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--accent-primary);">Power Points (PP)</h4>
-                  <div style="font-size: 11px; color: var(--text-muted);">Campaign progression &amp; earned experience</div>
+                  <h4 style="margin: 0; font-size: var(--font-size-labels, 16px); font-weight: 700; color: var(--accent-primary);">Power Points (PP)</h4>
+                  <div style="font-size: 10pt; color: var(--text-muted);">Campaign progression &amp; earned experience</div>
                 </div>
               </div>
-              <span class="badge" id="lblRemainingPPBadge" style="font-size: 13px; font-weight: 800; padding: 4px 10px; background: #10b981;">0 Unspent</span>
+              <span class="badge" id="lblRemainingPPBadge" style="font-size: 10.5pt; font-weight: 800; padding: 4px 10px; background: #10b981;">0 Unspent</span>
             </div>
 
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-panel); border-radius: 6px; border: 1px solid var(--border-color);">
               <div>
-                <div style="font-size: 13px; font-weight: 600;">Total PP Allowed / Earned:</div>
-                <div style="font-size: 11px; color: var(--text-muted);">Base: PL <span id="lblPLMultiplier">10</span> × 15 = <span id="lblBasePLPP">150</span> PP</div>
+                <div style="font-size: var(--font-size-controls, 14px); font-weight: 600;">Total PP Allowed / Earned:</div>
+                <div style="font-size: 10pt; color: var(--text-muted);">Base: PL <span id="lblPLMultiplier">10</span> × 15 = <span id="lblBasePLPP">150</span> PP</div>
               </div>
               <div class="stepper-group">
                 <button type="button" class="stepper-btn stepper-dec" id="btnDecTotalPP" onclick="stepVal('txtTotalPointsAllowed', -1, 0, 9999)" title="Decrease Total Power Points">−</button>
-                <input type="number" id="txtTotalPointsAllowed" class="stepper-input" min="0" max="9999" value="150" style="width: 60px; text-align: center;">
+                <input type="number" id="txtTotalPointsAllowed" class="stepper-input" min="0" max="9999" value="150" style="width: 65px; text-align: center; font-size: var(--font-size-controls, 14px);">
                 <button type="button" class="stepper-btn stepper-inc" id="btnIncTotalPP" onclick="stepVal('txtTotalPointsAllowed', 1, 0, 9999)" title="Increase Total Power Points">+</button>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 10pt; color: var(--text-muted); flex-wrap: wrap; gap: 6px;">
               <div>
                 Spent: <strong id="lblTrackerSpentPP" style="color: var(--text-main);">0</strong> PP &bull; Remaining: <strong id="lblTrackerRemainingPP" style="color: var(--accent-primary);">150</strong> PP
               </div>
-              <button type="button" class="btn btn-secondary btn-sm" id="btnResetTotalPP" style="padding: 2px 8px; font-size: 11px;" title="Reset total points to standard PL budget (PL × 15)">Reset to PL Standard</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnResetTotalPP" style="padding: 3px 10px; font-size: 10pt;" title="Reset total points to standard PL budget (PL × 15)">Reset to PL Standard</button>
             </div>
           </div>
 
@@ -793,11 +793,11 @@
           <span style="font-size: 18px;">📖</span>
           <div>
             <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--accent-primary);">M&amp;M 4E Hero Builder Manual &amp; Tab Guide</h3>
-            <div style="font-size: 11px; color: var(--text-muted);">Detailed guide to builder tabs, power point budgeting, mechanics &amp; rules</div>
+            <div style="font-size: 10pt; color: var(--text-muted);">Detailed guide to builder tabs, power point budgeting, mechanics &amp; rules</div>
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 320px; margin: 0 12px;">
-          <input type="text" id="txtHelpFilter" placeholder="🔍 Search help topics (e.g. powers, skills, caps)..." style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
+          <input type="text" id="txtHelpFilter" placeholder="🔍 Search help topics (e.g. powers, skills, caps)..." style="width: 100%; height: 28px; font-size: 10pt; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
         </div>
         <div style="display: flex; align-items: center; gap: 6px;">
           <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutHelp" title="Open in separate resizable window">⧉ Pop Out</button>
@@ -1067,7 +1067,7 @@
           </div>
           <div class="help-card-content">
             <p>Key utilities, pop-out windows, and keyboard shortcuts to streamline your workflow:</p>
-            <table class="reference-table" style="width: 100%; font-size: 12px; margin: 4px 0;">
+            <table class="reference-table" style="width: 100%; font-size: 10pt; margin: 4px 0;">
               <thead>
                 <tr>
                   <th style="width: 140px; text-align: left; padding: 4px 8px;">Shortcut / Control</th>
@@ -1111,10 +1111,10 @@
 
       <!-- Help Modal Footer -->
       <div class="help-modal-footer">
-        <div id="lblHelpF1Status" style="font-size: 12px; display: flex; align-items: center; gap: 6px;">
+        <div id="lblHelpF1Status" style="font-size: 10pt; display: flex; align-items: center; gap: 6px;">
           <span style="color: #10b981;">●</span> F1 Shortcut: <strong>Active</strong>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted);">
+        <div style="font-size: 10pt; color: var(--text-muted);">
           Tip: Press <kbd style="padding: 1px 4px; border: 1px solid var(--border-color); border-radius: 3px;">F1</kbd> anywhere or open from <strong>Main Menu &gt; Help &amp; Tab Guide</strong>.
         </div>
       </div>
@@ -1131,7 +1131,7 @@
           <h3 style="margin: 0; font-size: 15px; font-weight: 700;">Reference Tables &amp; Rules</h3>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; flex: 1; max-width: 380px; margin: 0 12px;">
-          <input type="text" id="txtTableFilter" placeholder="🔍 Filter tables (e.g. speed, time, condition)..." style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
+          <input type="text" id="txtTableFilter" placeholder="🔍 Filter tables (e.g. speed, time, condition)..." style="width: 100%; height: 28px; font-size: 10pt; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-card); color: var(--text-main);">
         </div>
         <div style="display: flex; align-items: center; gap: 6px;">
           <button type="button" class="btn btn-secondary btn-sm" id="btnToggleAllTables" title="Expand or collapse all reference tables">Expand / Collapse All</button>
@@ -1144,7 +1144,7 @@
         <div style="font-size: 14px; font-weight: 700; color: var(--accent-primary);">
           📊 Reference Tables are currently open in an independent pop-out window.
         </div>
-        <div style="font-size: 12px; color: var(--text-muted); max-width: 480px;">
+        <div style="font-size: 10pt; color: var(--text-muted); max-width: 480px;">
           You can move and resize the pop-out window across your screens. Its size and position will be remembered between sessions.
         </div>
         <button type="button" class="btn btn-secondary btn-sm" id="btnRedockTables" style="margin-top: 6px;">Return / Redock to Main App</button>

@@ -6724,10 +6724,6 @@ const UpdateCheckerManager = {
           this.updateStatusBadge("Up to date");
           if (!silent) {
             this.renderUpToDate(remoteData);
-          } else if (isStartup) {
-            if (typeof showToast === "function") {
-              showToast(`M&M 4E Builder: Checked for updates (v${this.currentVersion} is up to date).`, "info", 3200);
-            }
           }
         }
       } else {
@@ -6741,10 +6737,6 @@ const UpdateCheckerManager = {
           this.updateStatusBadge("Up to date");
           if (!silent) {
             this.renderUpToDate(remoteData);
-          } else if (isStartup) {
-            if (typeof showToast === "function") {
-              showToast(`M&M 4E Builder: Checked for updates (v${this.currentVersion} is up to date).`, "info", 3200);
-            }
           }
         }
       }
@@ -6792,14 +6784,14 @@ const UpdateCheckerManager = {
       banner.style.display = "flex";
     }
 
-    if (silent) {
+    if (isStartup || !silent) {
+      this.open();
+      this.renderUpdateAvailable(data);
+    } else {
       if (typeof showToast === "function") {
         showToast(`🎉 New update available: v${data.version}! Open Main Menu to update.`, "success", 5000);
       }
-      return;
     }
-
-    this.renderUpdateAvailable(data);
   },
 
   notifyCommitUpdateAvailable(data, silent, isStartup = false) {
@@ -6812,13 +6804,17 @@ const UpdateCheckerManager = {
       banner.style.display = "flex";
     }
 
-    if (silent) {
+    if (isStartup || !silent) {
+      this.open();
+      this.renderCommitUpdateAvailable(data);
+    } else {
       if (typeof showToast === "function") {
         showToast("New updates are available on GitHub! Open Main Menu to update.", "info", 5000);
       }
-      return;
     }
+  },
 
+  renderCommitUpdateAvailable(data) {
     const modalBody = document.getElementById("updateModalBody");
     if (!modalBody) return;
 

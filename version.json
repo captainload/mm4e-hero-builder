@@ -3,13 +3,16 @@
   "buildDate": "2026-10-22",
   "releaseName": "M&M 4E Hero Builder v1.4.0",
   "releaseNotes": [
+    "Automatic update check at program startup with notification toast and alert banner",
+    "Fixed duplicate companion creation bug when adding an alternate form",
+    "Streamlined form options by treating Mecha as Alternate Forms per M&M 4E rules",
+    "Added 'Check for Updates' function in Main Menu for local installations",
+    "Options popup now displays side-by-side with Main Menu instead of overlapping it",
     "Interactive Hero Point and Power Point trackers with steppers on History tab",
     "Renamed Background tab to History with updated navigation and help guide",
     "Smart travel mode stats: Flight and Space Speed only display on Basics tab when active",
-    "Options popup now displays side-by-side with Main Menu instead of overlapping it",
     "Skills and Advantages tabs converted to clean, non-collapsible panels",
-    "Enforced 10pt minimum font accessibility floor across entire application",
-    "Added 'Check for Updates' function in Main Menu for local offline installations"
+    "Enforced 10pt minimum font accessibility floor across entire application"
   ],
   "githubRepo": "https://github.com/captainload/mm4e-hero-builder",
   "downloadZipUrl": "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",

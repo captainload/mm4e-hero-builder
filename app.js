@@ -5765,7 +5765,6 @@ function updateAltSelectorUI() {
 
   html += `<option disabled>──────────</option>`;
   html += `<option value="__add_minion">+ Add Minion...</option>`;
-  html += `<option value="__add_mecha">+ Add Mecha...</option>`;
   html += `<option value="__add_alt_form">+ Add Alternate Form...</option>`;
 
   sel.innerHTML = html;
@@ -5866,7 +5865,7 @@ function renderCompanionsTab() {
 
   // 2. Each Companion
   if (comps.length === 0) {
-    html += `<div style="grid-column: 1 / -1; font-style: italic; color: var(--text-muted); padding: 12px 0;">No minions, mecha, or alternate forms added yet. Click an Add button above to create one.</div>`;
+    html += `<div style="grid-column: 1 / -1; font-style: italic; color: var(--text-muted); padding: 12px 0;">No minions or alternate forms added yet. Click an Add button above to create one.</div>`;
   } else {
     comps.forEach(c => {
       const isCompActive = window.activeCompanionId === c.id;
@@ -6588,9 +6587,40 @@ const UpdateCheckerManager = {
       });
     }
 
-    // Gentle background update check on startup when online
-    if (navigator.onLine && typeof window !== "undefined") {
-      setTimeout(() => this.check(true), 3500);
+    // Top update banner buttons
+    const btnBannerView = document.getElementById("btnBannerViewUpdate");
+    if (btnBannerView && !btnBannerView.__bound) {
+      btnBannerView.__bound = true;
+      btnBannerView.addEventListener("click", () => {
+        this.check(false);
+      });
+    }
+
+    const btnBannerDismiss = document.getElementById("btnBannerDismiss");
+    if (btnBannerDismiss && !btnBannerDismiss.__bound) {
+      btnBannerDismiss.__bound = true;
+      btnBannerDismiss.addEventListener("click", () => {
+        const banner = document.getElementById("appUpdateBanner");
+        if (banner) banner.style.display = "none";
+      });
+    }
+
+    // Options auto check toggle
+    const chkAutoCheck = document.getElementById("chkAutoCheckUpdates");
+    const autoCheckPref = localStorage.getItem("mm4e_auto_check_updates") !== "false";
+    if (chkAutoCheck) {
+      chkAutoCheck.checked = autoCheckPref;
+      if (!chkAutoCheck.__bound) {
+        chkAutoCheck.__bound = true;
+        chkAutoCheck.addEventListener("change", () => {
+          localStorage.setItem("mm4e_auto_check_updates", chkAutoCheck.checked ? "true" : "false");
+        });
+      }
+    }
+
+    // Check for updates automatically on startup when enabled
+    if (autoCheckPref && typeof window !== "undefined") {
+      setTimeout(() => this.check(true, true), 1200);
     }
   },
 
@@ -6621,7 +6651,16 @@ const UpdateCheckerManager = {
     return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
   },
 
-  async check(silent = false) {
+  updateStatusBadge(text, isNew = false) {
+    const badge = document.getElementById("lblUpdateStatusBadge");
+    if (badge) {
+      badge.textContent = text;
+      badge.style.color = isNew ? "#10b981" : "var(--text-muted)";
+      badge.style.fontWeight = isNew ? "700" : "normal";
+    }
+  },
+
+  async check(silent = false, isStartup = false) {
     const modalBody = document.getElementById("updateModalBody");
     if (!silent) {
       this.open();
@@ -6672,15 +6711,24 @@ const UpdateCheckerManager = {
         throw new Error("Unable to reach GitHub. Please check your network connection.");
       }
 
+      localStorage.setItem("mm4e_last_update_check", new Date().toISOString());
+
       if (checkSource === "version_json") {
         const isNewer = this.compareVersions(remoteData.version, this.currentVersion) > 0;
         const isSameVersionNewerBuild = this.compareVersions(remoteData.version, this.currentVersion) === 0 && 
                                         remoteData.buildDate && remoteData.buildDate > this.buildDate;
 
         if (isNewer || isSameVersionNewerBuild) {
-          this.notifyUpdateAvailable(remoteData, silent);
+          this.notifyUpdateAvailable(remoteData, silent, isStartup);
         } else {
-          if (!silent) this.renderUpToDate(remoteData);
+          this.updateStatusBadge("Up to date");
+          if (!silent) {
+            this.renderUpToDate(remoteData);
+          } else if (isStartup) {
+            if (typeof showToast === "function") {
+              showToast(`M&M 4E Builder: Checked for updates (v${this.currentVersion} is up to date).`, "info", 3200);
+            }
+          }
         }
       } else {
         const commitDate = remoteData.commitDate ? new Date(remoteData.commitDate) : null;
@@ -6688,20 +6736,31 @@ const UpdateCheckerManager = {
         const isCommitNewer = commitDate && commitDate > localBuildDate;
 
         if (isCommitNewer) {
-          this.notifyCommitUpdateAvailable(remoteData, silent);
+          this.notifyCommitUpdateAvailable(remoteData, silent, isStartup);
         } else {
-          if (!silent) this.renderUpToDate(remoteData);
+          this.updateStatusBadge("Up to date");
+          if (!silent) {
+            this.renderUpToDate(remoteData);
+          } else if (isStartup) {
+            if (typeof showToast === "function") {
+              showToast(`M&M 4E Builder: Checked for updates (v${this.currentVersion} is up to date).`, "info", 3200);
+            }
+          }
         }
       }
 
     } catch (err) {
       if (!silent) {
         this.renderError(err.message);
+      } else {
+        this.updateStatusBadge("Offline");
       }
     }
   },
 
-  notifyUpdateAvailable(data, silent) {
+  notifyUpdateAvailable(data, silent, isStartup = false) {
+    this.updateStatusBadge("NEW v" + data.version, true);
+
     const btnCheck = document.getElementById("btnCheckUpdates");
     if (btnCheck && !document.getElementById("badgeNewUpdate")) {
       const badge = document.createElement("span");
@@ -6716,9 +6775,26 @@ const UpdateCheckerManager = {
       btnCheck.appendChild(badge);
     }
 
+    const btnMainMenu = document.getElementById("btnMainMenu");
+    if (btnMainMenu && !document.getElementById("dotMainMenuUpdate")) {
+      const dot = document.createElement("span");
+      dot.id = "dotMainMenuUpdate";
+      dot.className = "main-menu-update-dot";
+      dot.title = "An update is available!";
+      btnMainMenu.appendChild(dot);
+    }
+
+    // Top update banner
+    const banner = document.getElementById("appUpdateBanner");
+    const bannerText = document.getElementById("appUpdateBannerText");
+    if (banner && bannerText) {
+      bannerText.innerHTML = `A new version (<strong>v${this.safeEscape(data.version)}</strong>) of Mutants &amp; Masterminds 4E Hero Builder is available!`;
+      banner.style.display = "flex";
+    }
+
     if (silent) {
       if (typeof showToast === "function") {
-        showToast(`A new update is available (v${data.version})! Check Main Menu to update.`, "success");
+        showToast(`🎉 New update available: v${data.version}! Open Main Menu to update.`, "success", 5000);
       }
       return;
     }
@@ -6726,10 +6802,19 @@ const UpdateCheckerManager = {
     this.renderUpdateAvailable(data);
   },
 
-  notifyCommitUpdateAvailable(data, silent) {
+  notifyCommitUpdateAvailable(data, silent, isStartup = false) {
+    this.updateStatusBadge("Update ready", true);
+
+    const banner = document.getElementById("appUpdateBanner");
+    const bannerText = document.getElementById("appUpdateBannerText");
+    if (banner && bannerText) {
+      bannerText.innerHTML = `New updates are available on GitHub! (${this.safeEscape(data.commitSha || "main")})`;
+      banner.style.display = "flex";
+    }
+
     if (silent) {
       if (typeof showToast === "function") {
-        showToast("New updates are available on GitHub! Check Main Menu to update.", "info");
+        showToast("New updates are available on GitHub! Open Main Menu to update.", "info", 5000);
       }
       return;
     }
@@ -6892,10 +6977,14 @@ const UpdateCheckerManager = {
 window.UpdateCheckerManager = UpdateCheckerManager;
 
 function setupMainMenuAndHeader() {
+  if (window.__mainMenuAndHeaderSetup) return;
+  window.__mainMenuAndHeaderSetup = true;
+
   // Main Menu Toggle
   const btnMainMenu = document.getElementById("btnMainMenu");
   const mainMenuDropdown = document.getElementById("mainMenuDropdown");
-  if (btnMainMenu && mainMenuDropdown) {
+  if (btnMainMenu && mainMenuDropdown && !btnMainMenu.__bound) {
+    btnMainMenu.__bound = true;
     btnMainMenu.onclick = (e) => {
       e.stopPropagation();
       const isVisible = mainMenuDropdown.style.display === "block";
@@ -6923,7 +7012,8 @@ function setupMainMenuAndHeader() {
 
     // Close menu when menu action buttons are clicked (except options which handles itself)
     mainMenuDropdown.querySelectorAll(".menu-action-btn").forEach(b => {
-      if (b.id !== "btnToggleOptions") {
+      if (b.id !== "btnToggleOptions" && !b.__closeBound) {
+        b.__closeBound = true;
         b.addEventListener("click", () => {
           mainMenuDropdown.style.display = "none";
           btnMainMenu.setAttribute("aria-expanded", "false");
@@ -6946,7 +7036,9 @@ function setupMainMenuAndHeader() {
 
   const radioLeft = document.getElementById("optMenuLeft");
   const radioRight = document.getElementById("optMenuRight");
-  if (radioLeft && radioRight) {
+  if (radioLeft && radioRight && !radioLeft.__bound) {
+    radioLeft.__bound = true;
+    radioRight.__bound = true;
     if (savedMenuPos === "left") radioLeft.checked = true;
     else radioRight.checked = true;
 
@@ -6973,13 +7065,12 @@ function setupMainMenuAndHeader() {
 
   // Active Form Selector dropdown
   const selActive = document.getElementById("selActiveCharacter");
-  if (selActive) {
+  if (selActive && !selActive.__bound) {
+    selActive.__bound = true;
     selActive.addEventListener("change", (e) => {
       const val = e.target.value;
       if (val === "__add_minion") {
         createNewCompanion("minion");
-      } else if (val === "__add_mecha") {
-        createNewCompanion("mecha");
       } else if (val === "__add_alt_form") {
         createNewCompanion("alt_form");
       } else {
@@ -6990,25 +7081,34 @@ function setupMainMenuAndHeader() {
 
   // Delete current alt button
   const btnDeleteAlt = document.getElementById("btnDeleteCurrentAlt");
-  if (btnDeleteAlt) {
+  if (btnDeleteAlt && !btnDeleteAlt.__bound) {
+    btnDeleteAlt.__bound = true;
     btnDeleteAlt.addEventListener("click", () => deleteCurrentAlt());
   }
 
   // Quick Add Companion buttons in Main Menu
   const btnQuickMinion = document.getElementById("btnQuickAddMinion");
-  const btnQuickMecha = document.getElementById("btnQuickAddMecha");
   const btnQuickAlt = document.getElementById("btnQuickAddAltForm");
-  if (btnQuickMinion) btnQuickMinion.addEventListener("click", () => createNewCompanion("minion"));
-  if (btnQuickMecha) btnQuickMecha.addEventListener("click", () => createNewCompanion("mecha"));
-  if (btnQuickAlt) btnQuickAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+  if (btnQuickMinion && !btnQuickMinion.__bound) {
+    btnQuickMinion.__bound = true;
+    btnQuickMinion.addEventListener("click", () => createNewCompanion("minion"));
+  }
+  if (btnQuickAlt && !btnQuickAlt.__bound) {
+    btnQuickAlt.__bound = true;
+    btnQuickAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+  }
 
   // Add Companion buttons on Companions Tab
   const btnAddMinion = document.getElementById("btnAddMinion");
-  const btnAddMecha = document.getElementById("btnAddMecha");
   const btnAddAlt = document.getElementById("btnAddAltForm");
-  if (btnAddMinion) btnAddMinion.addEventListener("click", () => createNewCompanion("minion"));
-  if (btnAddMecha) btnAddMecha.addEventListener("click", () => createNewCompanion("mecha"));
-  if (btnAddAlt) btnAddAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+  if (btnAddMinion && !btnAddMinion.__bound) {
+    btnAddMinion.__bound = true;
+    btnAddMinion.addEventListener("click", () => createNewCompanion("minion"));
+  }
+  if (btnAddAlt && !btnAddAlt.__bound) {
+    btnAddAlt.__bound = true;
+    btnAddAlt.addEventListener("click", () => createNewCompanion("alt_form"));
+  }
 
   // PDF Export and Print Preview buttons
   const btnExportPdf = document.getElementById("btnExportPdf");
@@ -7016,40 +7116,37 @@ function setupMainMenuAndHeader() {
   const btnModalExportPdf = document.getElementById("btnModalExportPdf");
   const btnClosePrintPreview = document.getElementById("btnClosePrintPreview");
 
-  if (btnExportPdf) btnExportPdf.addEventListener("click", () => {
-    if (typeof window.exportToPdf === 'function') window.exportToPdf();
-  });
-  if (btnModalExportPdf) btnModalExportPdf.addEventListener("click", () => {
-    if (typeof window.exportToPdf === 'function') window.exportToPdf();
-  });
+  if (btnExportPdf && !btnExportPdf.__bound) {
+    btnExportPdf.__bound = true;
+    btnExportPdf.addEventListener("click", () => {
+      if (typeof window.exportToPdf === 'function') window.exportToPdf();
+    });
+  }
+  if (btnModalExportPdf && !btnModalExportPdf.__bound) {
+    btnModalExportPdf.__bound = true;
+    btnModalExportPdf.addEventListener("click", () => {
+      if (typeof window.exportToPdf === 'function') window.exportToPdf();
+    });
+  }
 
-  if (btnPrintHero) btnPrintHero.addEventListener("click", () => {
-    if (typeof window.openPrintPreview === 'function') window.openPrintPreview();
-  });
+  if (btnPrintHero && !btnPrintHero.__bound) {
+    btnPrintHero.__bound = true;
+    btnPrintHero.addEventListener("click", () => {
+      if (typeof window.openPrintPreview === 'function') window.openPrintPreview();
+    });
+  }
 
-  if (btnClosePrintPreview) btnClosePrintPreview.addEventListener("click", () => {
-    if (typeof window.closePrintPreview === 'function') window.closePrintPreview();
-  });
+  if (btnClosePrintPreview && !btnClosePrintPreview.__bound) {
+    btnClosePrintPreview.__bound = true;
+    btnClosePrintPreview.addEventListener("click", () => {
+      if (typeof window.closePrintPreview === 'function') window.closePrintPreview();
+    });
+  }
 
   updateAltSelectorUI();
   TablesPopoutManager.init();
   OptionsPopoutManager.init();
   HelpModalManager.init();
-}
-
-// Hook setupMainMenuAndHeader into window load or DOMContentLoaded
-if (document.readyState === "complete" || document.readyState === "interactive") {
-  setupMainMenuAndHeader();
-  TablesPopoutManager.init();
-  OptionsPopoutManager.init();
-  HelpModalManager.init();
-} else {
-  window.addEventListener("DOMContentLoaded", () => {
-    setupMainMenuAndHeader();
-    TablesPopoutManager.init();
-    OptionsPopoutManager.init();
-  HelpModalManager.init();
-  });
 }
 
 // Popout window cleanup on main window unload

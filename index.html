@@ -67,6 +67,18 @@
 </head>
 <body>
 
+  <!-- Top App Update Notification Banner -->
+  <div id="appUpdateBanner" class="app-update-banner" style="display: none;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 14pt;">🚀</span>
+      <span id="appUpdateBannerText">A new update for Mutants &amp; Masterminds 4E Hero Builder is available!</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button type="button" class="btn btn-sm" id="btnBannerViewUpdate" style="background: #10b981; color: #ffffff; border: none; padding: 4px 12px; font-size: 10pt; cursor: pointer; font-weight: 600;">View &amp; Download</button>
+      <button type="button" class="btn btn-sm btn-secondary" id="btnBannerDismiss" style="background: transparent; color: #ecfdf5; border: 1px solid rgba(255,255,255,0.4); padding: 4px 8px; font-size: 10pt; cursor: pointer;" title="Dismiss">✕</button>
+    </div>
+  </div>
+
   <!-- Top App Header -->
   <header class="top-header menu-right" id="appTopHeader">
     <!-- Main Menu Component -->
@@ -91,15 +103,17 @@
         <button type="button" class="menu-action-btn" id="btnPrintHero"><span class="menu-btn-icon">🖨️</span> Print / Preview Sheet</button>
 
         <div class="menu-divider"></div>
-        <div class="menu-group-title">Minions, Mecha &amp; Forms</div>
+        <div class="menu-group-title">Minions &amp; Alternate Forms</div>
         <button type="button" class="menu-action-btn" id="btnQuickAddMinion"><span class="menu-btn-icon">👾</span> + Add Minion</button>
-        <button type="button" class="menu-action-btn" id="btnQuickAddMecha"><span class="menu-btn-icon">🤖</span> + Add Mecha</button>
         <button type="button" class="menu-action-btn" id="btnQuickAddAltForm"><span class="menu-btn-icon">⚡</span> + Add Alternate Form</button>
 
         <div class="menu-divider"></div>
         <button type="button" class="menu-action-btn" id="btnOpenHelpModal"><span class="menu-btn-icon">📖</span> Help &amp; Tab Guide <span id="lblF1HelpBadge" style="margin-left: auto; font-size: 10pt; opacity: 0.7;">(F1)</span></button>
         <button type="button" class="menu-action-btn" id="btnToggleOptions"><span class="menu-btn-icon">⚙️</span> Options &amp; Display...</button>
-        <button type="button" class="menu-action-btn" id="btnCheckUpdates"><span class="menu-btn-icon">🔄</span> Check for Updates...</button>
+        <button type="button" class="menu-action-btn" id="btnCheckUpdates" style="display: flex; align-items: center; justify-content: space-between;">
+          <span style="display: flex; align-items: center; gap: 6px;"><span class="menu-btn-icon">🔄</span> Check for Updates...</span>
+          <span id="lblUpdateStatusBadge" style="font-size: 10pt; color: var(--text-muted);"></span>
+        </button>
         <div class="menu-divider" style="margin-top: 4px;"></div>
         <div style="padding: 6px 12px 4px 12px; font-size: 10pt; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
           <span>Version <strong id="lblMenuAppVersion">1.4.0</strong></span>
@@ -230,6 +244,9 @@
               <span style="font-weight: 600; font-size: var(--font-size-secondary);">Version: <strong>1.4.0</strong></span>
               <button type="button" class="btn btn-secondary btn-sm" id="btnOptionsCheckUpdates" style="padding: 2px 8px; font-size: 10pt;">🔄 Check Updates</button>
             </div>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: var(--font-size-secondary); margin-top: 6px; cursor: pointer; color: var(--text-main);">
+              <input type="checkbox" id="chkAutoCheckUpdates" checked> Check for updates automatically on startup
+            </label>
           </div>
         </div>
       </div>
@@ -779,16 +796,15 @@
   <section id="tab-companions" class="tab-content">
     <div class="collapsible-panel">
       <div class="panel-header">
-        <span>Minions, Mecha &amp; Alternate Forms ("Alts")</span>
+        <span>Minions &amp; Alternate Forms ("Alts")</span>
         <span>▼</span>
       </div>
       <div class="panel-body">
         <p style="font-size: var(--font-size-secondary); color: var(--text-muted); margin-bottom: 12px;">
-          Create independent secondary character sheets for summoned minions, piloted or automated mecha, and alternate forms. Each alt tracks its own abilities, combat values, skills, and powers.
+          Create independent secondary character sheets for summoned minions and alternate forms. Each alt tracks its own abilities, combat values, skills, and powers.
         </p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;">
           <button type="button" class="btn" id="btnAddMinion">+ Add Minion</button>
-          <button type="button" class="btn btn-secondary" id="btnAddMecha">+ Add Mecha</button>
           <button type="button" class="btn btn-secondary" id="btnAddAltForm">+ Add Alternate Form</button>
         </div>
         <div class="companions-grid" id="companionsListContainer">
@@ -847,14 +863,14 @@
             <span class="help-badge">Core Engine</span>
           </div>
           <div class="help-card-content">
-            <p>Welcome to the <strong>Mutants &amp; Masterminds 4th Edition (4E) Hero Builder</strong>! This application gives you a fast, rules-accurate, and fully interactive workshop for creating superheroes, villains, minions, mecha, and alternate forms.</p>
+            <p>Welcome to the <strong>Mutants &amp; Masterminds 4th Edition (4E) Hero Builder</strong>! This application gives you a fast, rules-accurate, and fully interactive workshop for creating superheroes, villains, minions, and alternate forms.</p>
             <ul class="help-feature-list">
               <li><strong>Power Level (PL):</strong> The global benchmark of your campaign (default PL 10). Controls total starting Power Points (PL × 15) and maximum defense/attack caps.</li>
               <li><strong>Hero Points:</strong> In 4E, starting Hero Points are calculated automatically as <code>1 + Luck advantage ranks</code>. Used during play to reroll d20 checks, counter effects, or perform heroic extra effort.</li>
               <li><strong>Top Summary Bar:</strong> Displays real-time point expenditures across Abilities, Skills, Advantages, Powers, and Defenses, and warns you whenever you exceed your total allowed Power Points.</li>
             </ul>
             <div class="help-tip-box">
-              💡 <strong>Pro-Tip:</strong> All calculations update in real time as you adjust ranks, advantages, or modifiers. The active editing context can be switched at any time between your Primary Hero and any companion, mecha, or alternate form using the top header dropdown.
+              💡 <strong>Pro-Tip:</strong> All calculations update in real time as you adjust ranks, advantages, or modifiers. The active editing context can be switched at any time between your Primary Hero and any companion or alternate form using the top header dropdown.
             </div>
           </div>
         </div>
@@ -1021,10 +1037,10 @@
             <span class="help-badge">Tab 6: tab-companions</span>
           </div>
           <div class="help-card-content">
-            <p>Full support for secondary characters, allied summons, piloted mecha, and transformative identities.</p>
+            <p>Full support for secondary characters, allied summons, and transformative identities.</p>
             <ul class="help-feature-list">
               <li><strong>Minions (1 PP per 15 PP minion):</strong> Faithful side-characters, henchmen, automated drones, or animal companions. Subject to standard M&amp;M minion rules (cannot score critical hits, fail resistance checks against damage on a single degree of failure).</li>
-              <li><strong>Mecha:</strong> Giant piloted suits and robot allies with their own equipment frameworks, armor, and cockpits.</li>
+              <li><strong>Alternate Forms:</strong> Heroic morphs, power shifts, robotic/construct transformations, or combat modes with distinct traits.</li>
               <li><strong>Alternate Forms &amp; Metamorph:</strong> Characters with dual identities (e.g. Bruce Banner / The Hulk, Billy Batson / Shazam, civilian / armored battle-form).</li>
               <li><strong>Seamless Form Switching:</strong> Use the <strong>Active Form</strong> dropdown in the top header bar to instantly swap between your Primary Hero and any companion. The entire builder UI updates to edit that specific form's sheet!</li>
             </ul>

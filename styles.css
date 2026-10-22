@@ -2109,3 +2109,30 @@ body.popout-help-body {
   width: 92%;
   max-height: 85vh;
 }
+
+
+/* App Update Notification Banner & Indicator */
+.app-update-banner {
+  display: none;
+  background: linear-gradient(90deg, #065f46 0%, #047857 100%);
+  color: #ecfdf5;
+  padding: 8px 16px;
+  font-size: 10pt;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid #10b981;
+  position: relative;
+  z-index: 999;
+}
+
+.main-menu-update-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  display: inline-block;
+  margin-left: 5px;
+  box-shadow: 0 0 6px #10b981;
+  vertical-align: middle;
+}

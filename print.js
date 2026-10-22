@@ -237,7 +237,7 @@ function generatePrintSheet(targetContainerId = "print-layout", targetChar = nul
 
   // 1. ABILITIES BOX
   html += `
-    <div class="print-box">
+    <div class="print-box print-box-abilities">
       <div class="print-box-title">Abilities (6 Core)</div>
       <div class="print-abilities-grid">
   `;
@@ -255,10 +255,14 @@ function generatePrintSheet(targetContainerId = "print-layout", targetChar = nul
     const cost = isAbsent ? "-10" : ((val || 0) * 2);
     html += `
       <div class="print-ability-cell">
-        <span class="ab-key">${ab.key}</span>
-        <span class="ab-name">${ab.name}</span>
+        <div class="ab-meta">
+          <div class="ab-key-name">
+            <span class="ab-key">${ab.key}</span>
+            <span class="ab-name">${ab.name}</span>
+          </div>
+          <span class="ab-cost">[${cost} PP]</span>
+        </div>
         <span class="ab-score">${val >= 0 && !isAbsent ? '+' + val : val}</span>
-        <span class="ab-cost">[${cost} PP]</span>
       </div>
     `;
   });

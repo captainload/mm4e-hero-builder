@@ -1076,8 +1076,8 @@ const TablesPopoutManager = {
     const panels = contentEl.querySelectorAll(".collapsible-panel");
     if (panels.length === 0) return;
     const anyCollapsed = Array.from(panels).some(p => p.classList.contains("collapsed"));
-    const text = anyCollapsed ? "Expand / Close All" : "Close All";
-    const title = anyCollapsed ? "Expand all tables (Click to open all)" : "Close all tables (Click to collapse all)";
+    const text = anyCollapsed ? "Expand / Collapse All" : "Collapse All";
+    const title = anyCollapsed ? "Expand all tables (Click to open all)" : "Collapse all tables (Click to collapse all)";
     const btnDocked = document.getElementById("btnToggleAllTables");
     if (btnDocked) {
       btnDocked.textContent = text;
@@ -1143,7 +1143,7 @@ const TablesPopoutManager = {
       <input type="text" id="txtPopoutTableFilter" placeholder="🔍 Filter tables..." value="${this.activeFilter.replace(/"/g, '&quot;')}" style="width: 100%; height: 28px; font-size: 12px; padding: 2px 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-panel); color: var(--text-main);">
     </div>
     <div style="display: flex; align-items: center; gap: 6px;">
-      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutToggleAll" title="Expand or close all tables">Expand / Close All</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutToggleAll" title="Expand or collapse all reference tables">Expand / Collapse All</button>
       <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutRedock" title="Redock back to main builder">⬅ Redock</button>
       <button type="button" class="btn btn-secondary btn-sm" id="btnPopoutClose" title="Close window">✕ Close</button>
     </div>

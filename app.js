@@ -997,6 +997,7 @@ const TablesPopoutManager = {
         this.placeholder.remove();
         this.placeholder = null;
       }
+      contentEl.style.display = "flex";
       return;
     }
 
@@ -1477,6 +1478,7 @@ const OptionsPopoutManager = {
         this.placeholder.remove();
         this.placeholder = null;
       }
+      contentEl.style.display = "flex";
       return;
     }
 
@@ -5808,7 +5810,7 @@ const HelpModalManager = {
     } else {
       parent.appendChild(contentEl);
     }
-    contentEl.style.display = "";
+    contentEl.style.display = "flex";
   },
 
   isF1Enabled() {
@@ -6087,6 +6089,12 @@ const HelpModalManager = {
         this.redock({ openMainModal: false });
       }
     });
+    this.win.addEventListener("wheel", (e) => {
+      const popBody = popDoc.getElementById("helpModalBody");
+      if (popBody && !popBody.contains(e.target)) {
+        popBody.scrollTop += e.deltaY;
+      }
+    }, { passive: true });
 
     const popFilterInput = popDoc.getElementById("txtPopoutHelpFilter");
     if (popFilterInput) {
@@ -6176,6 +6184,16 @@ const HelpModalManager = {
       modal.addEventListener("click", (e) => {
         if (e.target === modal) this.closeModal();
       });
+      const dialog = modal.querySelector(".help-modal-dialog");
+      if (dialog && !dialog.__wheelBound) {
+        dialog.__wheelBound = true;
+        dialog.addEventListener("wheel", (e) => {
+          const body = document.getElementById("helpModalBody");
+          if (body && !body.contains(e.target)) {
+            body.scrollTop += e.deltaY;
+          }
+        }, { passive: true });
+      }
     }
 
     if (filterInput && !filterInput.__helpBound) {

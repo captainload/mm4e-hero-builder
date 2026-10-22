@@ -1808,6 +1808,15 @@ body.popout-help-body {
   background: var(--bg-panel);
 }
 
+.popout-help-container .help-dockable-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .popout-help-container .help-modal-body {
   padding: 14px 18px;
 }
@@ -1848,7 +1857,7 @@ body.popout-help-body {
   max-width: 1120px;
   height: calc(100vh - 36px);
   max-height: calc(100vh - 36px);
-  min-height: 480px;
+  min-height: 340px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1896,15 +1905,49 @@ body.popout-help-body {
   border-color: var(--accent-primary);
 }
 
+.help-dockable-content {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100%;
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
+
 .help-modal-body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) var(--bg-card);
+}
+
+.help-modal-body::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.help-modal-body::-webkit-scrollbar-track {
+  background: var(--bg-card);
+  border-radius: 4px;
+}
+
+.help-modal-body::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 4px;
+}
+
+.help-modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-hover, #1d4ed8);
 }
 
 .help-topic-card {

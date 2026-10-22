@@ -1588,6 +1588,8 @@ const OptionsPopoutManager = {
     const modal = this.getModalEl();
     if (modal) {
       modal.classList.add("show");
+      const btnToggle = document.getElementById("btnToggleOptions");
+      if (btnToggle) btnToggle.classList.add("active");
       const notice = this.getNoticeEl();
       if (notice) notice.style.display = "none";
       const popBtn = this.getPopoutBtn();
@@ -1598,6 +1600,8 @@ const OptionsPopoutManager = {
   closeModal(fromPopout = false) {
     const modal = this.getModalEl();
     if (modal) modal.classList.remove("show");
+    const btnToggle = document.getElementById("btnToggleOptions");
+    if (btnToggle) btnToggle.classList.remove("active");
     if (!fromPopout && !this.isPoppedOut()) {
       this.setPoppedOutSaved(false);
     }
@@ -1845,7 +1849,12 @@ const OptionsPopoutManager = {
       document.__optionsClickBound = true;
       document.addEventListener("click", (e) => {
         if (modal && modal.classList.contains("show")) {
-          if (!modal.contains(e.target) && e.target !== btnToggle && !btnToggle?.contains(e.target)) {
+          const mainMenu = document.getElementById("mainMenuDropdown");
+          const btnMain = document.getElementById("btnMainMenu");
+          if (!modal.contains(e.target) && 
+              e.target !== btnToggle && !btnToggle?.contains(e.target) &&
+              (!mainMenu || !mainMenu.contains(e.target)) &&
+              (!btnMain || (e.target !== btnMain && !btnMain.contains(e.target)))) {
             this.closeModal();
           }
         }
@@ -6535,12 +6544,23 @@ function setupMainMenuAndHeader() {
       const isVisible = mainMenuDropdown.style.display === "block";
       mainMenuDropdown.style.display = isVisible ? "none" : "block";
       btnMainMenu.setAttribute("aria-expanded", !isVisible);
+      if (isVisible) {
+        const optModal = document.getElementById("optionsModal");
+        if (optModal && optModal.classList.contains("show") && window.OptionsPopoutManager) {
+          window.OptionsPopoutManager.closeModal();
+        }
+      }
     };
 
     document.addEventListener("click", (e) => {
+      const optModal = document.getElementById("optionsModal");
+      if (optModal && optModal.contains(e.target)) return;
       if (!mainMenuDropdown.contains(e.target) && e.target !== btnMainMenu && !btnMainMenu.contains(e.target)) {
         mainMenuDropdown.style.display = "none";
         btnMainMenu.setAttribute("aria-expanded", "false");
+        if (optModal && optModal.classList.contains("show") && window.OptionsPopoutManager) {
+          window.OptionsPopoutManager.closeModal();
+        }
       }
     });
 
@@ -6550,6 +6570,10 @@ function setupMainMenuAndHeader() {
         b.addEventListener("click", () => {
           mainMenuDropdown.style.display = "none";
           btnMainMenu.setAttribute("aria-expanded", "false");
+          const optModal = document.getElementById("optionsModal");
+          if (optModal && optModal.classList.contains("show") && window.OptionsPopoutManager) {
+            window.OptionsPopoutManager.closeModal();
+          }
         });
       }
     });

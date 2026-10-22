@@ -888,7 +888,23 @@ window.checkScreenResolution = function() {
    ========================================================================== */
 const TablesPopoutManager = {
   storageKey: "mm4e_tables_bounds",
+  storageStateKey: "mm4e_tables_popped_out",
   defaultBounds: { width: 920, height: 720, left: 160, top: 120 },
+
+  isPoppedOutSaved() {
+    try {
+      return localStorage.getItem(this.storageStateKey) === "true";
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setPoppedOutSaved(val) {
+    try {
+      if (val) localStorage.setItem(this.storageStateKey, "true");
+      else localStorage.removeItem(this.storageStateKey);
+    } catch (e) {}
+  },
   win: null,
   placeholder: null,
   pollTimer: null,
@@ -948,7 +964,7 @@ const TablesPopoutManager = {
       btn.title = "Reference Tables are open in pop-out window (Click to bring to front)";
       btn.classList.add("btn-popped-out-active");
     } else {
-      btn.title = "Open Reference Tables";
+      btn.title = this.isPoppedOutSaved() ? "Open Reference Tables (Pop-Out)" : "Open Reference Tables";
       btn.classList.remove("btn-popped-out-active");
     }
   },
@@ -1017,7 +1033,7 @@ const TablesPopoutManager = {
     contentEl.style.display = "";
   },
 
-  openModal() {
+  openModal(forceDocked = false) {
     if (this.isPoppedOut()) {
       try {
         this.win.focus();
@@ -1025,6 +1041,11 @@ const TablesPopoutManager = {
       if (typeof showToast === "function") {
         showToast("Reference Tables window focused.", "info");
       }
+      return;
+    }
+
+    if (!forceDocked && this.isPoppedOutSaved()) {
+      this.popout();
       return;
     }
 
@@ -1046,9 +1067,12 @@ const TablesPopoutManager = {
     }
   },
 
-  closeModal() {
+  closeModal(fromPopout = false) {
     const modal = this.getModalOverlay();
     if (modal) modal.style.display = "none";
+    if (!fromPopout && !this.isPoppedOut()) {
+      this.setPoppedOutSaved(false);
+    }
   },
 
   toggleAllTables(forceExpand) {
@@ -1119,8 +1143,12 @@ const TablesPopoutManager = {
 
     if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
       alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      this.setPoppedOutSaved(false);
+      this.openModal(true);
       return;
     }
+
+    this.setPoppedOutSaved(true);
 
     const popDoc = this.win.document;
     const baseHref = document.baseURI || window.location.href || "";
@@ -1182,7 +1210,7 @@ const TablesPopoutManager = {
     }
 
     // Completely close the main window modal overlay so no popup or backdrop is left behind
-    this.closeModal();
+    this.closeModal(true);
 
     const notice = this.getNoticeEl();
     if (notice) notice.style.display = "none";
@@ -1279,9 +1307,10 @@ const TablesPopoutManager = {
       this.filterTables(this.activeFilter);
 
       if (options.openMainModal) {
-        this.openModal();
+        this.setPoppedOutSaved(false);
+        this.openModal(true);
       } else {
-        this.closeModal();
+        this.closeModal(true);
       }
     } finally {
       this.isRedocking = false;
@@ -1413,7 +1442,23 @@ window.TablesPopoutManager = TablesPopoutManager;
    ========================================================================== */
 const OptionsPopoutManager = {
   storageKey: "mm4e_options_bounds",
+  storageStateKey: "mm4e_options_popped_out",
   defaultBounds: { width: 380, height: 640, left: 100, top: 100 },
+
+  isPoppedOutSaved() {
+    try {
+      return localStorage.getItem(this.storageStateKey) === "true";
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setPoppedOutSaved(val) {
+    try {
+      if (val) localStorage.setItem(this.storageStateKey, "true");
+      else localStorage.removeItem(this.storageStateKey);
+    } catch (e) {}
+  },
   win: null,
   placeholder: null,
   pollTimer: null,
@@ -1525,12 +1570,17 @@ const OptionsPopoutManager = {
     contentEl.style.display = "";
   },
 
-  openModal() {
+  openModal(forceDocked = false) {
     if (this.isPoppedOut()) {
       try { this.win.focus(); } catch (e) {}
       if (typeof showToast === "function") {
         showToast("Display Settings window focused.", "info");
       }
+      return;
+    }
+
+    if (!forceDocked && this.isPoppedOutSaved()) {
+      this.popout();
       return;
     }
 
@@ -1545,9 +1595,12 @@ const OptionsPopoutManager = {
     }
   },
 
-  closeModal() {
+  closeModal(fromPopout = false) {
     const modal = this.getModalEl();
     if (modal) modal.classList.remove("show");
+    if (!fromPopout && !this.isPoppedOut()) {
+      this.setPoppedOutSaved(false);
+    }
   },
 
   toggleModal() {
@@ -1556,6 +1609,10 @@ const OptionsPopoutManager = {
       if (typeof showToast === "function") {
         showToast("Display Settings window focused.", "info");
       }
+      return;
+    }
+    if (this.isPoppedOutSaved()) {
+      this.popout();
       return;
     }
     const modal = this.getModalEl();
@@ -1593,8 +1650,12 @@ const OptionsPopoutManager = {
 
     if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
       alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      this.setPoppedOutSaved(false);
+      this.openModal(true);
       return;
     }
+
+    this.setPoppedOutSaved(true);
 
     const popDoc = this.win.document;
     const baseHref = document.baseURI || window.location.href || "";
@@ -1724,9 +1785,10 @@ const OptionsPopoutManager = {
       if (popBtn) popBtn.style.display = "";
 
       if (options.openMainModal) {
-        this.openModal();
+        this.setPoppedOutSaved(false);
+        this.openModal(true);
       } else {
-        this.closeModal();
+        this.closeModal(true);
       }
     } finally {
       this.isRedocking = false;
@@ -5714,7 +5776,23 @@ window.renderCompanionsTab = renderCompanionsTab;
    ========================================================================== */
 const HelpModalManager = {
   storageKey: "mm4e_help_bounds",
+  storageStateKey: "mm4e_help_popped_out",
   defaultBounds: { width: 1060, height: 860, left: 120, top: 60 },
+
+  isPoppedOutSaved() {
+    try {
+      return localStorage.getItem(this.storageStateKey) === "true";
+    } catch (e) {
+      return false;
+    }
+  },
+
+  setPoppedOutSaved(val) {
+    try {
+      if (val) localStorage.setItem(this.storageStateKey, "true");
+      else localStorage.removeItem(this.storageStateKey);
+    } catch (e) {}
+  },
   win: null,
   placeholder: null,
   pollTimer: null,
@@ -5772,7 +5850,7 @@ const HelpModalManager = {
       btn.title = "Help Manual is open in pop-out window (Click to bring to front)";
       btn.classList.add("btn-popped-out-active");
     } else {
-      btn.title = "Open Help Manual & Tab Guide (F1)";
+      btn.title = this.isPoppedOutSaved() ? "Open Help Manual & Tab Guide (Pop-Out) (F1)" : "Open Help Manual & Tab Guide (F1)";
       btn.classList.remove("btn-popped-out-active");
     }
   },
@@ -5919,7 +5997,7 @@ const HelpModalManager = {
     }
   },
 
-  openModal(tabTarget) {
+  openModal(tabTarget, forceDocked = false) {
     if (this.isPoppedOut()) {
       try {
         this.win.focus();
@@ -5930,6 +6008,11 @@ const HelpModalManager = {
       if (tabTarget) {
         this.scrollToSection(tabTarget);
       }
+      return;
+    }
+
+    if (!forceDocked && this.isPoppedOutSaved()) {
+      this.popout(tabTarget);
       return;
     }
 
@@ -5951,14 +6034,21 @@ const HelpModalManager = {
     }
   },
 
-  closeModal() {
+  closeModal(fromPopout = false) {
     const modal = this.getModalOverlay();
     if (modal) modal.style.display = "none";
+    if (!fromPopout && !this.isPoppedOut()) {
+      this.setPoppedOutSaved(false);
+    }
   },
 
   toggleModal() {
     if (this.isPoppedOut()) {
       try { this.win.focus(); } catch (e) {}
+      return;
+    }
+    if (this.isPoppedOutSaved()) {
+      this.popout();
       return;
     }
     if (this.isOpenModal()) this.closeModal();
@@ -6001,9 +6091,10 @@ const HelpModalManager = {
     });
   },
 
-  popout() {
+  popout(tabTarget) {
     if (this.isPoppedOut()) {
       try { this.win.focus(); } catch (e) {}
+      if (tabTarget) this.scrollToSection(tabTarget);
       return;
     }
 
@@ -6026,8 +6117,12 @@ const HelpModalManager = {
 
     if (!this.win || this.win.closed || typeof this.win.closed === "undefined") {
       alert("Pop-out window was blocked by your browser. Please allow popups for this page.");
+      this.setPoppedOutSaved(false);
+      this.openModal(tabTarget, true);
       return;
     }
+
+    this.setPoppedOutSaved(true);
 
     const popDoc = this.win.document;
     const baseHref = document.baseURI || window.location.href || "";
@@ -6177,7 +6272,10 @@ const HelpModalManager = {
       this.filterTopics(this.activeFilter);
 
       if (options.openMainModal) {
-        this.openModal();
+        this.setPoppedOutSaved(false);
+        this.openModal(null, true);
+      } else {
+        this.closeModal(true);
       }
     } finally {
       this.isRedocking = false;

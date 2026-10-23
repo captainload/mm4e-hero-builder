@@ -5397,8 +5397,19 @@ function populateUIFromCharacter() {
 
 function applyLoadedCharacter(loaded) {
   if (!loaded) return;
+  if (window.activeCompanionId) {
+    window.activeCompanionId = null;
+  }
   char.deserialize(loaded);
+  window.primaryHero = char;
   populateUIFromCharacter();
+  if (typeof updateAltSelectorUI === "function") {
+    updateAltSelectorUI();
+  }
+  if (typeof FileManager !== "undefined") {
+    FileManager.captureSavedSnapshot();
+    FileManager.updateFileStatusUI();
+  }
 }
 
 function refreshUI() {
@@ -5722,6 +5733,10 @@ function refreshUI() {
       }
     });
   }
+
+  if (typeof FileManager !== "undefined" && typeof FileManager.updateFileStatusUI === "function") {
+    FileManager.updateFileStatusUI();
+  }
 }
 
 /* ==========================================================================
@@ -5879,6 +5894,7 @@ const FileManager = {
   currentFileName: null,
   activeDirectoryHandle: null,
   activeDirectoryName: null,
+  lastSavedSnapshot: null,
 
   init: async function() {
     const saved = await FolderStore.getSavedFolder();
@@ -5886,8 +5902,53 @@ const FileManager = {
       this.activeDirectoryHandle = saved.handle;
       this.activeDirectoryName = saved.name || saved.handle.name || "Custom Folder";
     }
+    this.captureSavedSnapshot();
     this.updateFolderUI();
     this.updateFileStatusUI();
+  },
+
+  captureSavedSnapshot: function() {
+    try {
+      if (typeof syncActiveCompanionToPrimary === "function") {
+        syncActiveCompanionToPrimary();
+      }
+      const hero = window.primaryHero || window.char;
+      if (hero && typeof hero.serialize === "function") {
+        this.lastSavedSnapshot = JSON.stringify(hero.serialize().character);
+      }
+    } catch (e) {
+      console.warn("Could not capture character snapshot:", e);
+    }
+  },
+
+  hasUnsavedChanges: function() {
+    if (!this.lastSavedSnapshot) {
+      return false;
+    }
+    try {
+      if (typeof syncActiveCompanionToPrimary === "function") {
+        syncActiveCompanionToPrimary();
+      }
+      const hero = window.primaryHero || window.char;
+      if (!hero || typeof hero.serialize !== "function") return false;
+      const currentSnapshot = JSON.stringify(hero.serialize().character);
+      return currentSnapshot !== this.lastSavedSnapshot;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  confirmUnsavedChanges: function(actionDescription = "load a different character") {
+    if (!this.hasUnsavedChanges()) {
+      return true;
+    }
+    const heroName = (window.primaryHero || window.char).name || "Current Hero";
+    const fileDesc = this.currentFileName 
+      ? `file "${this.currentFileName}" (${heroName})` 
+      : `character "${heroName}"`;
+    return confirm(
+      `⚠️ Unsaved Changes Warning!\n\nYou have unsaved changes to ${fileDesc}.\n\nProceeding to ${actionDescription} will overwrite and discard all unsaved edits.\n\nDo you want to discard unsaved changes and proceed?`
+    );
   },
 
   updateFolderUI: function() {
@@ -5918,12 +5979,14 @@ const FileManager = {
   updateFileStatusUI: function() {
     const badge = document.getElementById("lblCurrentFile");
     if (!badge) return;
+    const isDirty = this.hasUnsavedChanges();
+    const dirtyMark = isDirty ? " *" : "";
     if (this.currentFileName) {
-      badge.textContent = `[${this.currentFileName}]`;
-      badge.title = `Active File: ${this.currentFileName}`;
+      badge.textContent = `[${this.currentFileName}${dirtyMark}]`;
+      badge.title = `Active File: ${this.currentFileName}${isDirty ? " (Unsaved changes)" : ""}`;
     } else {
-      badge.textContent = `[Unsaved Character]`;
-      badge.title = `Unsaved Character`;
+      badge.textContent = isDirty ? `[Unsaved Character *]` : `[Unsaved Character]`;
+      badge.title = isDirty ? `Unsaved Character (Changes pending)` : `Unsaved Character`;
     }
   },
 
@@ -6007,9 +6070,13 @@ const FileManager = {
       showToast("Save cancelled (Power Point limit exceeded).", "warning");
       return false;
     }
-    const safeHeroName = char.name ? char.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : "hero";
+    if (typeof syncActiveCompanionToPrimary === "function") {
+      syncActiveCompanionToPrimary();
+    }
+    const hero = window.primaryHero || window.char;
+    const safeHeroName = hero.name ? hero.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : "hero";
     const defaultFileName = `${safeHeroName}.mm4e`;
-    const payload = JSON.stringify(char.serialize(), null, 2);
+    const payload = JSON.stringify(hero.serialize(), null, 2);
 
     if (window.showSaveFilePicker) {
       try {
@@ -6025,6 +6092,7 @@ const FileManager = {
         if (!this.activeDirectoryName) {
           this.activeDirectoryHandle = handle;
         }
+        this.captureSavedSnapshot();
         this.updateFileStatusUI();
         showToast(`Saved "${handle.name}" successfully!`, "success");
         return true;
@@ -6039,6 +6107,7 @@ const FileManager = {
     // Fallback download
     this.fallbackDownload(payload, defaultFileName);
     this.currentFileName = defaultFileName;
+    this.captureSavedSnapshot();
     this.updateFileStatusUI();
 
     const isFF = typeof navigator !== 'undefined' && (/firefox/i.test(navigator.userAgent) || !window.showSaveFilePicker);
@@ -6059,12 +6128,16 @@ const FileManager = {
     if (!this.currentFileHandle) {
       return this.saveHeroAs();
     }
-
-    const payload = JSON.stringify(char.serialize(), null, 2);
+    if (typeof syncActiveCompanionToPrimary === "function") {
+      syncActiveCompanionToPrimary();
+    }
+    const hero = window.primaryHero || window.char;
+    const payload = JSON.stringify(hero.serialize(), null, 2);
     try {
       const writable = await this.currentFileHandle.createWritable();
       await writable.write(payload);
       await writable.close();
+      this.captureSavedSnapshot();
       this.updateFileStatusUI();
       showToast(`Saved "${this.currentFileName}" successfully!`, "success");
       return true;
@@ -6076,6 +6149,9 @@ const FileManager = {
 
   // Load: Opens native OS open dialog starting in active/last used folder, or opens file input
   loadHero: async function() {
+    if (!this.confirmUnsavedChanges("load a different character")) {
+      return false;
+    }
     if (window.showOpenFilePicker) {
       try {
         const pickerOptions = this.getPickerOptions();
@@ -6092,6 +6168,7 @@ const FileManager = {
         if (!this.activeDirectoryName) {
           this.activeDirectoryHandle = handle;
         }
+        this.captureSavedSnapshot();
         this.updateFileStatusUI();
         showToast(`Loaded "${handle.name}" successfully!`, "success");
         return true;
@@ -6182,19 +6259,31 @@ const FileManager = {
 
   // New Character: Resets model and UI to clean slate
   newHero: function() {
-    const isUnsaved = !this.currentFileName;
-    const msg = isUnsaved 
-      ? "Create a new hero? Any unsaved changes will be lost." 
-      : `Create a new hero? Current file "${this.currentFileName}" will be closed.`;
-
-    if (confirm(msg)) {
-      char.reset();
-      this.currentFileHandle = null;
-      this.currentFileName = null;
-      this.updateFileStatusUI();
-      populateUIFromCharacter();
-      showToast("New hero sheet created.", "info");
+    if (this.hasUnsavedChanges()) {
+      if (!this.confirmUnsavedChanges("create a new character")) {
+        return;
+      }
+    } else {
+      const msg = this.currentFileName 
+        ? `Create a new hero? Current file "${this.currentFileName}" will be closed.` 
+        : `Create a new hero sheet?`;
+      if (!confirm(msg)) {
+        return;
+      }
     }
+
+    char.reset();
+    window.primaryHero = char;
+    window.activeCompanionId = null;
+    this.currentFileHandle = null;
+    this.currentFileName = null;
+    this.captureSavedSnapshot();
+    this.updateFileStatusUI();
+    populateUIFromCharacter();
+    if (typeof updateAltSelectorUI === "function") {
+      updateAltSelectorUI();
+    }
+    showToast("New hero sheet created.", "info");
   },
 
   fallbackDownload: function(content, filename) {
@@ -6238,6 +6327,11 @@ function setupFileHandlers() {
       const file = e.target.files[0];
       if (!file) return;
 
+      if (!FileManager.confirmUnsavedChanges("load a different character")) {
+        fileInput.value = "";
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (uploadEvent) => {
         try {
@@ -6245,6 +6339,7 @@ function setupFileHandlers() {
           applyLoadedCharacter(loadedData);
           FileManager.currentFileHandle = null;
           FileManager.currentFileName = file.name;
+          FileManager.captureSavedSnapshot();
           FileManager.updateFileStatusUI();
           showToast(`Loaded "${file.name}" successfully!`, "success");
         } catch (err) {
@@ -6256,6 +6351,14 @@ function setupFileHandlers() {
       fileInput.value = "";
     });
   }
+
+  window.addEventListener("beforeunload", (e) => {
+    if (typeof FileManager !== "undefined" && FileManager.hasUnsavedChanges()) {
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    }
+  });
 }
 
 
@@ -7067,7 +7170,7 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.0",
+  currentVersion: "1.4.2",
   buildDate: "2026-10-22",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
@@ -7349,39 +7452,64 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 26px;">🎉</span>
-        <div>
-          <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Update Available on GitHub</div>
-          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
-            Latest Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🎉</span>
+          <div>
+            <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New GitHub Updates Available</div>
+            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+              Latest Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+            ⟳ Reload App
+          </button>
+        </div>
+      </div>
+
+      <div class="update-grid-container" style="margin-bottom: 14px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column;">
+          <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+            <span>📝</span> Latest Commit Message:
+          </div>
+          <div style="font-size: 10pt; color: var(--text-main); font-style: italic; background: rgba(0,0,0,0.15); padding: 8px 10px; border-radius: 4px; border-left: 3px solid var(--accent-primary);">
+            "${this.safeEscape(data.commitMessage)}"
+          </div>
+          <div style="margin-top: 10px; font-size: 10pt; color: var(--text-muted);">
+            Your local installation build date is <strong>${this.safeEscape(this.buildDate)}</strong>.
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
+              <span>📦</span> Local Update Instructions:
+            </div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
+              <li>Download the latest ZIP or pull with git.</li>
+              <li>Extract and replace files in your local folder.</li>
+              <li>Click <strong>Reload App</strong> or relaunch with <code>Launch Hero Builder.bat</code>.</li>
+            </ol>
+          </div>
+          <div style="margin-top: 10px; padding: 6px 10px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 4px; font-size: 10pt; color: var(--text-muted);">
+            🔒 <em>Your saved character files (.mm4e) and browser data are completely safe and untouched!</em>
           </div>
         </div>
       </div>
 
-      <div style="margin-bottom: 14px;">
-        <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 4px; color: var(--text-main);">Latest Change:</div>
-        <div style="font-size: 10pt; color: var(--text-muted); font-style: italic;">"${this.safeEscape(data.commitMessage)}"</div>
-      </div>
-
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-        <div style="font-weight: 700; font-size: 10pt; margin-bottom: 4px; color: var(--accent-primary);">📦 How to Update Your Local Installation:</div>
-        <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
-          <li>Click <strong>Download Latest ZIP</strong> below.</li>
-          <li>Extract and replace files in your local folder.</li>
-          <li>Launch the builder using <code>Launch Hero Builder.bat</code>.</li>
-          <li><em style="color: var(--text-main);">Your saved character files (.mm4e) and browser saves will remain completely safe!</em></li>
-        </ol>
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          ⟳ Reload App
+        </button>
         <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
           ⬇️ Download Latest ZIP
         </a>
         <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
           View on GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
       </div>
     `;
 
@@ -7394,45 +7522,67 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     const notes = Array.isArray(data.releaseNotes) 
-      ? data.releaseNotes.map(n => `<li style="margin-bottom: 3px;">${this.safeEscape(n)}</li>`).join("")
+      ? data.releaseNotes.map(n => `<li style="margin-bottom: 4px;">${this.safeEscape(n)}</li>`).join("")
       : (data.releaseNotes ? `<p style="margin: 0;">${this.safeEscape(data.releaseNotes)}</p>` : "<li>Performance enhancements and rules refinements.</li>");
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px;">
-        <span style="font-size: 26px;">🎉</span>
-        <div>
-          <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Version Available: v${this.safeEscape(data.version)}</div>
-          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
-            Installed Version: <strong>v${this.currentVersion}</strong> • Released: <strong>${this.safeEscape(data.buildDate || "Latest")}</strong>
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 24px;">🎉</span>
+          <div>
+            <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Version Available: v${this.safeEscape(data.version)}</div>
+            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+              Installed: <strong>v${this.currentVersion}</strong> (${this.safeEscape(this.buildDate)}) • Released: <strong>v${this.safeEscape(data.version)}</strong> (${this.safeEscape(data.buildDate || "Latest")})
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+            ⟳ Reload App
+          </button>
+        </div>
+      </div>
+
+      <div class="update-grid-container" style="margin-bottom: 14px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column;">
+          <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
+            <span>✨</span> What's New in v${this.safeEscape(data.version)}:
+          </div>
+          <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
+            <ul style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-main); line-height: 1.5;">
+              ${notes}
+            </ul>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
+              <span>📦</span> Local Update Instructions:
+            </div>
+            <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
+              <li>Click <strong>Download Latest ZIP</strong> below to save the latest files.</li>
+              <li>Extract and replace files into your local program folder.</li>
+              <li>Click <strong>Reload App</strong> or relaunch with <code>Launch Hero Builder.bat</code>.</li>
+            </ol>
+          </div>
+          <div style="margin-top: 10px; padding: 6px 10px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 4px; font-size: 10pt; color: var(--text-muted);">
+            🔒 <em>Your saved character files (.mm4e) and browser saves will remain completely safe and untouched!</em>
           </div>
         </div>
       </div>
 
-      <div style="margin-bottom: 14px;">
-        <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 6px; color: var(--text-main);">What's New in v${this.safeEscape(data.version)}:</div>
-        <ul style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-main); line-height: 1.5;">
-          ${notes}
-        </ul>
-      </div>
-
-      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-        <div style="font-weight: 700; font-size: 10pt; margin-bottom: 4px; color: var(--accent-primary);">📦 How to Update Your Local Installation:</div>
-        <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
-          <li>Click <strong>Download Latest ZIP</strong> below to save the latest files.</li>
-          <li>Extract the ZIP and copy/replace the files into your local program folder.</li>
-          <li>Launch the builder using <code>Launch Hero Builder.bat</code> (or <code>index.html</code>).</li>
-          <li><em style="color: var(--text-main);">Your saved character files (.mm4e) and browser saves will remain completely safe and untouched!</em></li>
-        </ol>
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          ⟳ Reload App
+        </button>
         <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
           ⬇️ Download Latest ZIP
         </a>
         <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
           View on GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
       </div>
     `;
 
@@ -7445,16 +7595,23 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="text-align: center; padding: 12px 6px;">
-        <div style="font-size: 36px; margin-bottom: 8px;">✅</div>
-        <h4 style="margin: 0 0 6px 0; font-size: 12pt; color: #10b981; font-weight: 700;">You are running the latest version!</h4>
-        <div style="font-size: 10.5pt; color: var(--text-main); margin-bottom: 4px;">
-          Current Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+      <div style="padding: 8px 12px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 32px;">✅</span>
+          <div style="text-align: left;">
+            <h4 style="margin: 0; font-size: 12pt; color: #10b981; font-weight: 700;">You are running the latest version!</h4>
+            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
+              Current Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+            </div>
+          </div>
         </div>
-        <div style="font-size: 10pt; color: var(--text-muted); max-width: 440px; margin: 0 auto 16px auto;">
-          Your local installation of the Mutants &amp; Masterminds 4E Hero Builder is completely up to date with the latest official repository release.
+        <div style="font-size: 10pt; color: var(--text-muted); max-width: 600px; margin: 0 auto 16px auto; line-height: 1.5;">
+          Your local installation of the Mutants &amp; Masterminds 4E Hero Builder is completely up to date with the official GitHub repository.
         </div>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+            ⟳ Reload App
+          </button>
           <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
             View GitHub Repository ↗
           </a>
@@ -7472,24 +7629,30 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="text-align: center; padding: 12px 6px;">
-        <div style="font-size: 36px; margin-bottom: 8px;">🌐</div>
-        <h4 style="margin: 0 0 6px 0; font-size: 12pt; color: #f59e0b; font-weight: 700;">Unable to check for updates</h4>
-        <div style="font-size: 10pt; color: var(--text-muted); max-width: 440px; margin: 0 auto 12px auto;">
-          Could not connect to GitHub. This usually means you are working offline or GitHub could not be reached.
+      <div style="padding: 8px 12px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 32px;">🌐</span>
+          <div style="text-align: left;">
+            <h4 style="margin: 0; font-size: 12pt; color: #f59e0b; font-weight: 700;">Unable to check for updates</h4>
+            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
+              Installed Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+            </div>
+          </div>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; margin: 0 auto 16px auto; max-width: 420px; text-align: left; font-size: 10pt;">
-          <div><strong>Installed Version:</strong> v${this.currentVersion} (${this.buildDate})</div>
-          <div style="margin-top: 4px; font-size: 10pt; color: var(--text-muted);">You can always download releases and updates manually on GitHub.</div>
+        <div style="font-size: 10pt; color: var(--text-muted); max-width: 600px; margin: 0 auto 16px auto; line-height: 1.5;">
+          Could not connect to GitHub to check for updates. This usually means you are working offline or GitHub could not be reached. You can still download updates manually from GitHub.
         </div>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
           <button type="button" class="btn" id="btnRetryUpdate" style="padding: 6px 14px; font-size: 10pt;">
             🔄 Retry Check
           </button>
+          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+            ⟳ Reload App
+          </button>
           <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt;">
             Open GitHub ↗
           </a>
-          <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 12px; font-size: 10pt;">Close</button>
+          <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
         </div>
       </div>
     `;
@@ -7500,6 +7663,35 @@ const UpdateCheckerManager = {
     if (btnDismiss) btnDismiss.onclick = () => this.close();
   }
 };
+
+window.reloadApp = async function() {
+  try {
+    if (typeof showToast === "function") {
+      showToast("Reloading app...", "info", 1500);
+    }
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) {
+        await reg.update();
+        if (reg.waiting) {
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      for (const key of keys) {
+        await caches.delete(key);
+      }
+    }
+  } catch (e) {
+    console.warn("Cache reset error:", e);
+  }
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 100);
+};
+
 window.UpdateCheckerManager = UpdateCheckerManager;
 
 function setupMainMenuAndHeader() {

@@ -1,8 +1,11 @@
 {
-  "version": "1.4.1",
+  "version": "1.4.2",
   "buildDate": "2026-10-22",
-  "releaseName": "M&M 4E Hero Builder v1.4.1",
+  "releaseName": "M&M 4E Hero Builder v1.4.2",
   "releaseNotes": [
+    "Compact, wide 2-column Update dialog matching Help pop-up width to eliminate whitespace",
+    "Added 'Reload App' option in update pop-up to refresh cached assets with one click",
+    "Unsaved changes protection: warns and confirms before loading another character or creating a new sheet if open edits exist",
     "Re-established Sustained as a +0 extra tradeoff for Regeneration with official 4th Edition rules text",
     "Updated all 82 power modifier descriptions and full rule entries directly from 4th Edition rules without paraphrasing",
     "Fixed 0-cost modifier calculation across all powers (e.g. Sustained on Protection, Strength-Based on Damage)",

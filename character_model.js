@@ -349,7 +349,7 @@ class CharacterModel {
           if (sub.modifiers && sub.modifiers.length > 0) {
               sub.modifiers.forEach(m => {
                   let mult = m.category === 'extra' ? 1 : -1;
-                  let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+                  let mC = (m.cost !== undefined && m.cost !== null ? Number(m.cost) : 1) * (parseInt(m.ranks)||1);
                   if (m.costType === 'per_rank') sPerRank += mult * mC;
                   else if (m.costType === 'flat') sFlat += mult * mC;
                   else if (m.costType === 'removable') sRemovable += parseInt(m.ranks)||1;
@@ -375,7 +375,7 @@ class CharacterModel {
       if (effect.modifiers && effect.modifiers.length > 0) {
           effect.modifiers.forEach(m => {
               let mult = m.category === 'extra' ? 1 : -1;
-              let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+              let mC = (m.cost !== undefined && m.cost !== null ? Number(m.cost) : 1) * (parseInt(m.ranks)||1);
               if (m.costType === 'per_rank') pPerRank += mult * mC;
               else if (m.costType === 'flat') pFlat += mult * mC;
               else if (m.costType === 'removable') pRemovable += parseInt(m.ranks)||1;
@@ -391,7 +391,7 @@ class CharacterModel {
       if (effect.modifiers && effect.modifiers.length > 0) {
           effect.modifiers.forEach(m => {
               let mult = m.category === 'extra' ? 1 : -1;
-              let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+              let mC = (m.cost !== undefined && m.cost !== null ? Number(m.cost) : 1) * (parseInt(m.ranks)||1);
               if (m.costType === 'per_rank') pPerRank += mult * mC;
               else if (m.costType === 'flat') pFlat += mult * mC;
               else if (m.costType === 'removable') pRemovable += parseInt(m.ranks)||1;

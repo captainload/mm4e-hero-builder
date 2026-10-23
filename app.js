@@ -13,45 +13,251 @@ let advantagesDisplayList = typeof ADVANTAGES_LIST !== 'undefined' ? [...ADVANTA
 // --- DYNAMIC CONFIGURATION INJECTOR ---
 const EXTRACTED_CONFIGS = {
   "Affliction": [
-    { name: "Affliction Aura", modifiers: [{ name: "Aura", ranks: 1, cost: 4, costType: "per_rank", category: "extra" }] },
-    { name: "Dazzle", modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], options: { deg1: "Disabled", deg2: "Unaware" } },
-    { name: "Hallucination", modifiers: [{ name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }], options: { deg1: "Figment", deg2: "Phantasm", deg3: "Delusion" } },
-    { name: "Mind Control", modifiers: [{ name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }], options: { deg1: "Dazed", deg2: "Compelled", deg3: "Controlled" } },
-    { name: "Paralyze", options: { deg1: "Hindered", deg2: "Immobile", deg3: "Paralyzed" } },
-    { name: "Snare", modifiers: [{ name: "Extra Condition", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Degree", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], options: { deg1: "Hindered", deg1_extra: "Vulnerable", deg2: "Defenseless", deg2_extra: "Immobile" } },
-    { name: "Stun", options: { deg1: "Dazed", deg2: "Stunned", deg3: "Incapacitated" } },
-    { name: "Suffocation", modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Concentration", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], options: { deg1: "Dazed", deg2: "Stunned", deg3: "Incapacitated" } },
-    { name: "Toxin", options: { deg1: "Impaired", deg2: "Disabled", deg3: "Incapacitated" } },
-    { name: "Transform", modifiers: [{ name: "Progressive", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, { name: "Limited Degree", ranks: 2, cost: 1, costType: "per_rank", category: "flaw" }], options: { deg3: "Transformed" } },
-    { name: "Weaken", modifiers: [{ name: "Cumulative", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], options: { deg1: "Impaired", deg2: "Disabled", deg3: "Debilitated" } }
+    { 
+      name: "Affliction Aura", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Dazed", deg2: "Stunned", deg3: "Incapacitated" },
+      modifiers: [{ name: "Aura", ranks: 1, cost: 3, costType: "per_rank", category: "extra" }],
+      notes: "Affliction triggering on touch/contact."
+    },
+    { 
+      name: "Dazzle", 
+      rank: 1,
+      options: { resist: "Dodge", deg1: "Disabled", deg2: "Unaware", deg3: "- None -" },
+      modifiers: [
+        { name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" },
+        { name: "Limited Degree", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }
+      ],
+      notes: "Blinds or deafens targets at range (2 degrees only)."
+    },
+    { 
+      name: "Hallucination", 
+      rank: 1,
+      options: { resist: "Will", deg1: "Figment", deg2: "Phantasm", deg3: "Delusion" },
+      modifiers: [
+        { name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, 
+        { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }
+      ], 
+      notes: "Induces sensory illusions directly into the target's mind."
+    },
+    { 
+      name: "Mind Control", 
+      rank: 1,
+      options: { resist: "Will", deg1: "Dazed", deg2: "Compelled", deg3: "Controlled" },
+      modifiers: [
+        { name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, 
+        { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }
+      ], 
+      notes: "Telepathic control of target's actions."
+    },
+    { 
+      name: "Paralyze", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Hindered", deg2: "Immobile", deg3: "Paralyzed" },
+      notes: "Freezes target's motor functions."
+    },
+    { 
+      name: "Snare", 
+      rank: 1,
+      options: { resist: "Dodge", deg1: "Hindered", deg1_extra: "Vulnerable", deg2: "Defenseless", deg2_extra: "Immobile", deg3: "- None -" },
+      modifiers: [
+        { name: "Extra Condition", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, 
+        { name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, 
+        { name: "Limited Degree", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }
+      ], 
+      notes: "Binds targets at range with entangling material (Hindered/Vulnerable, Defenseless/Immobile)."
+    },
+    { 
+      name: "Stun", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Dazed", deg2: "Stunned", deg3: "Incapacitated" },
+      notes: "Overwhelms target with concussive shock or nerve strike."
+    },
+    { 
+      name: "Suffocation", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Dazed", deg2: "Stunned", deg3: "Incapacitated" },
+      modifiers: [
+        { name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, 
+        { name: "Concentration", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }
+      ], 
+      notes: "Chokes or cuts off air to target from a distance."
+    },
+    { 
+      name: "Toxin", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Impaired", deg2: "Disabled", deg3: "Incapacitated" },
+      notes: "Biological or chemical venom attacking bodily systems."
+    },
+    { 
+      name: "Transform", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "- None -", deg2: "- None -", deg3: "Transformed" },
+      modifiers: [
+        { name: "Progressive", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, 
+        { name: "Limited Degree", ranks: 2, cost: 1, costType: "per_rank", category: "flaw" }
+      ], 
+      notes: "Transforms target into another shape or object upon complete failure."
+    },
+    { 
+      name: "Weaken", 
+      rank: 1,
+      options: { resist: "Fortitude", deg1: "Impaired", deg2: "Disabled", deg3: "Debilitated" },
+      modifiers: [
+        { name: "Cumulative", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, 
+        { name: "Limited", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }
+      ], 
+      notes: "Drains target traits, debilitating physical or mental capabilities."
+    }
+  ],
+  "Burrowing": [
+    { name: "Basic Burrowing", rank: 1, modifiers: [], notes: "Tunnels through soil and loose earth." },
+    { name: "Penetrating Burrow", rank: 1, modifiers: [{ name: "Penetrating", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Tunnels through hard rock and dense material." },
+    { name: "Ranged Excavation", rank: 1, modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Excavates tunnels from a distance." },
+    { name: "Collapse Tunnel", rank: 1, modifiers: [{ name: "No Tunnel", ranks: 1, cost: 1, costType: "flat", category: "flaw" }], notes: "Displaces earth without leaving an open tunnel behind." },
+    { name: "Reinforced Tunnel", rank: 1, modifiers: [{ name: "No Collapse", ranks: 1, cost: 1, costType: "flat", category: "extra" }], notes: "Creates structurally stable tunnels that resist collapse." }
   ],
   "Communication": [
-    { name: "Commlink", modifiers: [{ name: "One-Way", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }, { name: "Removable (Easily Removable)", ranks: 1, cost: 2, costType: "removable", category: "flaw" }], notes: "Radio Communication." },
-    { name: "Interface", notes: "Electromagnetic Communication." },
-    { name: "Psychic Connection", modifiers: [{ name: "Limited", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Mental Communication. Limited to One Person." },
-    { name: "Telepathic Link", notes: "Mental Communication." }
+    { 
+      name: "Commlink", 
+      rank: 1,
+      options: { medium: "Radio" },
+      modifiers: [
+        { name: "One-Way", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }, 
+        { name: "Removable (Easily Removable)", ranks: 1, cost: 2, costType: "removable", category: "flaw" }
+      ], 
+      notes: "Radio Communication via removable earpiece or device." 
+    },
+    { 
+      name: "Interface", 
+      rank: 1,
+      options: { medium: "Special" }, 
+      notes: "Electromagnetic Communication directly with computers and digital networks." 
+    },
+    { 
+      name: "Psychic Connection", 
+      rank: 1,
+      options: { medium: "Mental" }, 
+      modifiers: [{ name: "Limited", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], 
+      notes: "Mental Communication. Limited to a single bonded person." 
+    },
+    { 
+      name: "Telepathic Link", 
+      rank: 1,
+      options: { medium: "Mental" }, 
+      notes: "Two-way Mental Communication with any mind in range." 
+    }
+  ],
+  "Comprehend": [
+    { 
+      name: "Animal Empathy", 
+      rank: 2, 
+      options: { comprehend_type: "Animals" }, 
+      subPowers: [{ name: "Animals (Speak to and Understand) [2 ranks]", type: "Animals", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Understand and communicate with animals." 
+    },
+    { 
+      name: "Machine Interface", 
+      rank: 2, 
+      options: { comprehend_type: "Computers" }, 
+      subPowers: [{ name: "Computers (Communicate with and Understand) [2 ranks]", type: "Computers", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Communicate with and comprehend digital systems and software." 
+    },
+    { 
+      name: "Universal Translator", 
+      rank: 2, 
+      options: { comprehend_type: "Languages" }, 
+      subPowers: [{ name: "Languages (Understand and Speak All) [2 ranks]", type: "Languages", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Speak and understand any spoken or written human language." 
+    },
+    { 
+      name: "Object Reading", 
+      rank: 2, 
+      options: { comprehend_type: "Objects" }, 
+      subPowers: [{ name: "Objects (Read Impressions) [2 ranks]", type: "Objects", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Read psychic impressions and memories from physical objects." 
+    },
+    { 
+      name: "Spirit Medium", 
+      rank: 2, 
+      options: { comprehend_type: "Spirits" }, 
+      subPowers: [{ name: "Spirits (Communicate with) [2 ranks]", type: "Spirits", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Communicate with ghosts, spirits, and discorporate entities." 
+    }
   ],
   "Concealment": [
-    { name: "Inaudibility", rank: 1, notes: "Hearing Concealment." },
-    { name: "Invisibility", rank: 2, notes: "Sight Concealment." }
+    { name: "Inaudibility", rank: 1, options: { senses: "Normal Hearing (1 rank)" }, notes: "Hearing Concealment (completely silent)." },
+    { name: "Invisibility", rank: 2, options: { senses: "Normal Sight (2 ranks)" }, notes: "Sight Concealment (invisible to normal vision)." },
+    { name: "Complete Sensory Mask", rank: 10, options: { senses: "All Senses (10 ranks)" }, notes: "Total concealment against all sensory types." }
   ],
   "Create": [
-    { name: "Force Constructs", modifiers: [{ name: "Movable", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] },
-    { name: "Matter Shaping", modifiers: [{ name: "Permanent", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }] }
+    { name: "Force Constructs", rank: 1, modifiers: [{ name: "Movable", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Solid energy shapes that can be moved at flight speed." },
+    { name: "Matter Shaping", rank: 1, modifiers: [{ name: "Permanent", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Creates permanent physical objects that remain after creation." }
   ],
   "Damage": [
-    { name: "Blast", modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] },
-    { name: "Damage Aura", modifiers: [{ name: "Aura", ranks: 1, cost: 3, costType: "per_rank", category: "extra" }] },
-    { name: "Mental Blast", modifiers: [{ name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }] },
-    { name: "Strike" },
-    { name: "Weapon", modifiers: [{ name: "Removable (Easily Removable)", ranks: 1, cost: 2, costType: "removable", category: "flaw" }] }
+    { name: "Blast", rank: 1, modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Ranged physical or energy blast." },
+    { name: "Damage Aura", rank: 1, modifiers: [{ name: "Aura", ranks: 1, cost: 3, costType: "per_rank", category: "extra" }], notes: "Deals damage to anyone making physical contact." },
+    { name: "Mental Blast", rank: 1, modifiers: [{ name: "Perception Range", ranks: 1, cost: 2, costType: "per_rank", category: "extra" }, { name: "Alternate Resistance (Will)", ranks: 1, cost: 0, costType: "flat", category: "extra" }], notes: "Psychic damage resisted by Will at perception range." },
+    { name: "Strike", rank: 1, modifiers: [{ name: "Strength-Based", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Close combat attack adding to Strength damage." },
+    { name: "Weapon", rank: 1, modifiers: [{ name: "Strength-Based", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }, { name: "Removable (Easily Removable)", ranks: 1, cost: 2, costType: "removable", category: "flaw" }], notes: "Handheld weapon (sword, club, etc.) easily disarmed." }
+  ],
+  "Enhanced Movement": [
+    { 
+      name: "Wall-Crawling", 
+      rank: 2, 
+      options: { enh_mov_type: "Wall-Crawling" }, 
+      subPowers: [{ name: "Wall-Crawling [1 pt/r]", type: "Wall-Crawling", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Walk on walls and ceilings at normal speed." 
+    },
+    { 
+      name: "Water-Walking", 
+      rank: 1, 
+      options: { enh_mov_type: "Water-Walking" }, 
+      subPowers: [{ name: "Water-Walking [1 pt/r]", type: "Water-Walking", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Walk across liquid surfaces without sinking." 
+    },
+    { 
+      name: "Safe Fall", 
+      rank: 1, 
+      options: { enh_mov_type: "Safe Fall" }, 
+      subPowers: [{ name: "Safe Fall [1 pt]", type: "Safe Fall", rank: 1, baseCost: 1, costType: "flat", modifiers: [] }], 
+      notes: "Fall any distance without taking falling damage." 
+    },
+    { 
+      name: "Trackless", 
+      rank: 1, 
+      options: { enh_mov_type: "Trackless" }, 
+      subPowers: [{ name: "Trackless [1 pt/r]", type: "Trackless", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Leave no trail or tracks while moving on foot." 
+    },
+    { 
+      name: "Dimensional Travel", 
+      rank: 2, 
+      options: { enh_mov_type: "Dimensional Travel" }, 
+      subPowers: [{ name: "Dimensional Travel [1 pt/r]", type: "Dimensional Travel", rank: 2, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Travel to other dimensions or planes of existence." 
+    },
+    { 
+      name: "Space Travel", 
+      rank: 1, 
+      options: { enh_mov_type: "Space Travel" }, 
+      subPowers: [{ name: "Space Travel [1 pt/r]", type: "Space Travel", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Travel through the vacuum of space at sublight speeds." 
+    },
+    { 
+      name: "Environmental Adaptation", 
+      rank: 1, 
+      options: { enh_mov_type: "Environmental Adaptation" }, 
+      subPowers: [{ name: "Environmental Adaptation [1 pt/r]", type: "Environmental Adaptation", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }], 
+      notes: "Move and act normally in a specific hazardous environment (e.g. aquatic, zero-g)." 
+    }
   ],
   "Enhanced Senses": [
-    { name: "Radar", subPowers: [{ name: "Radio [1 pt]", type: "Radio", rank: 1, baseCost: 1, costType: "flat", modifiers: [{ name: "Accurate (Single Sense) [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }] },
-    { name: "Sonar", subPowers: [{ name: "Ultra-Hearing [1 pt]", type: "Ultra-Hearing", rank: 1, baseCost: 1, costType: "flat", modifiers: [{ name: "Accurate (Single Sense) [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }] },
-    { name: "Spatial Sense", subPowers: [{ name: "Normal Touch [0 pts]", type: "Normal Touch", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Ranged (Single Sense) [+1 pt]", ranks: 1, cost: 1, costType: "flat", category: "extra", isMeta: true }] }], modifiers: [{ name: "Subtle", ranks: 2, cost: 2, costType: "flat", category: "extra" }] },
-    { name: "True Sight", subPowers: [{ name: "Visual Senses - Sense Type [0 pts]", type: "Visual Senses", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Counters Concealment (All) [+5 pts]", ranks: 1, cost: 5, costType: "flat", category: "extra", isMeta: true }, { name: "Counters Illusion [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }] },
-    { name: "X-Ray Vision", subPowers: [{ name: "Visual Senses - Sense Type [0 pts]", type: "Visual Senses", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Penetrates Concealment [+4 pts]", ranks: 1, cost: 4, costType: "flat", category: "extra", isMeta: true }] }] }
+    { name: "Radar", subPowers: [{ name: "Radio [1 pt]", type: "Radio", rank: 1, baseCost: 1, costType: "flat", modifiers: [{ name: "Accurate (Single Sense) [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }], notes: "Accurate radio perception." },
+    { name: "Sonar", subPowers: [{ name: "Ultra-Hearing [1 pt]", type: "Ultra-Hearing", rank: 1, baseCost: 1, costType: "flat", modifiers: [{ name: "Accurate (Single Sense) [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }], notes: "Accurate high-frequency echolocation." },
+    { name: "Spatial Sense", subPowers: [{ name: "Normal Touch [0 pts]", type: "Normal Touch", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Ranged (Single Sense) [+1 pt]", ranks: 1, cost: 1, costType: "flat", category: "extra", isMeta: true }] }], modifiers: [{ name: "Subtle", ranks: 2, cost: 2, costType: "flat", category: "extra" }], notes: "3D awareness of surroundings via subtle touch vibrations." },
+    { name: "True Sight", subPowers: [{ name: "Visual Senses - Sense Type [0 pts]", type: "Visual Senses", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Counters Concealment (All) [+5 pts]", ranks: 1, cost: 5, costType: "flat", category: "extra", isMeta: true }, { name: "Counters Illusion [+2 pts]", ranks: 1, cost: 2, costType: "flat", category: "extra", isMeta: true }] }], notes: "Penetrates all visual concealment and illusions." },
+    { name: "X-Ray Vision", subPowers: [{ name: "Visual Senses - Sense Type [0 pts]", type: "Visual Senses", rank: 1, baseCost: 0, costType: "flat", modifiers: [{ name: "Penetrates Concealment [+4 pts]", ranks: 1, cost: 4, costType: "flat", category: "extra", isMeta: true }] }], notes: "Vision penetrates solid obstacles and barriers." }
   ],
   "Enhanced Trait": [
     { 
@@ -97,18 +303,62 @@ const EXTRACTED_CONFIGS = {
         }
       ]
     },
-    { name: "Trait Boost", modifiers: [{ name: "Fades", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
+    { 
+      name: "Trait Boost", 
+      rank: 4,
+      subPowers: [
+        {
+          name: "Strength (STR) [2 pts/r]",
+          type: "Strength (STR)",
+          rank: 4,
+          baseCost: 2,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      modifiers: [{ name: "Fades", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }],
+      notes: "Temporary burst of enhanced trait that fades with each use."
+    }
   ],
   "Environment": [
-    { name: "Flashlight", rank: 1, modifiers: [{ name: "Area Effect (Cone)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Illumination 1" },
-    { name: "Mist", notes: "Visibility" },
-    { name: "Weather Control", modifiers: [{ name: "Variable", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] }
+    { name: "Flashlight", rank: 1, modifiers: [{ name: "Area Effect (Cone)", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Illumination 1 (Cone shape)." },
+    { name: "Mist", rank: 1, notes: "Visibility (-2 penalty to sight Perception checks in area)." },
+    { name: "Weather Control", rank: 2, modifiers: [{ name: "Variable", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Controls temperature, precipitation, and winds in an area." },
+    { name: "Extreme Cold", rank: 2, notes: "Lowers temperature to Extreme Cold (Fortitude DC 10 / min)." },
+    { name: "Extreme Heat", rank: 2, notes: "Raises temperature to Extreme Heat (Fortitude DC 10 / min)." }
   ],
   "Feature": [
-    "Animal Harmony", "Battery", "Built-in Equipment", "Charmed Life", "Chill", "Dimensional Pocket", "Display", "Higher Guidance", "Insulating Fur", "Internal Compartment", "Iron Stomach", "Light Sleeper", "Lucid Dreamer", "Massive", "Megaphone", "Mimicry", "Quick Change", "Remote", "Shade", "Special Effect", "Temporal Inertia", "Weatherproof"
-  ].map(name => ({ name })),
+    { name: "Animal Harmony", rank: 1, notes: "Animals are calm and well-disposed towards you; +2 to interaction checks with animals." },
+    { name: "Battery", rank: 1, notes: "Stores energy to power devices or recharge equipment." },
+    { name: "Built-in Equipment", rank: 1, notes: "Includes 1 equipment point of built-in gear (e.g. tools, flashlight, lighter)." },
+    { name: "Charmed Life", rank: 1, notes: "Reroll one natural 1 on a d20 roll per game session." },
+    { name: "Chill", rank: 1, notes: "Can lower the temperature of small objects or liquids (e.g. keep drinks cold)." },
+    { name: "Dimensional Pocket", rank: 1, notes: "Can store small objects (mass rank -5 or less) in an extradimensional pocket." },
+    { name: "Display", rank: 1, notes: "Can project or display visual images or holographic symbols on your body." },
+    { name: "Higher Guidance", rank: 1, notes: "Receive occasional cryptic intuition, guidance, or omen from a higher power." },
+    { name: "Insulating Fur", rank: 1, notes: "Provides comfort and warmth in freezing conditions; ignores routine cold checks." },
+    { name: "Internal Compartment", rank: 1, notes: "Can conceal small items (mass rank -5 or less) inside your body." },
+    { name: "Iron Stomach", rank: 1, notes: "Can consume and digest virtually anything organic without ill effect." },
+    { name: "Light Sleeper", rank: 1, notes: "Remain fully aware of surroundings while asleep; wake instantly with no penalty." },
+    { name: "Lucid Dreamer", rank: 1, notes: "Full conscious control and awareness inside dreams and dreamscapes." },
+    { name: "Massive", rank: 1, notes: "Count as one size category larger for resistance to being moved or tripped." },
+    { name: "Megaphone", rank: 1, notes: "Can project your voice up to distance rank 0 (several hundred feet)." },
+    { name: "Mimicry", rank: 1, notes: "Can accurately imitate sounds, voices, or accents you have heard." },
+    { name: "Quick Change", rank: 1, notes: "Can switch into hero costume or chosen clothing as a free action." },
+    { name: "Remote", rank: 1, notes: "Can operate personal electronic or computer devices remotely as a free action." },
+    { name: "Shade", rank: 1, notes: "Provide shade or minor ambient shielding against blinding light in your immediate space." },
+    { name: "Special Effect", rank: 1, notes: "Produces harmless, purely cosmetic visual/auditory special effects on demand." },
+    { name: "Temporal Inertia", rank: 1, notes: "Immune to minor temporal alterations and always know the exact date and time." },
+    { name: "Weatherproof", rank: 1, notes: "Clothing and gear are completely impervious to weather damage, dirt, and wetness." }
+  ],
   "Flight": [
-    { name: "Wings", modifiers: [{ name: "Restrainable", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
+    { name: "Wings", rank: 1, modifiers: [{ name: "Restrainable", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Flight dependent on wings that can be bound or tangled." }
+  ],
+  "Healing": [
+    { name: "Restoration", rank: 1, modifiers: [{ name: "Energizing", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Heals damage conditions and removes Fatigued/Exhausted." },
+    { name: "Ranged Healing", rank: 1, modifiers: [{ name: "Ranged", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Heals targets at distance." },
+    { name: "Resurrection", rank: 1, modifiers: [{ name: "Resurrection", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Can restore dead subjects to life." },
+    { name: "Empathic Healing", rank: 1, modifiers: [{ name: "Empathic", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Takes the target's damage conditions onto yourself." }
   ],
   "Immunity": [
     { 
@@ -293,10 +543,10 @@ const EXTRACTED_CONFIGS = {
     }
   ],
   "Move Object": [
-    { name: "Cyclone", modifiers: [{ name: "Area Effect (Cone)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
-    { name: "Energy Tendrils" },
-    { name: "Gravity Field", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
-    { name: "[Matter] Moving", modifiers: [{ name: "Limited Material", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
+    { name: "Cyclone", rank: 1, modifiers: [{ name: "Area Effect (Cone)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Cone of swirling telekinetic winds." },
+    { name: "Energy Tendrils", rank: 1, modifiers: [{ name: "Damaging", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Tendrils of force capable of manipulating and crushing targets." },
+    { name: "Gravity Field", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Sphere of intensified gravity pulling objects down." },
+    { name: "[Matter] Moving", rank: 1, modifiers: [{ name: "Limited Material", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Move Object limited to a single material (e.g. metal, water, earth)." },
     { 
       name: "Poltergeist", 
       rank: 4,
@@ -332,29 +582,35 @@ const EXTRACTED_CONFIGS = {
         }
       ]
     },
-    { name: "Psychokinesis", modifiers: [{ name: "Perception Range", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] },
-    { name: "Tether", modifiers: [{ name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] }
+    { name: "Psychokinesis", rank: 1, modifiers: [{ name: "Perception Range", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Manipulate objects at perception range." },
+    { name: "Tether", rank: 1, modifiers: [{ name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Pulls objects directly toward or away from you." }
   ],
   "Obscure": [
-    { name: "Darkness", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Normal Sight" },
-    { name: "Silence", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Normal Hearing" },
-    { name: "Static", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Radio" },
-    { name: "Wards", notes: "Detect and Remote Sensing" }
+    { name: "Darkness", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], options: { sense_type: "Normal Sight" }, notes: "Blocks Normal Sight in an area." },
+    { name: "Silence", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], options: { sense_type: "Normal Hearing" }, notes: "Blocks Normal Hearing in an area." },
+    { name: "Static", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], options: { sense_type: "Radio" }, notes: "Jams Radio communications and senses in an area." },
+    { name: "Wards", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], options: { sense_type: "Detect and Remote Sensing" }, notes: "Blocks Detect and Remote Sensing in an area." }
   ],
   "Protection": [
-    { name: "Armored Skin", modifiers: [{ name: "Noticeable", ranks: 1, cost: 1, costType: "flat", category: "flaw" }] },
-    { name: "Force Field", modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }] }
+    { name: "Armored Skin", rank: 1, modifiers: [{ name: "Noticeable", ranks: 1, cost: 1, costType: "flat", category: "flaw" }], notes: "Tough hide or dense scales noticeable to observers." },
+    { name: "Force Field", rank: 1, modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Energy barrier maintained as a free action (+0 pts/r)." }
+  ],
+  "Regeneration": [
+    { name: "Rapid Healing", rank: 5, notes: "Recovers from damage conditions every 6 rounds." },
+    { name: "Instant Regeneration", rank: 10, notes: "Recovers from least severe damage condition every round." },
+    { name: "Undying", rank: 15, modifiers: [{ name: "Persistent", ranks: 1, cost: 1, costType: "flat", category: "extra" }], notes: "Can regenerate even from the Dead condition within 4 minutes." },
+    { name: "Sustained Regeneration", rank: 5, modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "flaw" }], notes: "Requires active Free action each round to maintain healing." }
   ],
   "Remote Sensing": [
-    { name: "Astral Projection", modifiers: [{ name: "Side Effect", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Sight, Hearing, Mental. Side-Effect: physical body defenseless/immobile." },
-    { name: "Scrying", notes: "Sight and Hearing." },
-    { name: "Telepresence", modifiers: [{ name: "Medium", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Sight and Hearing. Medium: Technology." }
+    { name: "Astral Projection", rank: 1, options: { remote_senses: "Three Sense Types (7 pts/r)" }, modifiers: [{ name: "Side Effect", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Displaces Sight, Hearing, and Mental senses; physical body remains defenseless/immobile." },
+    { name: "Scrying", rank: 1, options: { remote_senses: "Sight / Two Sense Types (6 pts/r)" }, notes: "Displaces Sight and Hearing to perceive a distant location." },
+    { name: "Telepresence", rank: 1, options: { remote_senses: "Sight / Two Sense Types (6 pts/r)" }, modifiers: [{ name: "Medium", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Perceives through electronic video and audio feeds (Technology medium)." }
   ],
   "Summon": [
-    { name: "Duplication" }
+    { name: "Duplication", rank: 1, modifiers: [{ name: "Heroic", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Summons a heroic clone/duplicate of yourself." }
   ],
   "Teleport": [
-    { name: "Portal", modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Concentration", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }] }
+    { name: "Portal", rank: 1, modifiers: [{ name: "Area Effect (Sphere)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Concentration", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }], notes: "Leaves a gateway open that others can step through." }
   ]
 };
 
@@ -480,8 +736,8 @@ const EXTRACTED_MODIFIERS = {
       flaws: [{name: "Limited to One Task", cost: 2, costType: "per_rank"}, {name: "Mental Quickness", cost: 1, costType: "per_rank"}, {name: "Physical Quickness", cost: 1, costType: "per_rank"}]
   },
   "Regeneration": {
-      extras: [{name: "Diehard", cost: 1, costType: "flat"}, {name: "Persistent", cost: 1, costType: "flat"}, {name: "Sustained", cost: 0, costType: "per_rank"}],
-      flaws: [{name: "Not Against [Descriptor]", cost: 1, costType: "per_rank"}, {name: "Not Against [Rare Descriptor]", cost: 2, costType: "flat"}, {name: "Only When Dead", cost: 2, costType: "per_rank"}, {name: "Only When Incapacitated", cost: 1, costType: "per_rank"}, {name: "Source", cost: 1, costType: "per_rank"}]
+      extras: [{name: "Diehard", cost: 1, costType: "flat"}, {name: "Persistent", cost: 1, costType: "flat"}],
+      flaws: [{name: "Not Against [Descriptor]", cost: 1, costType: "per_rank"}, {name: "Not Against [Rare Descriptor]", cost: 2, costType: "flat"}, {name: "Only When Dead", cost: 2, costType: "per_rank"}, {name: "Only When Incapacitated", cost: 1, costType: "per_rank"}, {name: "Source", cost: 1, costType: "per_rank"}, {name: "Sustained", cost: 0, costType: "per_rank"}]
   },
   "Remote Sensing": {
       extras: [{name: "Communication", cost: 2, costType: "per_rank"}, {name: "Dimensional (1 Dimension)", cost: 1, costType: "flat"}, {name: "Dimensional (Group)", cost: 2, costType: "flat"}, {name: "Dimensional (Any)", cost: 3, costType: "flat"}, {name: "Protected", cost: 1, costType: "per_rank"}, {name: "Simultaneous", cost: 1, costType: "per_rank"}, {name: "Subtle (DC 20)", cost: 1, costType: "flat"}, {name: "Subtle (Unnoticeable)", cost: 2, costType: "flat"}, {name: "Targeting", cost: 1, costType: "per_rank"}],
@@ -649,7 +905,7 @@ function getFilteredModifiersForEffect(effectType, effectOrSub) {
 char.calculateEffectCost = function(effect) {
   const effectData = typeof POWER_EFFECTS_LIST !== 'undefined' ? POWER_EFFECTS_LIST.find(e => e.name === effect.effectName) : null;
   let pBaseCost = effectData ? effectData.baseCost : 1;
-  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Immunity"].includes(effect.effectName);
 
   if (isComposite) {
     let totalRank = 0;
@@ -669,7 +925,7 @@ char.calculateEffectCost = function(effect) {
         if (sub.modifiers && sub.modifiers.length > 0) {
           sub.modifiers.forEach(m => {
             let mult = m.category === 'extra' ? 1 : -1;
-            let mCost = m.cost || 1;
+            let mCost = (m.cost !== undefined && m.cost !== null) ? Number(m.cost) : 1;
             let mRanks = parseInt(m.ranks) || 1;
             
             if (m.isMeta) {
@@ -718,7 +974,7 @@ char.calculateEffectCost = function(effect) {
     if(effect.modifiers && effect.modifiers.length > 0) {
         effect.modifiers.forEach(m => {
             let mult = m.category === 'extra' ? 1 : -1;
-            let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+            let mC = (m.cost !== undefined && m.cost !== null ? Number(m.cost) : 1) * (parseInt(m.ranks)||1);
             if(m.costType === 'per_rank') pPerRank += mult * mC;
             else if(m.costType === 'flat') pFlat += mult * mC;
             else if(m.costType === 'removable') pRemovable += parseInt(m.ranks)||1;
@@ -734,7 +990,7 @@ char.calculateEffectCost = function(effect) {
     if(effect.modifiers && effect.modifiers.length > 0) {
         effect.modifiers.forEach(m => {
             let mult = m.category === 'extra' ? 1 : -1;
-            let mC = (m.cost || 1) * (parseInt(m.ranks)||1);
+            let mC = (m.cost !== undefined && m.cost !== null ? Number(m.cost) : 1) * (parseInt(m.ranks)||1);
             if(m.costType === 'per_rank') pPerRank += mult * mC;
             else if(m.costType === 'flat') pFlat += mult * mC;
             else if(m.costType === 'removable') pRemovable += parseInt(m.ranks)||1;
@@ -2714,7 +2970,7 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
     }
   }
 
-  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+  const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Immunity"].includes(effect.effectName);
   if (isComposite && effect.subPowers && effect.subPowers.length > 0) {
     let sumRanks = 0;
     effect.subPowers.forEach(sp => { sumRanks += (parseInt(sp.rank) || 1); });
@@ -2961,7 +3217,7 @@ function buildPowersUI() {
     const summaryText = powerContainer.effects.map(e => `${e.effectName || 'No Effect'} ${e.rank}`).join(" | ");
 
     let effectsHtml = powerContainer.effects.map((effect, eIdx) => {
-        const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
+        const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Immunity"].includes(effect.effectName);
         
         let effectData = null;
         if (effect.effectName) {
@@ -3793,7 +4049,7 @@ function buildPowersUI() {
             if (!modData) modData = { name: mod.name, cost: 1, costType: "flat", category: "extra", hasRanks: false };
 
             modData = JSON.parse(JSON.stringify(modData));
-            const isExtra = (modData.category === "extra" || (effectData && effectData.specificExtras && effectData.specificExtras.some(e => e.name === mod.name)));
+            const isExtra = (mod.category === "extra" || (modData.category === "extra" && mod.category !== "flaw"));
             const rateStr = modData.costType === 'per_rank' ? '/r' : (modData.costType === 'removable' ? '/5 PP' : ' flat');
             const needsRanks = (modData.hasRanks === true || modData.costType === 'removable');
             let maxR = modData.maxRanks || 20;
@@ -4011,7 +4267,7 @@ function buildPowersUI() {
               <div style="display: flex; align-items: center; gap: 6px;">
                 <select id="selRootExtra_${pIdx}_${eIdx}" class="minor-control" style="max-width: 170px;">
                   <option value="">+ Add Extra...</option>
-                  ${availableSpecificExtras.length > 0 ? `<optgroup label="Effect-Specific Extras">${availableSpecificExtras.map(e => `<option value="${e.name}">${e.name} (+${e.cost || 1}${e.costType === 'flat' ? ' flat' : '/r'})</option>`).join('')}</optgroup>` : ''}
+                  ${availableSpecificExtras.length > 0 ? `<optgroup label="Effect-Specific Extras">${availableSpecificExtras.map(e => `<option value="${e.name}">${e.name} (+${e.cost !== undefined ? e.cost : 1}${e.costType === 'flat' ? ' flat' : '/r'})</option>`).join('')}</optgroup>` : ''}
                   <optgroup label="Universal Extras">
                     ${availableRootExtras.map(e => `<option value="${e.name}">${e.name} (+${e.cost}/r)</option>`).join('')}
                   </optgroup>
@@ -4023,7 +4279,7 @@ function buildPowersUI() {
               <div style="display: flex; align-items: center; gap: 6px;">
                 <select id="selRootFlaw_${pIdx}_${eIdx}" class="minor-control" style="max-width: 170px;">
                   <option value="">+ Add Flaw...</option>
-                  ${availableSpecificFlaws.length > 0 ? `<optgroup label="Effect-Specific Flaws">${availableSpecificFlaws.map(f => `<option value="${f.name}">${f.name} (-${f.cost || 1}${f.costType === 'flat' ? ' flat' : '/r'})</option>`).join('')}</optgroup>` : ''}
+                  ${availableSpecificFlaws.length > 0 ? `<optgroup label="Effect-Specific Flaws">${availableSpecificFlaws.map(f => `<option value="${f.name}">${f.name} (-${f.cost !== undefined ? f.cost : 1}${f.costType === 'flat' ? ' flat' : '/r'})</option>`).join('')}</optgroup>` : ''}
                   <optgroup label="Universal Flaws">
                     ${availableRootFlaws.map(f => `<option value="${f.name}">${f.name} (-${f.cost}/r)</option>`).join('')}
                   </optgroup>
@@ -4619,12 +4875,21 @@ window.addModifierToEffect = function(pIdx, eIdx, selectElemId) {
   if (!sel || !sel.value) return;
   const modName = sel.value;
   const effect = char.activePowers[pIdx].effects[eIdx];
+  const isFlawSelect = selectElemId.includes("Flaw");
 
   let effName = effect.effectName;
   let effData = POWER_EFFECTS_LIST.find(e => e.name === effName);
   let modData = null;
 
-  if (typeof POWER_MODIFIERS_LIST !== 'undefined') {
+  if (isFlawSelect) {
+      if (effData && effData.specificFlaws) modData = effData.specificFlaws.find(m => m.name === modName);
+      if (!modData && typeof POWER_MODIFIERS_LIST !== 'undefined') modData = POWER_MODIFIERS_LIST.find(m => m.name === modName && m.category === "flaw");
+  } else {
+      if (effData && effData.specificExtras) modData = effData.specificExtras.find(m => m.name === modName);
+      if (!modData && typeof POWER_MODIFIERS_LIST !== 'undefined') modData = POWER_MODIFIERS_LIST.find(m => m.name === modName && m.category === "extra");
+  }
+
+  if (!modData && typeof POWER_MODIFIERS_LIST !== 'undefined') {
       modData = POWER_MODIFIERS_LIST.find(m => m.name === modName);
   }
   if (!modData && effData) {
@@ -4635,15 +4900,15 @@ window.addModifierToEffect = function(pIdx, eIdx, selectElemId) {
       let smartMods = window.generateSmartModifiers(effect);
       modData = smartMods.extras.find(m => m.name === modName) || smartMods.flaws.find(m => m.name === modName);
   }
-  if (!modData) modData = { name: modName, cost: 1, costType: "flat", category: "extra" };
+  if (!modData) modData = { name: modName, cost: 1, costType: "flat", category: isFlawSelect ? "flaw" : "extra" };
 
   if (!effect.modifiers) effect.modifiers = [];
   effect.modifiers.push({
     name: modName,
     ranks: 1,
-    cost: modData.cost,
-    costType: modData.costType,
-    category: modData.category
+    cost: modData.cost !== undefined ? modData.cost : 1,
+    costType: modData.costType || "per_rank",
+    category: isFlawSelect ? "flaw" : (modData.category || "extra")
   });
   sel.value = "";
   buildPowersUI();

@@ -1,8 +1,12 @@
 {
-  "version": "1.4.0",
+  "version": "1.4.1",
   "buildDate": "2026-10-22",
-  "releaseName": "M&M 4E Hero Builder v1.4.0",
+  "releaseName": "M&M 4E Hero Builder v1.4.1",
   "releaseNotes": [
+    "Moved Sustained modifier for Regeneration from extras to flaws and updated power rules text",
+    "Fixed 0-cost modifier calculation across all powers (e.g. Sustained on Protection, Strength-Based on Damage)",
+    "Enhanced power effect configurations across all powers with full options (resist, condition degrees, media, senses, subPowers, notes, and ranks)",
+    "Configured Feature as a standard rank-adjustable effect with complete presets and descriptions",
     "Fixed Immunity configuration presets (Fortitude Immunity, Will Immunity, Save Immunities) to properly configure sub-options, ranks, and PP costs",
     "Real-time PP budget tracker on Basics tab highlighting in red when exceeding allowed limit",
     "Save validation warning and confirmation prompt whenever saving a character over its PP limit",

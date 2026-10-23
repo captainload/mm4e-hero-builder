@@ -7149,8 +7149,8 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.2",
-  buildDate: "2026-10-22",
+  currentVersion: "1.4.3",
+  buildDate: "2026-10-23",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
   commitApiUrl: "https://api.github.com/repos/captainload/mm4e-hero-builder/commits/main",

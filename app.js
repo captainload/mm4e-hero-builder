@@ -7150,7 +7150,7 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.4",
+  currentVersion: "1.4.5",
   buildDate: "2026-10-23",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
@@ -7202,24 +7202,6 @@ const UpdateCheckerManager = {
         if (e.key === "Escape" && modal && modal.style.display !== "none") {
           this.close();
         }
-      });
-    }
-
-    // Top update banner buttons
-    const btnBannerView = document.getElementById("btnBannerViewUpdate");
-    if (btnBannerView && !btnBannerView.__bound) {
-      btnBannerView.__bound = true;
-      btnBannerView.addEventListener("click", () => {
-        this.check(false);
-      });
-    }
-
-    const btnBannerDismiss = document.getElementById("btnBannerDismiss");
-    if (btnBannerDismiss && !btnBannerDismiss.__bound) {
-      btnBannerDismiss.__bound = true;
-      btnBannerDismiss.addEventListener("click", () => {
-        const banner = document.getElementById("appUpdateBanner");
-        if (banner) banner.style.display = "none";
       });
     }
 
@@ -7407,14 +7389,6 @@ const UpdateCheckerManager = {
       btnMainMenu.appendChild(dot);
     }
 
-    // Top update banner
-    const banner = document.getElementById("appUpdateBanner");
-    const bannerText = document.getElementById("appUpdateBannerText");
-    if (banner && bannerText) {
-      bannerText.innerHTML = `A new version (<strong>v${this.safeEscape(data.version)}</strong>) of Mutants &amp; Masterminds 4E Hero Builder is available!`;
-      banner.style.display = "flex";
-    }
-
     if (isStartup || !silent) {
       this.open();
       this.renderUpdateAvailable(data);
@@ -7428,12 +7402,7 @@ const UpdateCheckerManager = {
   notifyCommitUpdateAvailable(data, silent, isStartup = false) {
     this.updateStatusBadge("Update ready", true);
 
-    const banner = document.getElementById("appUpdateBanner");
-    const bannerText = document.getElementById("appUpdateBannerText");
-    if (banner && bannerText) {
-      bannerText.innerHTML = `New updates are available on GitHub! (${this.safeEscape(data.commitSha || "main")})`;
-      banner.style.display = "flex";
-    }
+
 
     if (isStartup || !silent) {
       this.open();
@@ -7479,8 +7448,8 @@ const UpdateCheckerManager = {
         <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
           ⟳ Reload App
         </button>
-        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 5px 10px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
-          ⬇️ ZIP
+        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+          ⬇️ Download ZIP
         </a>
         <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
           GitHub ↗
@@ -7533,8 +7502,8 @@ const UpdateCheckerManager = {
         <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
           ⟳ Reload App
         </button>
-        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 5px 10px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
-          ⬇️ ZIP
+        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+          ⬇️ Download ZIP
         </a>
         <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
           GitHub ↗

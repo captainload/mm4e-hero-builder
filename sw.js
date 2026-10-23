@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mm4e-hero-builder-v143';
+const CACHE_NAME = 'mm4e-hero-builder-v144';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

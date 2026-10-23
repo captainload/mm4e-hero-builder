@@ -6332,6 +6332,7 @@ function setupFileHandlers() {
   }
 
   window.addEventListener("beforeunload", (e) => {
+    if (window.__bypassingBeforeUnload) return;
     if (typeof FileManager !== "undefined" && FileManager.hasUnsavedChanges()) {
       e.preventDefault();
       e.returnValue = "";
@@ -7149,7 +7150,7 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.3",
+  currentVersion: "1.4.4",
   buildDate: "2026-10-23",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
@@ -7449,64 +7450,42 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 24px;">🎉</span>
-          <div>
-            <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New GitHub Updates Available</div>
-            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
-              Latest Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
-            </div>
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+        <div>
+          <div style="font-weight: 700; color: #10b981; font-size: 10.5pt; display: flex; align-items: center; gap: 6px;">
+            <span>🎉</span> New GitHub Update
+          </div>
+          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+            Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
           </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-            ⟳ Reload App
-          </button>
-        </div>
-      </div>
-
-      <div class="update-grid-container" style="margin-bottom: 14px;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column;">
-          <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-            <span>📝</span> Latest Commit Message:
-          </div>
-          <div style="font-size: 10pt; color: var(--text-main); font-style: italic; background: rgba(0,0,0,0.15); padding: 8px 10px; border-radius: 4px; border-left: 3px solid var(--accent-primary);">
-            "${this.safeEscape(data.commitMessage)}"
-          </div>
-          <div style="margin-top: 10px; font-size: 10pt; color: var(--text-muted);">
-            Your local installation build date is <strong>${this.safeEscape(this.buildDate)}</strong>.
-          </div>
-        </div>
-
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
-              <span>📦</span> Local Update Instructions:
-            </div>
-            <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
-              <li>Download the latest ZIP or pull with git.</li>
-              <li>Extract and replace files in your local folder.</li>
-              <li>Click <strong>Reload App</strong> or relaunch with <code>Launch Hero Builder.bat</code>.</li>
-            </ol>
-          </div>
-          <div style="margin-top: 10px; padding: 6px 10px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 4px; font-size: 10pt; color: var(--text-muted);">
-            🔒 <em>Your saved character files (.mm4e) and browser data are completely safe and untouched!</em>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 4px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
           ⟳ Reload App
         </button>
-        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-          ⬇️ Download Latest ZIP
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <div style="font-weight: 600; font-size: 10pt; margin-bottom: 4px; color: var(--text-main);">Latest Change:</div>
+        <div style="font-size: 10pt; color: var(--text-main); font-style: italic; background: var(--bg-card); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 4px; padding: 6px 10px; line-height: 1.35;">
+          "${this.safeEscape(data.commitMessage)}"
+        </div>
+      </div>
+
+      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; font-size: 10pt; color: var(--text-muted); line-height: 1.35;">
+        📦 <strong>To update:</strong> Click <strong>Reload App</strong> (online) or replace local files with the ZIP. Your character files (.mm4e) remain safe.
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+          ⟳ Reload App
+        </button>
+        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 5px 10px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
+          ⬇️ ZIP
         </a>
-        <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-          View on GitHub ↗
+        <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
+          GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 5px 12px; font-size: 10pt;">Close</button>
       </div>
     `;
 
@@ -7519,67 +7498,48 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     const notes = Array.isArray(data.releaseNotes) 
-      ? data.releaseNotes.map(n => `<li style="margin-bottom: 4px;">${this.safeEscape(n)}</li>`).join("")
+      ? data.releaseNotes.map(n => `<li style="margin-bottom: 2px;">${this.safeEscape(n)}</li>`).join("")
       : (data.releaseNotes ? `<p style="margin: 0;">${this.safeEscape(data.releaseNotes)}</p>` : "<li>Performance enhancements and rules refinements.</li>");
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 24px;">🎉</span>
-          <div>
-            <div style="font-weight: 700; color: #10b981; font-size: 11pt;">New Version Available: v${this.safeEscape(data.version)}</div>
-            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
-              Installed: <strong>v${this.currentVersion}</strong> (${this.safeEscape(this.buildDate)}) • Released: <strong>v${this.safeEscape(data.version)}</strong> (${this.safeEscape(data.buildDate || "Latest")})
-            </div>
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+        <div>
+          <div style="font-weight: 700; color: #10b981; font-size: 10.5pt; display: flex; align-items: center; gap: 6px;">
+            <span>🎉</span> New Version: v${this.safeEscape(data.version)}
+          </div>
+          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+            Installed: <strong>v${this.currentVersion}</strong> • Released: <strong>${this.safeEscape(data.buildDate || "Latest")}</strong>
           </div>
         </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-            ⟳ Reload App
-          </button>
-        </div>
-      </div>
-
-      <div class="update-grid-container" style="margin-bottom: 14px;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column;">
-          <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; gap: 6px;">
-            <span>✨</span> What's New in v${this.safeEscape(data.version)}:
-          </div>
-          <div style="max-height: 240px; overflow-y: auto; padding-right: 4px;">
-            <ul style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-main); line-height: 1.5;">
-              ${notes}
-            </ul>
-          </div>
-        </div>
-
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div style="font-weight: 700; font-size: 10.5pt; margin-bottom: 8px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
-              <span>📦</span> Local Update Instructions:
-            </div>
-            <ol style="margin: 0; padding-left: 20px; font-size: 10pt; color: var(--text-muted); line-height: 1.45;">
-              <li>Click <strong>Download Latest ZIP</strong> below to save the latest files.</li>
-              <li>Extract and replace files into your local program folder.</li>
-              <li>Click <strong>Reload App</strong> or relaunch with <code>Launch Hero Builder.bat</code>.</li>
-            </ol>
-          </div>
-          <div style="margin-top: 10px; padding: 6px 10px; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 4px; font-size: 10pt; color: var(--text-muted);">
-            🔒 <em>Your saved character files (.mm4e) and browser saves will remain completely safe and untouched!</em>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 4px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
           ⟳ Reload App
         </button>
-        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-          ⬇️ Download Latest ZIP
+      </div>
+
+      <div style="margin-bottom: 8px;">
+        <div style="font-weight: 600; font-size: 10pt; margin-bottom: 4px; color: var(--text-main);">What's New in v${this.safeEscape(data.version)}:</div>
+        <div style="max-height: 130px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px 6px 6px;">
+          <ul style="margin: 0; padding-left: 18px; font-size: 10pt; color: var(--text-main); line-height: 1.35;">
+            ${notes}
+          </ul>
+        </div>
+      </div>
+
+      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; font-size: 10pt; color: var(--text-muted); line-height: 1.35;">
+        📦 <strong>To update:</strong> Click <strong>Reload App</strong> (online) or replace local files with the ZIP. Your character files (.mm4e) remain safe.
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+          ⟳ Reload App
+        </button>
+        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn" style="text-decoration: none; padding: 5px 10px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
+          ⬇️ ZIP
         </a>
-        <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-          View on GitHub ↗
+        <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
+          GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 5px 12px; font-size: 10pt;">Close</button>
       </div>
     `;
 
@@ -7592,27 +7552,27 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="padding: 8px 12px; text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
-          <span style="font-size: 32px;">✅</span>
+      <div style="padding: 6px 8px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 24px;">✅</span>
           <div style="text-align: left;">
-            <h4 style="margin: 0; font-size: 12pt; color: #10b981; font-weight: 700;">You are running the latest version!</h4>
-            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
-              Current Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+            <div style="font-size: 11pt; color: #10b981; font-weight: 700;">You are running the latest version!</div>
+            <div style="font-size: 10pt; color: var(--text-muted);">
+              Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
             </div>
           </div>
         </div>
-        <div style="font-size: 10pt; color: var(--text-muted); max-width: 600px; margin: 0 auto 16px auto; line-height: 1.5;">
-          Your local installation of the Mutants &amp; Masterminds 4E Hero Builder is completely up to date with the official GitHub repository.
+        <div style="font-size: 10pt; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Your installation is completely up to date with the GitHub repository.
         </div>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt;">
             ⟳ Reload App
           </button>
-          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
-            View GitHub Repository ↗
+          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt;">
+            GitHub ↗
           </a>
-          <button type="button" class="btn" id="btnDismissUpdate" style="padding: 6px 18px; font-size: 10pt;">Great!</button>
+          <button type="button" class="btn btn-primary" id="btnDismissUpdate" style="padding: 5px 16px; font-size: 10pt;">Great!</button>
         </div>
       </div>
     `;
@@ -7626,30 +7586,27 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="padding: 8px 12px; text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px;">
-          <span style="font-size: 32px;">🌐</span>
+      <div style="padding: 6px 8px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+          <span style="font-size: 24px;">🌐</span>
           <div style="text-align: left;">
-            <h4 style="margin: 0; font-size: 12pt; color: #f59e0b; font-weight: 700;">Unable to check for updates</h4>
-            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 2px;">
-              Installed Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
+            <div style="font-size: 11pt; color: #f59e0b; font-weight: 700;">Unable to check for updates</div>
+            <div style="font-size: 10pt; color: var(--text-muted);">
+              Current: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
             </div>
           </div>
         </div>
-        <div style="font-size: 10pt; color: var(--text-muted); max-width: 600px; margin: 0 auto 16px auto; line-height: 1.5;">
-          Could not connect to GitHub to check for updates. This usually means you are working offline or GitHub could not be reached. You can still download updates manually from GitHub.
+        <div style="font-size: 10pt; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+          Could not connect to GitHub. Please check your network connection.
         </div>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn" id="btnRetryUpdate" style="padding: 6px 14px; font-size: 10pt;">
-            🔄 Retry Check
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn" id="btnRetryUpdate" style="padding: 5px 12px; font-size: 10pt;">
+            🔄 Retry
           </button>
-          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 10pt; display: inline-flex; align-items: center; gap: 6px;">
+          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt;">
             ⟳ Reload App
           </button>
-          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 10pt;">
-            Open GitHub ↗
-          </a>
-          <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 10pt;">Close</button>
+          <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 5px 12px; font-size: 10pt;">Close</button>
         </div>
       </div>
     `;
@@ -7662,30 +7619,41 @@ const UpdateCheckerManager = {
 };
 
 window.reloadApp = async function() {
+  if (typeof FileManager !== "undefined" && FileManager.hasUnsavedChanges()) {
+    const heroName = (window.primaryHero || window.char)?.name || "Current Hero";
+    const ok = confirm(
+      `⚠️ Unsaved Changes Warning!\n\nYou have unsaved changes to "${heroName}".\n\nReloading the app now will update to the latest version, but any unsaved changes will be lost.\n\nDo you want to discard unsaved changes and reload?`
+    );
+    if (!ok) return;
+  }
+
+  window.__bypassingBeforeUnload = true;
+
+  if (typeof showToast === "function") {
+    showToast("Updating & reloading app...", "info", 1500);
+  }
+
   try {
-    if (typeof showToast === "function") {
-      showToast("Reloading app...", "info", 1500);
-    }
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const reg of registrations) {
-        await reg.update();
-        if (reg.waiting) {
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
-      }
-    }
     if ('caches' in window) {
       const keys = await caches.keys();
-      for (const key of keys) {
-        await caches.delete(key);
-      }
+      await Promise.all(keys.map(k => caches.delete(k)));
     }
   } catch (e) {
     console.warn("Cache reset error:", e);
   }
+
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map(r => r.unregister()));
+    }
+  } catch (e) {
+    console.warn("SW unregister error:", e);
+  }
+
   setTimeout(() => {
-    window.location.reload(true);
+    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+    window.location.replace(`${baseUrl}?_t=${Date.now()}`);
   }, 100);
 };
 

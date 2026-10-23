@@ -1,3 +1,15 @@
+if (typeof window.escapeHtml !== 'function') {
+  window.escapeHtml = function(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
+}
+
 const char = new CharacterModel();
 window.char = char;
 window.primaryHero = char;
@@ -1113,19 +1125,39 @@ window.stepVal = function(elemId, delta, minVal, maxVal) {
 };
 
 window.showAdvantageInfo = function(advName) {
-  const adv = ADVANTAGES_LIST.find(a => a.name === advName);
+  if (!advName) return;
+  const target = String(advName).trim().toLowerCase();
+  const adv = (typeof ADVANTAGES_LIST !== 'undefined' ? ADVANTAGES_LIST : []).find(a => a.name.toLowerCase() === target)
+           || (typeof ADVANTAGES_LIST !== 'undefined' ? ADVANTAGES_LIST : []).find(a => a.name.replace(/['’]/g, '').toLowerCase() === target.replace(/['’]/g, ''))
+           || (typeof ADVANTAGES_LIST !== 'undefined' ? ADVANTAGES_LIST : []).find(a => target.startsWith(a.name.toLowerCase()));
   if (!adv) return;
-  document.getElementById("modalRuleTitle").textContent = adv.name + ` [${adv.types.join(", ")}]`;
-  document.getElementById("modalRuleBody").textContent = adv.fullText || adv.description;
-  document.getElementById("ruleInfoModal").classList.add("active");
+  const titleEl = document.getElementById("modalRuleTitle");
+  const bodyEl = document.getElementById("modalRuleBody");
+  if (titleEl) titleEl.textContent = adv.name + (adv.types && adv.types.length ? ` [${adv.types.join(", ")}]` : '');
+  const rawText = adv.fullText || adv.description || "No detailed description available.";
+  if (bodyEl) {
+    bodyEl.textContent = rawText;
+  }
+  const modal = document.getElementById("ruleInfoModal");
+  if (modal) modal.classList.add("active");
 };
 
 window.showSkillInfo = function(skillName) {
-  const skill = SKILLS_LIST.find(s => s.name === skillName);
+  if (!skillName) return;
+  const target = String(skillName).trim().toLowerCase();
+  const skill = (typeof SKILLS_LIST !== 'undefined' ? SKILLS_LIST : []).find(s => s.name.toLowerCase() === target)
+             || (typeof SKILLS_LIST !== 'undefined' ? SKILLS_LIST : []).find(s => s.name.replace(/['’]/g, '').toLowerCase() === target.replace(/['’]/g, ''))
+             || (typeof SKILLS_LIST !== 'undefined' ? SKILLS_LIST : []).find(s => target.startsWith(s.name.toLowerCase()));
   if (!skill) return;
-  document.getElementById("modalRuleTitle").textContent = skill.name + ` (${skill.ability})`;
-  document.getElementById("modalRuleBody").textContent = skill.fullText;
-  document.getElementById("ruleInfoModal").classList.add("active");
+  const titleEl = document.getElementById("modalRuleTitle");
+  const bodyEl = document.getElementById("modalRuleBody");
+  if (titleEl) titleEl.textContent = skill.name + (skill.ability ? ` (${skill.ability})` : '');
+  const rawText = skill.fullText || skill.description || "No detailed description available.";
+  if (bodyEl) {
+    bodyEl.textContent = rawText;
+  }
+  const modal = document.getElementById("ruleInfoModal");
+  if (modal) modal.classList.add("active");
 };
 
 let COMPLETE_FULL_TEXT_MAP = {};
@@ -2757,7 +2789,7 @@ function buildSkillsUI() {
         const rankText = advRanks > 0 ? ` (${advRanks})` : "";
         const activeClass = advRanks > 0 ? " active-adv-tag" : "";
         return `
-          <span class="skill-adv-tag${activeClass}" onclick="showAdvantageInfo('${advName}')" title="Click to view ${advName} rule">
+          <span class="skill-adv-tag${activeClass}" data-adv="${escapeHtml(advName)}" onclick="showAdvantageInfo(this.dataset.adv)" title="Click to view ${escapeHtml(advName)} rule">
             <span class="bolt">⚡</span>${advName}${rankText}
           </span>
         `;
@@ -2785,7 +2817,7 @@ function buildSkillsUI() {
         </td>
         <td>${advTagsHtml}</td>
         <td style="text-align: center;">
-          <button type="button" class="btn-info-circle" onclick="showSkillInfo('${skill.name}')" title="View Full Skill Rules">?</button>
+          <button type="button" class="btn-info-circle" data-skill="${escapeHtml(skill.name)}" onclick="showSkillInfo(this.dataset.skill)" title="View Full Skill Rules">?</button>
         </td>
       </tr>
     `;
@@ -2834,7 +2866,7 @@ function buildAdvantagesUI() {
         </td>
         <td class="secondary-text">${adv.description}</td>
         <td style="text-align: center;">
-          <button type="button" class="btn-info-circle" onclick="showAdvantageInfo('${adv.name}')" title="View Full Description">?</button>
+          <button type="button" class="btn-info-circle" data-adv="${escapeHtml(adv.name)}" onclick="showAdvantageInfo(this.dataset.adv)" title="View Full Description">?</button>
         </td>
       </tr>
     `;
@@ -4074,7 +4106,7 @@ function buildPowersUI() {
                     <button type="button" class="modifier-stepper-btn" onclick="stepModifierRank(${pIdx}, ${eIdx}, ${mIdx}, 1, 1, ${maxR})">+</button>
                   </div>
                 ` : ''}
-                <button type="button" class="btn-info-circle" style="min-width: 18px; min-height: 18px; font-size: calc(var(--font-size-minor-controls) * 0.85);" onclick="showModifierInfo('${mod.name}')" title="View Modifier Rule">?</button>
+                <button type="button" class="btn-info-circle" style="min-width: 18px; min-height: 18px; font-size: calc(var(--font-size-minor-controls) * 0.85);" data-mod="${escapeHtml(mod.name)}" onclick="showModifierInfo(this.dataset.mod)" title="View Modifier Rule">?</button>
                 <button type="button" style="background: none; border: none; color: #ef4444; font-weight: bold; cursor: pointer; padding: 0 2px;" onclick="removeModifier(${pIdx}, ${eIdx}, ${mIdx})" title="Remove Modifier">✕</button>
               </div>
             `;
@@ -4234,7 +4266,7 @@ function buildPowersUI() {
                         <button type="button" class="btn minor-control-btn" style="padding: 2px 6px; font-weight: bold;" onclick="navigateEffectHistory(${pIdx}, ${eIdx}, -1)" title="Back">&lt;</button>
                         <button type="button" class="btn minor-control-btn" style="padding: 2px 6px; font-weight: bold;" onclick="navigateEffectHistory(${pIdx}, ${eIdx}, 1)" title="Forward">&gt;</button>
                     </div>
-                    ${effectData && effect.effectName !== "" ? `<button type="button" class="btn-info-circle" onclick="showPowerEffectInfo('${effect.effectName}')" title="View Effect Rules">?</button>` : ''}
+                    ${effectData && effect.effectName !== "" ? `<button type="button" class="btn-info-circle" data-effect="${escapeHtml(effect.effectName)}" onclick="showPowerEffectInfo(this.dataset.effect)" title="View Effect Rules">?</button>` : ''}
                 </div>
                 
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -5638,7 +5670,7 @@ function refreshUI() {
       <div class="combat-conditional-row">
         <span class="combat-conditional-name">
           ${cs.name}
-          <button type="button" class="btn-info-circle" onclick="showSkillInfo('${cs.name}')" title="View Skill Rules">?</button>
+          <button type="button" class="btn-info-circle" data-skill="${escapeHtml(cs.name)}" onclick="showSkillInfo(this.dataset.skill)" title="View Skill Rules">?</button>
         </span>
         <span class="combat-conditional-desc">${cs.action}</span>
       </div>
@@ -5656,7 +5688,7 @@ function refreshUI() {
             <div class="combat-conditional-row">
               <span class="combat-conditional-name">
                 ${adv.name}${rankLabel}${detail}
-                <button type="button" class="btn-info-circle" onclick="showAdvantageInfo('${adv.name}')" title="View Full Rule">?</button>
+                <button type="button" class="btn-info-circle" data-adv="${escapeHtml(adv.name)}" onclick="showAdvantageInfo(this.dataset.adv)" title="View Full Rule">?</button>
               </span>
               <span class="combat-conditional-desc">${adv.conditionalSummary}</span>
             </div>
@@ -7150,7 +7182,7 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.5",
+  currentVersion: "1.4.6",
   buildDate: "2026-10-23",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",

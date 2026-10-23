@@ -644,8 +644,8 @@ textarea {
 
 .info-popup-box {
   width: 90%;
-  max-width: 540px;
-  max-height: 55vh;
+  max-width: min(640px, 85vw);
+  max-height: 70vh;
   background: var(--bg-panel);
   color: var(--text-main);
   border: 2px solid var(--border-color);

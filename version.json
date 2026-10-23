@@ -1,13 +1,13 @@
 {
-  "version": "1.4.5",
+  "version": "1.4.6",
   "buildDate": "2026-10-23",
-  "releaseName": "M&M 4E Hero Builder v1.4.5",
+  "releaseName": "M&M 4E Hero Builder v1.4.6",
   "releaseNotes": [
-    "Removed top update banner; start-up update notifications now directly display the update pop-up dialog",
-    "Streamlined update pop-up with prominent Reload App, Download ZIP, and GitHub buttons",
-    "Condensed update popup dialog to cover no more than 60% of viewable tab area without wasted space",
-    "Fixed 'Reload App' to bypass browser leave-page prompts and perform clean cache-busting reload",
-    "Removed redundant PP readout from Hero Details row to eliminate horizontal scrollbar on narrow displays"
+    "Fixed '?' description button for advantages with apostrophes in their names (e.g. Beginner's Luck, Up and At 'Em)",
+    "Verified all 119 advantages and 21 skills have full 4th Edition unabridged rules descriptions",
+    "Enhanced info modal display sizing with clean paragraph formatting and scrolling",
+    "Removed redundant top update banner; start-up update notifications now directly open the update pop-up dialog",
+    "Streamlined update pop-up with prominent Reload App, Download ZIP, and GitHub buttons"
   ],
   "githubRepo": "https://github.com/captainload/mm4e-hero-builder",
   "downloadZipUrl": "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",

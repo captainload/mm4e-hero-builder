@@ -5479,27 +5479,6 @@ function refreshUI() {
     }
   }
 
-  // Basics Tab PP display
-  const lblBasicsSpent = document.getElementById("lblBasicsSpentPP");
-  const lblBasicsTotal = document.getElementById("lblBasicsTotalPP");
-  const boxBasicsPP = document.getElementById("boxBasicsPP");
-
-  if (lblBasicsSpent) {
-    lblBasicsSpent.textContent = totalSpent;
-    lblBasicsSpent.style.color = isOverBudget ? "#ef4444" : "var(--text-main)";
-  }
-  if (lblBasicsTotal) {
-    lblBasicsTotal.textContent = totalAllowed;
-  }
-  if (boxBasicsPP) {
-    if (isOverBudget) {
-      boxBasicsPP.classList.add("over-budget");
-      boxBasicsPP.title = `Power Points exceeded: ${totalSpent} / ${totalAllowed} PP (+${totalSpent - totalAllowed} over limit)`;
-    } else {
-      boxBasicsPP.classList.remove("over-budget");
-      boxBasicsPP.title = `Power Points: ${totalSpent} / ${totalAllowed} PP`;
-    }
-  }
 
   // History Tab Trackers & Summary Hero Points
   const hpVal = typeof char.heroPoints === "number" ? char.heroPoints : 1;

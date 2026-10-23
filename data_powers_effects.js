@@ -1298,24 +1298,24 @@ If you have no Stamina rank, 1 rank of Regeneration makes you "self-repairing" a
 EXTRAS
 * DIEHARD: Automatically stabilize when gaining Dying condition. +1 point flat.
 * PERSISTENT: Regenerate Incurable Damage conditions. +1 point flat.
+* SUSTAINED: You must take a free Sustain action on your turn each round to maintain your Regeneration throughout the recovery time. If you do not or cannot take a free action (such as when Stunned, Incapacitated, or Asleep), your Regeneration stops and does not function until you resume sustaining it. Because it is Sustained Duration, you can use Extra Effort with your Regeneration (allowing you to temporarily boost your recovery rate when needed) or turn it off at will. This is a unique zero-point tradeoff in how Regeneration works. +0 points per rank.
 
 FLAWS
 * NOT AGAINST [DESCRIPTOR]: Cannot remove damage caused by specific descriptors. -1 point per rank.
 * ONLY WHEN DEAD: Functions only when dead. -2 points per rank.
 * ONLY WHEN INCAPACITATED: Functions only when incapacitated. -1 point per rank.
-* SOURCE: Requires access to a specific source (food, electricity, sunlight). -1 point per rank.
-* SUSTAINED: Requires Sustain action throughout recovery time. -0 points per rank.`,
+* SOURCE: Requires access to a specific source (food, electricity, sunlight). -1 point per rank.`,
     specificExtras: [
       { name: "Diehard", cost: 1, costType: "flat", description: "Automatically stabilize when gaining Dying condition." },
-      { name: "Persistent", cost: 1, costType: "flat", description: "Regenerate Incurable Damage conditions." }
+      { name: "Persistent", cost: 1, costType: "flat", description: "Regenerate Incurable Damage conditions." },
+      { name: "Sustained", cost: 0, costType: "per_rank", category: "extra", description: "Requires a free Sustain action to maintain recovery, but allows Extra Effort and turning it off (+0 pts/r tradeoff)." }
     ],
     specificFlaws: [
       { name: "Not Against [Descriptor]", cost: 1, costType: "per_rank", description: "Cannot remove damage caused by specific descriptors." },
       { name: "Not Against [Rare Descriptor]", cost: 2, costType: "flat", description: "Cannot remove damage caused by rare descriptors." },
       { name: "Only When Dead", cost: 2, costType: "per_rank", description: "Functions only when dead." },
       { name: "Only When Incapacitated", cost: 1, costType: "per_rank", description: "Functions only when incapacitated." },
-      { name: "Source", cost: 1, costType: "per_rank", description: "Requires access to a specific source." },
-      { name: "Sustained", cost: 0, costType: "per_rank", category: "flaw", description: "Requires Sustain action throughout recovery time." }
+      { name: "Source", cost: 1, costType: "per_rank", description: "Requires access to a specific source." }
     ],
     shortDesc: "Automatically recover from Damage conditions over time."
   },

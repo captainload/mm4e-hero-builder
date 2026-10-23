@@ -3,7 +3,8 @@
   "buildDate": "2026-10-22",
   "releaseName": "M&M 4E Hero Builder v1.4.1",
   "releaseNotes": [
-    "Moved Sustained modifier for Regeneration from extras to flaws and updated power rules text",
+    "Re-established Sustained as a +0 extra tradeoff for Regeneration with official 4th Edition rules text",
+    "Updated all 82 power modifier descriptions and full rule entries directly from 4th Edition rules without paraphrasing",
     "Fixed 0-cost modifier calculation across all powers (e.g. Sustained on Protection, Strength-Based on Damage)",
     "Enhanced power effect configurations across all powers with full options (resist, condition degrees, media, senses, subPowers, notes, and ranks)",
     "Configured Feature as a standard rank-adjustable effect with complete presets and descriptions",

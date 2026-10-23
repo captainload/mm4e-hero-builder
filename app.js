@@ -599,7 +599,7 @@ const EXTRACTED_CONFIGS = {
     { name: "Rapid Healing", rank: 5, notes: "Recovers from damage conditions every 6 rounds." },
     { name: "Instant Regeneration", rank: 10, notes: "Recovers from least severe damage condition every round." },
     { name: "Undying", rank: 15, modifiers: [{ name: "Persistent", ranks: 1, cost: 1, costType: "flat", category: "extra" }], notes: "Can regenerate even from the Dead condition within 4 minutes." },
-    { name: "Sustained Regeneration", rank: 5, modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "flaw" }], notes: "Requires active Free action each round to maintain healing." }
+    { name: "Sustained Regeneration", rank: 5, modifiers: [{ name: "Sustained", ranks: 1, cost: 0, costType: "per_rank", category: "extra" }], notes: "Requires active Free action each round to maintain healing (+0 tradeoff)." }
   ],
   "Remote Sensing": [
     { name: "Astral Projection", rank: 1, options: { remote_senses: "Three Sense Types (7 pts/r)" }, modifiers: [{ name: "Side Effect", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }], notes: "Displaces Sight, Hearing, and Mental senses; physical body remains defenseless/immobile." },
@@ -736,8 +736,8 @@ const EXTRACTED_MODIFIERS = {
       flaws: [{name: "Limited to One Task", cost: 2, costType: "per_rank"}, {name: "Mental Quickness", cost: 1, costType: "per_rank"}, {name: "Physical Quickness", cost: 1, costType: "per_rank"}]
   },
   "Regeneration": {
-      extras: [{name: "Diehard", cost: 1, costType: "flat"}, {name: "Persistent", cost: 1, costType: "flat"}],
-      flaws: [{name: "Not Against [Descriptor]", cost: 1, costType: "per_rank"}, {name: "Not Against [Rare Descriptor]", cost: 2, costType: "flat"}, {name: "Only When Dead", cost: 2, costType: "per_rank"}, {name: "Only When Incapacitated", cost: 1, costType: "per_rank"}, {name: "Source", cost: 1, costType: "per_rank"}, {name: "Sustained", cost: 0, costType: "per_rank"}]
+      extras: [{name: "Diehard", cost: 1, costType: "flat"}, {name: "Persistent", cost: 1, costType: "flat"}, {name: "Sustained", cost: 0, costType: "per_rank"}],
+      flaws: [{name: "Not Against [Descriptor]", cost: 1, costType: "per_rank"}, {name: "Not Against [Rare Descriptor]", cost: 2, costType: "flat"}, {name: "Only When Dead", cost: 2, costType: "per_rank"}, {name: "Only When Incapacitated", cost: 1, costType: "per_rank"}, {name: "Source", cost: 1, costType: "per_rank"}]
   },
   "Remote Sensing": {
       extras: [{name: "Communication", cost: 2, costType: "per_rank"}, {name: "Dimensional (1 Dimension)", cost: 1, costType: "flat"}, {name: "Dimensional (Group)", cost: 2, costType: "flat"}, {name: "Dimensional (Any)", cost: 3, costType: "flat"}, {name: "Protected", cost: 1, costType: "per_rank"}, {name: "Simultaneous", cost: 1, costType: "per_rank"}, {name: "Subtle (DC 20)", cost: 1, costType: "flat"}, {name: "Subtle (Unnoticeable)", cost: 2, costType: "flat"}, {name: "Targeting", cost: 1, costType: "per_rank"}],

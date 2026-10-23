@@ -162,13 +162,135 @@ const EXTRACTED_CONFIGS = {
         }
       ]
     },
-    { name: "Ageless", rank: 1 },
-    { name: "[Effect] Resistance", modifiers: [{ name: "Resistance", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
-    { name: "Environmental Immunity", rank: 10 },
-    { name: "Fortitude Immunity", rank: 30 },
-    { name: "Mental Immunity", rank: 10 },
-    { name: "Water Breathing", rank: 1 },
-    { name: "Will Immunity", rank: 30 }
+    { 
+      name: "Ageless", 
+      rank: 1,
+      subPowers: [
+        {
+          name: "Aging [1 rank]",
+          type: "Aging",
+          rank: 1,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Immunity to aging effects."
+    },
+    { 
+      name: "[Effect] Resistance", 
+      rank: 1, 
+      modifiers: [{ name: "Resistance", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }],
+      subPowers: [
+        {
+          name: "Custom Immunity (Specified Effect) [1 rank]",
+          type: "Custom Immunity",
+          rank: 1,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Halves the rank of specified effects before rolling resistance checks."
+    },
+    { 
+      name: "Environmental Immunity", 
+      rank: 10,
+      subPowers: [
+        {
+          name: "Life Support (All Environments) [10 ranks]",
+          type: "Life Support",
+          rank: 10,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Complete immunity to all Environmental Hazards (cold, heat, pressure, radiation, vacuum, and suffocation)."
+    },
+    { 
+      name: "Fortitude Immunity", 
+      rank: 30,
+      subPowers: [
+        {
+          name: "Fortitude Effects [30 ranks]",
+          type: "Fortitude Effects",
+          rank: 30,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Complete immunity to all effects requiring Fortitude resistance checks."
+    },
+    { 
+      name: "Save Immunities (Fortitude & Will)", 
+      rank: 60,
+      subPowers: [
+        {
+          name: "Fortitude Effects [30 ranks]",
+          type: "Fortitude Effects",
+          rank: 30,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        },
+        {
+          name: "Will Effects [30 ranks]",
+          type: "Will Effects",
+          rank: 30,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Complete immunity to all Fortitude and Will resistance checks (30 ranks each, 60 ranks total)."
+    },
+    { 
+      name: "Mental Immunity", 
+      rank: 10,
+      subPowers: [
+        {
+          name: "Common Descriptor (Mental Effects) [10 ranks]",
+          type: "Common Descriptor",
+          rank: 10,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Immunity to all mental powers and psychic effects."
+    },
+    { 
+      name: "Water Breathing", 
+      rank: 1,
+      subPowers: [
+        {
+          name: "Suffocation (One Type: Drowning) [1 rank]",
+          type: "Suffocation (One Type)",
+          rank: 1,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Immunity to suffocation underwater (drowning)."
+    },
+    { 
+      name: "Will Immunity", 
+      rank: 30,
+      subPowers: [
+        {
+          name: "Will Effects [30 ranks]",
+          type: "Will Effects",
+          rank: 30,
+          baseCost: 1,
+          costType: "per_rank",
+          modifiers: []
+        }
+      ],
+      notes: "Complete immunity to all effects requiring Will resistance checks."
+    }
   ],
   "Move Object": [
     { name: "Cyclone", modifiers: [{ name: "Area Effect (Cone)", ranks: 1, cost: 1, costType: "per_rank", category: "extra" }, { name: "Limited Direction", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }] },
@@ -2553,8 +2675,51 @@ window.applyEffectConfiguration = function(pIdx, eIdx, configName, skipHistory =
   effect.subPowers = config.subPowers ? JSON.parse(JSON.stringify(config.subPowers)) : [];
   effect.notes = config.notes ? config.notes : "";
 
+  // Auto-configure Immunity subPowers if missing or for any Save Immunity config
+  if (effect.effectName === "Immunity" && (!effect.subPowers || effect.subPowers.length === 0)) {
+    const cfgLower = (targetConfig || config.name || "").toLowerCase();
+    if (cfgLower.includes("fortitude") && cfgLower.includes("will")) {
+      effect.subPowers = [
+        { name: "Fortitude Effects [30 ranks]", type: "Fortitude Effects", rank: 30, baseCost: 1, costType: "per_rank", modifiers: [] },
+        { name: "Will Effects [30 ranks]", type: "Will Effects", rank: 30, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("fortitude") || (cfgLower.includes("save") && !cfgLower.includes("will"))) {
+      effect.subPowers = [
+        { name: "Fortitude Effects [30 ranks]", type: "Fortitude Effects", rank: 30, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("will")) {
+      effect.subPowers = [
+        { name: "Will Effects [30 ranks]", type: "Will Effects", rank: 30, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("environment") || cfgLower.includes("life support")) {
+      effect.subPowers = [
+        { name: "Life Support (All Environments) [10 ranks]", type: "Life Support", rank: 10, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("mental")) {
+      effect.subPowers = [
+        { name: "Common Descriptor (Mental Effects) [10 ranks]", type: "Common Descriptor", rank: 10, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("water") || cfgLower.includes("drown")) {
+      effect.subPowers = [
+        { name: "Suffocation (One Type: Drowning) [1 rank]", type: "Suffocation (One Type)", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (cfgLower.includes("ageless") || cfgLower.includes("aging")) {
+      effect.subPowers = [
+        { name: "Aging [1 rank]", type: "Aging", rank: 1, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    } else if (config.rank && config.rank > 0) {
+      effect.subPowers = [
+        { name: `${config.name} [${config.rank} ranks]`, type: config.name, rank: config.rank, baseCost: 1, costType: "per_rank", modifiers: [] }
+      ];
+    }
+  }
+
   const isComposite = ["Enhanced Senses", "Enhanced Movement", "Enhanced Trait", "Comprehend", "Feature", "Immunity"].includes(effect.effectName);
-  if (!isComposite) {
+  if (isComposite && effect.subPowers && effect.subPowers.length > 0) {
+    let sumRanks = 0;
+    effect.subPowers.forEach(sp => { sumRanks += (parseInt(sp.rank) || 1); });
+    effect.rank = sumRanks;
+  } else if (!isComposite) {
       let maxR = window.getMaxPowerRank(effect); 
       if (effect.rank > maxR) effect.rank = maxR;
   }

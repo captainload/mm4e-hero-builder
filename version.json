@@ -1,12 +1,12 @@
 {
-  "version": "1.4.7",
+  "version": "1.4.8",
   "buildDate": "2026-10-23",
-  "releaseName": "M&M 4E Hero Builder v1.4.7",
+  "releaseName": "M&M 4E Hero Builder v1.4.8",
   "releaseNotes": [
+    "Completely rebuilt update pop-up dialog with sleek, content-fitted geometry eliminating all empty space",
+    "Streamlined status cards for update-available, up-to-date, checking, and offline states",
     "Updated Enhanced Trait preset 'Trait Boost' to only apply the Fades flaw without pre-selecting Strength",
-    "Increased typography scale and legibility across all views of the update pop-up dialog",
-    "Fixed '?' description button for advantages with apostrophes (e.g. Beginner's Luck)",
-    "Verified all 119 advantages and 21 skills have full 4th Edition unabridged rules descriptions"
+    "Fixed '?' description button for advantages with apostrophes (e.g. Beginner's Luck)"
   ],
   "githubRepo": "https://github.com/captainload/mm4e-hero-builder",
   "downloadZipUrl": "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",

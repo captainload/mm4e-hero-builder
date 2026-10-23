@@ -104,7 +104,7 @@
         </button>
         <div class="menu-divider" style="margin-top: 4px;"></div>
         <div style="padding: 6px 12px 4px 12px; font-size: 10pt; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
-          <span>Version <strong id="lblMenuAppVersion">1.4.7</strong></span>
+          <span>Version <strong id="lblMenuAppVersion">1.4.8</strong></span>
           <a href="https://github.com/captainload/mm4e-hero-builder" target="_blank" rel="noopener" style="color: var(--accent-primary); text-decoration: none; font-size: 10pt;" title="View repository on GitHub">GitHub ↗</a>
         </div>
       </div>
@@ -229,7 +229,7 @@
           <!-- Application Updates Option -->
           <div class="font-control-group" style="margin-top: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-weight: 600; font-size: var(--font-size-secondary);">Version: <strong id="lblOptionsAppVersion">1.4.7</strong></span>
+              <span style="font-weight: 600; font-size: var(--font-size-secondary);">Version: <strong id="lblOptionsAppVersion">1.4.8</strong></span>
               <button type="button" class="btn btn-secondary btn-sm" id="btnOptionsCheckUpdates" style="padding: 2px 8px; font-size: 10pt;">🔄 Check Updates</button>
             </div>
             <label style="display: flex; align-items: center; gap: 6px; font-size: var(--font-size-secondary); margin-top: 6px; cursor: pointer; color: var(--text-main);">
@@ -1375,16 +1375,16 @@
     </div>
   </div>
 
-  <!-- Check for Updates Modal Dialog -->
-  <div class="modal-overlay" id="updateModal" style="display: none; align-items: center; justify-content: center; z-index: 2200;">
-    <div class="info-popup-box update-modal-dialog">
-      <div class="info-popup-header">
-        <h3 id="updateModalTitle" style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 13pt;">
+  <!-- Check for Updates Modal Dialog (Content-Fitted, Zero Wasted Space) -->
+  <div class="modal-overlay update-modal-overlay" id="updateModal" style="display: none; align-items: center; justify-content: center; z-index: 2400;">
+    <div class="update-dialog-box" id="updateDialogBox">
+      <div class="update-dialog-header">
+        <h3 id="updateModalTitle">
           <span>🔄</span> Check for Updates
         </h3>
-        <button type="button" class="info-popup-close" id="btnUpdateModalClose" title="Close">✕</button>
+        <button type="button" class="update-dialog-close" id="btnUpdateModalClose" title="Close (Esc)">✕</button>
       </div>
-      <div class="info-popup-body" id="updateModalBody" style="padding: 16px; font-size: 11.5pt; line-height: 1.5;">
+      <div class="update-dialog-body" id="updateModalBody">
         <!-- Rendered dynamically -->
       </div>
     </div>

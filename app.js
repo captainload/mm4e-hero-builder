@@ -5011,13 +5011,54 @@ function refreshUI() {
   }
 
   const pp = char.powerPointsSummary;
+  const totalSpent = pp.totalSpent || 0;
+  const totalAllowed = typeof char.totalPointsAllowed === "number" ? char.totalPointsAllowed : (char.powerLevel * 15);
+  const isOverBudget = totalSpent > totalAllowed;
+
   document.getElementById("lblAbilPP").textContent = `${pp.abilities} PP`;
   document.getElementById("lblCombatPP").textContent = `${pp.combat} PP`;
   document.getElementById("lblResistPP").textContent = `${pp.resistances} PP`;
   document.getElementById("lblSkillPP").textContent = `${pp.skills} PP`;
   document.getElementById("lblAdvPP").textContent = `${pp.advantages} PP`;
   document.getElementById("lblPowerPP").textContent = `${pp.powers} PP`;
-  document.getElementById("lblTotalPP").textContent = `${pp.totalSpent} / ${char.totalPointsAllowed} PP`;
+
+  const totalPPElem = document.getElementById("lblTotalPP");
+  if (totalPPElem) {
+    totalPPElem.textContent = `${totalSpent} / ${totalAllowed} PP`;
+    if (isOverBudget) {
+      totalPPElem.style.setProperty("color", "#ef4444", "important");
+      totalPPElem.style.setProperty("font-weight", "700", "important");
+      totalPPElem.style.setProperty("border-color", "#ef4444", "important");
+      totalPPElem.title = `Power Points exceeded by ${totalSpent - totalAllowed} PP!`;
+    } else {
+      totalPPElem.style.removeProperty("color");
+      totalPPElem.style.removeProperty("font-weight");
+      totalPPElem.style.removeProperty("border-color");
+      totalPPElem.title = `Total Power Points`;
+    }
+  }
+
+  // Basics Tab PP display
+  const lblBasicsSpent = document.getElementById("lblBasicsSpentPP");
+  const lblBasicsTotal = document.getElementById("lblBasicsTotalPP");
+  const boxBasicsPP = document.getElementById("boxBasicsPP");
+
+  if (lblBasicsSpent) {
+    lblBasicsSpent.textContent = totalSpent;
+    lblBasicsSpent.style.color = isOverBudget ? "#ef4444" : "var(--text-main)";
+  }
+  if (lblBasicsTotal) {
+    lblBasicsTotal.textContent = totalAllowed;
+  }
+  if (boxBasicsPP) {
+    if (isOverBudget) {
+      boxBasicsPP.classList.add("over-budget");
+      boxBasicsPP.title = `Power Points exceeded: ${totalSpent} / ${totalAllowed} PP (+${totalSpent - totalAllowed} over limit)`;
+    } else {
+      boxBasicsPP.classList.remove("over-budget");
+      boxBasicsPP.title = `Power Points: ${totalSpent} / ${totalAllowed} PP`;
+    }
+  }
 
   // History Tab Trackers & Summary Hero Points
   const hpVal = typeof char.heroPoints === "number" ? char.heroPoints : 1;
@@ -5039,8 +5080,6 @@ function refreshUI() {
   }
 
   // Power Points Tracker on History Tab
-  const totalAllowed = typeof char.totalPointsAllowed === "number" ? char.totalPointsAllowed : (char.powerLevel * 15);
-  const totalSpent = pp.totalSpent || 0;
   const remainingPP = totalAllowed - totalSpent;
   const basePLPP = char.powerLevel * 15;
 
@@ -5479,8 +5518,65 @@ const FileManager = {
     return options;
   },
 
+  confirmPPOverLimit: function() {
+    if (typeof syncActiveCompanionToPrimary === "function") {
+      syncActiveCompanionToPrimary();
+    }
+    const current = window.char;
+    const hero = window.primaryHero || window.char;
+
+    // 1. Check current form
+    const currentSpent = current.powerPointsSummary ? current.powerPointsSummary.totalSpent : 0;
+    const currentAllowed = typeof current.totalPointsAllowed === "number" ? current.totalPointsAllowed : (current.powerLevel * 15);
+
+    if (currentSpent > currentAllowed) {
+      const over = currentSpent - currentAllowed;
+      const msg = `⚠️ Warning: Power Points Exceeded!\n\n"${current.name || 'Hero'}" has spent ${currentSpent} PP, which is ${over} PP over the allowed limit of ${currentAllowed} PP.\n\nDo you want to proceed and save this character anyway?`;
+      return confirm(msg);
+    }
+
+    // 2. If editing a companion, also check primary hero
+    if (hero && hero !== current) {
+      const heroSpent = hero.powerPointsSummary ? hero.powerPointsSummary.totalSpent : 0;
+      const heroAllowed = typeof hero.totalPointsAllowed === "number" ? hero.totalPointsAllowed : (hero.powerLevel * 15);
+      if (heroSpent > heroAllowed) {
+        const over = heroSpent - heroAllowed;
+        const msg = `⚠️ Warning: Power Points Exceeded!\n\nPrimary Hero "${hero.name || 'Hero'}" has spent ${heroSpent} PP, which is ${over} PP over the allowed limit of ${heroAllowed} PP.\n\nDo you want to proceed and save this character anyway?`;
+        return confirm(msg);
+      }
+    }
+
+    // 3. Check any other companions
+    if (hero && Array.isArray(hero.companions)) {
+      for (const comp of hero.companions) {
+        if (comp.id === window.activeCompanionId) continue;
+        const compPL = comp.powerLevel || hero.powerLevel || 10;
+        const compAllowed = typeof comp.totalPointsAllowed === "number" ? comp.totalPointsAllowed : (compPL * 15);
+        let compSpent = 0;
+        if (comp.data) {
+          try {
+            const tempModel = new CharacterModel();
+            tempModel.deserialize(comp.data);
+            compSpent = tempModel.powerPointsSummary ? tempModel.powerPointsSummary.totalSpent : 0;
+          } catch (e) {}
+        }
+        if (compSpent > compAllowed) {
+          const over = compSpent - compAllowed;
+          const msg = `⚠️ Warning: Power Points Exceeded!\n\nCompanion form "${comp.name}" has spent ${compSpent} PP, which is ${over} PP over the allowed limit of ${compAllowed} PP.\n\nDo you want to proceed and save this character anyway?`;
+          return confirm(msg);
+        }
+      }
+    }
+
+    return true;
+  },
+
   // Save As: Opens native OS save dialog to choose any directory/filename, or downloads
   saveHeroAs: async function() {
+    if (!this.confirmPPOverLimit()) {
+      showToast("Save cancelled (Power Point limit exceeded).", "warning");
+      return false;
+    }
     const safeHeroName = char.name ? char.name.replace(/[^a-z0-9]/gi, '_').toLowerCase() : "hero";
     const defaultFileName = `${safeHeroName}.mm4e`;
     const payload = JSON.stringify(char.serialize(), null, 2);
@@ -5526,6 +5622,10 @@ const FileManager = {
 
   // Save: Writes directly to the active file handle in-place, or prompts Save As
   saveHero: async function() {
+    if (!this.confirmPPOverLimit()) {
+      showToast("Save cancelled (Power Point limit exceeded).", "warning");
+      return false;
+    }
     if (!this.currentFileHandle) {
       return this.saveHeroAs();
     }

@@ -3,7 +3,9 @@
   "buildDate": "2026-10-22",
   "releaseName": "M&M 4E Hero Builder v1.4.0",
   "releaseNotes": [
-    "Automatic update check at program startup with notification toast and alert banner",
+    "Real-time PP budget tracker on Basics tab highlighting in red when exceeding allowed limit",
+    "Save validation warning and confirmation prompt whenever saving a character over its PP limit",
+    "Automatic update check at program startup displaying update dialog when a newer version is found",
     "Fixed duplicate companion creation bug when adding an alternate form",
     "Streamlined form options by treating Mecha as Alternate Forms per M&M 4E rules",
     "Added 'Check for Updates' function in Main Menu for local installations",

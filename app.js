@@ -7178,6 +7178,11 @@ const UpdateCheckerManager = {
   downloadZipUrl: "https://github.com/captainload/mm4e-hero-builder/archive/refs/heads/main.zip",
 
   init() {
+    const lblMenu = document.getElementById("lblMenuAppVersion");
+    if (lblMenu) lblMenu.textContent = this.currentVersion;
+    const lblOptions = document.getElementById("lblOptionsAppVersion");
+    if (lblOptions) lblOptions.textContent = this.currentVersion;
+
     const btnCheck = document.getElementById("btnCheckUpdates");
     const btnOptionsCheck = document.getElementById("btnOptionsCheckUpdates");
     const btnClose = document.getElementById("btnUpdateModalClose");

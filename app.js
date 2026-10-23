@@ -1,13 +1,14 @@
-if (typeof window.escapeHtml !== 'function') {
-  window.escapeHtml = function(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  };
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+if (typeof window !== 'undefined') {
+  window.escapeHtml = escapeHtml;
 }
 
 const char = new CharacterModel();
@@ -317,17 +318,8 @@ const EXTRACTED_CONFIGS = {
     },
     { 
       name: "Trait Boost", 
-      rank: 4,
-      subPowers: [
-        {
-          name: "Strength (STR) [2 pts/r]",
-          type: "Strength (STR)",
-          rank: 4,
-          baseCost: 2,
-          costType: "per_rank",
-          modifiers: []
-        }
-      ],
+      rank: 1,
+      subPowers: [],
       modifiers: [{ name: "Fades", ranks: 1, cost: 1, costType: "per_rank", category: "flaw" }],
       notes: "Temporary burst of enhanced trait that fades with each use."
     }
@@ -7182,7 +7174,7 @@ window.HelpModalManager = HelpModalManager;
 
 // --- UPDATE CHECKER SYSTEM (FOR LOCAL & OFFLINE USERS) ---
 const UpdateCheckerManager = {
-  currentVersion: "1.4.6",
+  currentVersion: "1.4.7",
   buildDate: "2026-10-23",
   githubRepo: "https://github.com/captainload/mm4e-hero-builder",
   rawVersionUrl: "https://raw.githubusercontent.com/captainload/mm4e-hero-builder/main/version.json",
@@ -7299,9 +7291,9 @@ const UpdateCheckerManager = {
       if (modalBody) {
         modalBody.innerHTML = `
           <div style="text-align: center; padding: 24px 12px;">
-            <div style="font-size: 34px; animation: spin 1.2s linear infinite; display: inline-block;">🔄</div>
-            <div style="font-size: 11.5pt; font-weight: 700; margin-top: 14px; color: var(--text-main);">Checking for Updates...</div>
-            <div style="font-size: 10pt; color: var(--text-muted); margin-top: 4px;">Connecting to GitHub (Current: v${this.currentVersion})...</div>
+            <div style="font-size: 38px; animation: spin 1.2s linear infinite; display: inline-block;">🔄</div>
+            <div style="font-size: 13pt; font-weight: 700; margin-top: 14px; color: var(--text-main);">Checking for Updates...</div>
+            <div style="font-size: 11pt; color: var(--text-muted); margin-top: 6px;">Connecting to GitHub (Current: v${this.currentVersion})...</div>
           </div>
         `;
       }
@@ -7451,42 +7443,42 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
         <div>
-          <div style="font-weight: 700; color: #10b981; font-size: 10.5pt; display: flex; align-items: center; gap: 6px;">
+          <div style="font-weight: 700; color: #10b981; font-size: 12pt; display: flex; align-items: center; gap: 6px;">
             <span>🎉</span> New GitHub Update
           </div>
-          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+          <div style="font-size: 11pt; color: var(--text-muted); margin-top: 2px;">
             Commit: <strong>${this.safeEscape(data.commitSha || "main")}</strong> (${this.safeEscape(data.commitDate ? data.commitDate.slice(0, 10) : "")})
           </div>
         </div>
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 4px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 4px;">
           ⟳ Reload App
         </button>
       </div>
 
-      <div style="margin-bottom: 8px;">
-        <div style="font-weight: 600; font-size: 10pt; margin-bottom: 4px; color: var(--text-main);">Latest Change:</div>
-        <div style="font-size: 10pt; color: var(--text-main); font-style: italic; background: var(--bg-card); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 4px; padding: 6px 10px; line-height: 1.35;">
+      <div style="margin-bottom: 10px;">
+        <div style="font-weight: 600; font-size: 11.5pt; margin-bottom: 4px; color: var(--text-main);">Latest Change:</div>
+        <div style="font-size: 11.5pt; color: var(--text-main); font-style: italic; background: var(--bg-card); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-primary); border-radius: 4px; padding: 8px 12px; line-height: 1.4;">
           "${this.safeEscape(data.commitMessage)}"
         </div>
       </div>
 
-      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; font-size: 10pt; color: var(--text-muted); line-height: 1.35;">
+      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 11pt; color: var(--text-muted); line-height: 1.4;">
         📦 <strong>To update:</strong> Click <strong>Reload App</strong> (online) or replace local files with the ZIP. Your character files (.mm4e) remain safe.
       </div>
 
-      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--border-color);">
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 5px;">
           ⟳ Reload App
         </button>
-        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+        <a href="${this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 5px;">
           ⬇️ Download ZIP
         </a>
-        <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
+        <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 11pt;">
           GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 5px 12px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 11pt;">Close</button>
       </div>
     `;
 
@@ -7503,44 +7495,44 @@ const UpdateCheckerManager = {
       : (data.releaseNotes ? `<p style="margin: 0;">${this.safeEscape(data.releaseNotes)}</p>` : "<li>Performance enhancements and rules refinements.</li>");
 
     modalBody.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+      <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; padding: 8px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
         <div>
-          <div style="font-weight: 700; color: #10b981; font-size: 10.5pt; display: flex; align-items: center; gap: 6px;">
+          <div style="font-weight: 700; color: #10b981; font-size: 12.5pt; display: flex; align-items: center; gap: 6px;">
             <span>🎉</span> New Version: v${this.safeEscape(data.version)}
           </div>
-          <div style="font-size: 10pt; color: var(--text-muted); margin-top: 1px;">
+          <div style="font-size: 11pt; color: var(--text-muted); margin-top: 2px;">
             Installed: <strong>v${this.currentVersion}</strong> • Released: <strong>${this.safeEscape(data.buildDate || "Latest")}</strong>
           </div>
         </div>
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 4px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 4px;">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 4px;">
           ⟳ Reload App
         </button>
       </div>
 
-      <div style="margin-bottom: 8px;">
-        <div style="font-weight: 600; font-size: 10pt; margin-bottom: 4px; color: var(--text-main);">What's New in v${this.safeEscape(data.version)}:</div>
-        <div style="max-height: 130px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px 6px 6px;">
-          <ul style="margin: 0; padding-left: 18px; font-size: 10pt; color: var(--text-main); line-height: 1.35;">
+      <div style="margin-bottom: 10px;">
+        <div style="font-weight: 600; font-size: 11.5pt; margin-bottom: 4px; color: var(--text-main);">What's New in v${this.safeEscape(data.version)}:</div>
+        <div style="max-height: 140px; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px 8px 8px;">
+          <ul style="margin: 0; padding-left: 20px; font-size: 11pt; color: var(--text-main); line-height: 1.45;">
             ${notes}
           </ul>
         </div>
       </div>
 
-      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 6px 10px; margin-bottom: 10px; font-size: 10pt; color: var(--text-muted); line-height: 1.35;">
+      <div style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 11pt; color: var(--text-muted); line-height: 1.4;">
         📦 <strong>To update:</strong> Click <strong>Reload App</strong> (online) or replace local files with the ZIP. Your character files (.mm4e) remain safe.
       </div>
 
-      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid var(--border-color);">
-        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--border-color);">
+        <button type="button" class="btn btn-primary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 5px;">
           ⟳ Reload App
         </button>
-        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt; display: inline-flex; align-items: center; gap: 5px;">
+        <a href="${data.downloadZipUrl || this.downloadZipUrl}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 11pt; display: inline-flex; align-items: center; gap: 5px;">
           ⬇️ Download ZIP
         </a>
-        <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 10px; font-size: 10pt;">
+        <a href="${data.githubRepo || this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 12px; font-size: 11pt;">
           GitHub ↗
         </a>
-        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 5px 12px; font-size: 10pt;">Close</button>
+        <button type="button" class="btn btn-secondary" id="btnDismissUpdate" style="padding: 6px 14px; font-size: 11pt;">Close</button>
       </div>
     `;
 
@@ -7553,27 +7545,27 @@ const UpdateCheckerManager = {
     if (!modalBody) return;
 
     modalBody.innerHTML = `
-      <div style="padding: 6px 8px; text-align: center;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
-          <span style="font-size: 24px;">✅</span>
+      <div style="padding: 10px 8px; text-align: center;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+          <span style="font-size: 28px;">✅</span>
           <div style="text-align: left;">
-            <div style="font-size: 11pt; color: #10b981; font-weight: 700;">You are running the latest version!</div>
-            <div style="font-size: 10pt; color: var(--text-muted);">
+            <div style="font-size: 13pt; color: #10b981; font-weight: 700;">You are running the latest version!</div>
+            <div style="font-size: 11.5pt; color: var(--text-muted); margin-top: 2px;">
               Version: <strong>v${this.currentVersion}</strong> (Build: ${this.buildDate})
             </div>
           </div>
         </div>
-        <div style="font-size: 10pt; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">
+        <div style="font-size: 11.5pt; color: var(--text-muted); margin-bottom: 16px; line-height: 1.45;">
           Your installation is completely up to date with the GitHub repository.
         </div>
-        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 5px 12px; font-size: 10pt;">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary" onclick="window.reloadApp()" style="padding: 6px 14px; font-size: 11pt;">
             ⟳ Reload App
           </button>
-          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 5px 12px; font-size: 10pt;">
+          <a href="${this.githubRepo}" target="_blank" rel="noopener" class="btn btn-secondary" style="text-decoration: none; padding: 6px 14px; font-size: 11pt;">
             GitHub ↗
           </a>
-          <button type="button" class="btn btn-primary" id="btnDismissUpdate" style="padding: 5px 16px; font-size: 10pt;">Great!</button>
+          <button type="button" class="btn btn-primary" id="btnDismissUpdate" style="padding: 6px 20px; font-size: 11pt;">Great!</button>
         </div>
       </div>
     `;

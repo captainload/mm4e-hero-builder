@@ -7296,13 +7296,26 @@ const UpdateCheckerManager = {
       let remoteData = null;
       let checkSource = "version_json";
 
-      // 1. First try fetching version.json directly with cache-busting
+      // 1. First try GitHub Contents API (bypasses raw CDN cache for instant real-time version checks)
       try {
-        const resp = await fetch(`${this.rawVersionUrl}?_t=${Date.now()}`, { cache: "no-store" });
+        const resp = await fetch(`https://api.github.com/repos/captainload/mm4e-hero-builder/contents/version.json?ref=main&_t=${Date.now()}`, {
+          headers: { 'Accept': 'application/vnd.github.v3.raw' },
+          cache: "no-store"
+        });
         if (resp.ok) {
           remoteData = await resp.json();
         }
       } catch (err) {}
+
+      // 2. Fallback to raw GitHub version.json
+      if (!remoteData || !remoteData.version) {
+        try {
+          const resp = await fetch(`${this.rawVersionUrl}?_t=${Date.now()}`, { cache: "no-store" });
+          if (resp.ok) {
+            remoteData = await resp.json();
+          }
+        } catch (err) {}
+      }
 
       // 2. If version.json failed or returned 404, fall back to GitHub commits API
       if (!remoteData || !remoteData.version) {
